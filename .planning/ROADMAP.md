@@ -31,7 +31,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. Grid keyboard navigation (Tab between cells, Enter to confirm, arrow keys) works without triggering browser defaults
 **Plans:** 2 plans
 Plans:
-- [ ] 01-01-PLAN.md — Project scaffold, HyperFormula engine factory, Excel-compat smoke tests (TDD)
+- [x] 01-01-PLAN.md — Project scaffold, HyperFormula engine factory, Excel-compat smoke tests (TDD)
 - [ ] 01-02-PLAN.md — Spreadsheet grid UI, formula bar, function autocomplete, app shell
 
 ### Phase 2: Challenge Loop
@@ -86,7 +86,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Formula Engine | 0/2 | Planned | - |
+| 1. Formula Engine | 1/2 | In progress | - |
 | 2. Challenge Loop | 0/TBD | Not started | - |
 | 3. Content Library | 0/TBD | Not started | - |
 | 4. Keyboard Shortcuts | 0/TBD | Not started | - |
