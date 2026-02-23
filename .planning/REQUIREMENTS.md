@@ -61,27 +61,27 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GRID-01 | — | Pending |
-| GRID-02 | — | Pending |
-| GRID-03 | — | Pending |
-| GRID-04 | — | Pending |
-| LEARN-01 | — | Pending |
-| LEARN-02 | — | Pending |
-| LEARN-03 | — | Pending |
-| LEARN-04 | — | Pending |
-| LEARN-05 | — | Pending |
-| LEARN-06 | — | Pending |
-| PROG-01 | — | Pending |
-| PROG-02 | — | Pending |
-| PROG-03 | — | Pending |
-| KEYS-01 | — | Pending |
-| KEYS-02 | — | Pending |
+| GRID-01 | Phase 1 | Pending |
+| GRID-02 | Phase 1 | Pending |
+| GRID-03 | Phase 2 | Pending |
+| GRID-04 | Phase 2 | Pending |
+| LEARN-01 | Phase 2 | Pending |
+| LEARN-02 | Phase 3 | Pending |
+| LEARN-03 | Phase 2 | Pending |
+| LEARN-04 | Phase 2 | Pending |
+| LEARN-05 | Phase 3 | Pending |
+| LEARN-06 | Phase 5 | Pending |
+| PROG-01 | Phase 5 | Pending |
+| PROG-02 | Phase 5 | Pending |
+| PROG-03 | Phase 5 | Pending |
+| KEYS-01 | Phase 4 | Pending |
+| KEYS-02 | Phase 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 15 total
-- Mapped to phases: 0
-- Unmapped: 15 ⚠️
+- Mapped to phases: 15
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-02-22*
-*Last updated: 2026-02-22 after initial definition*
+*Last updated: 2026-02-22 after roadmap creation — all requirements mapped*
