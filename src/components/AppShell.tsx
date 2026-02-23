@@ -12,7 +12,8 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Formula Practice', to: '/challenge' },
+  { label: 'Challenges', to: '/challenge' },
+  { label: 'Rapid-Fire Drill', to: '/drill' },
   { label: 'Keyboard Shortcuts', to: '/shortcuts' },
   { label: 'Progress', to: '/progress', disabled: true },
 ];

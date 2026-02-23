@@ -3,6 +3,7 @@ import { WelcomePage } from './pages/WelcomePage';
 import { AppShell } from './components/AppShell';
 import { SpreadsheetGrid } from './components/SpreadsheetGrid';
 import { ChallengePage } from './pages/ChallengePage';
+import { DrillPage } from './pages/DrillPage';
 import { ShortcutsPage } from './pages/ShortcutsPage';
 
 function App() {
@@ -23,6 +24,14 @@ function App() {
           element={
             <AppShell>
               <ChallengePage />
+            </AppShell>
+          }
+        />
+        <Route
+          path="/drill"
+          element={
+            <AppShell>
+              <DrillPage />
             </AppShell>
           }
         />
