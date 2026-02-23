@@ -1,3 +1,5 @@
+export type Tier = 'beginner' | 'intermediate' | 'advanced';
+
 export interface CellAddress {
   sheet: number;
   row: number;
@@ -38,8 +40,44 @@ export interface Challenge {
   answerCells: AnswerCell[];
   /** Optional function category tag */
   category?: string;
-  /** Optional difficulty tag */
-  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  /** Optional difficulty tag — alias for tier; use tier for authoritative value */
+  difficulty?: Tier;
+  /** Authoritative learning path tier */
+  tier: Tier;
+  /** Short prompt for drill mode with inline data (no grid references). Falls back to prompt if absent. */
+  drillPrompt?: string;
+  /** Exact expected answer string in drill mode */
+  drillAnswer: string;
+  /** Whether drill asks for full formula or just function name */
+  drillAnswerScope: 'formula' | 'function';
+  /** 3 wrong options for multiple choice mode */
+  drillWrongOptions: string[];
+}
+
+export interface DrillQuestion {
+  challengeId: string;
+  prompt: string;
+  correctAnswer: string;
+  answerScope: 'formula' | 'function';
+  wrongOptions: string[];
+  tier: Tier;
+  category: string;
+  explanation: string;
+  correctFormula: string;
+}
+
+export function challengeToDrillQuestion(c: Challenge): DrillQuestion {
+  return {
+    challengeId: c.id,
+    prompt: c.drillPrompt ?? c.prompt,
+    correctAnswer: c.drillAnswer,
+    answerScope: c.drillAnswerScope,
+    wrongOptions: c.drillWrongOptions,
+    tier: c.tier,
+    category: c.category ?? 'General',
+    explanation: c.explanation,
+    correctFormula: c.correctFormula,
+  };
 }
 
 export type ChallengeStatus = 'unattempted' | 'correct' | 'incorrect' | 'skipped';
