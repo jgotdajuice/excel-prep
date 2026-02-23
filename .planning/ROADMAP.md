@@ -13,7 +13,7 @@ Build a client-side SPA that teaches Excel functions for finance interviews thro
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Formula Engine** - Interactive spreadsheet grid wired to a verified, Excel-compatible formula engine (completed 2026-02-23)
-- [ ] **Phase 2: Challenge Loop** - Single end-to-end challenge flow: grid renders, user enters formula, grader grades it, explanation appears
+- [x] **Phase 2: Challenge Loop** - Single end-to-end challenge flow: grid renders, user enters formula, grader grades it, explanation appears (completed 2026-02-23)
 - [ ] **Phase 3: Content Library** - Finance-framed question bank and structured beginner-to-interview-ready learning path
 - [ ] **Phase 4: Keyboard Shortcuts** - Independent drill module for finance/IB keyboard shortcuts with keypress capture
 - [ ] **Phase 5: Progress and Weak Areas** - Session persistence, per-function accuracy tracking, weighted drill queue, next-topic suggestions
@@ -44,11 +44,11 @@ Plans:
   3. User sees distinct, clear feedback for "wrong value" versus "formula syntax error" (not a generic error message)
   4. After every submission (correct or incorrect), user sees an explanation of how the formula works and why it produces the expected result
   5. User can move to the next challenge after seeing their result
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 Plans:
 - [x] 02-01-PLAN.md — Challenge types, grading engine (TDD), Zustand store, seed challenge data
-- [ ] 02-02-PLAN.md — SpreadsheetGrid challenge mode, ChallengePage, RightPanel, ChallengeList, CompletionScreen, routing
-- [ ] 02-03-PLAN.md — Human verification of end-to-end challenge flow
+- [x] 02-02-PLAN.md — SpreadsheetGrid challenge mode, ChallengePage, RightPanel, ChallengeList, CompletionScreen, routing
+- [x] 02-03-PLAN.md — Human verification of end-to-end challenge flow (4 bugs found & fixed)
 
 ### Phase 3: Content Library
 **Goal**: Users have a full set of finance interview formulas to practice — organized from beginner to interview-ready — plus a rapid-fire drill mode for recognition practice
@@ -91,7 +91,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Formula Engine | 2/2 | Complete    | 2026-02-23 |
-| 2. Challenge Loop | 2/3 | In Progress|  |
+| 2. Challenge Loop | 3/3 | Complete | 2026-02-23 |
 | 3. Content Library | 0/TBD | Not started | - |
 | 4. Keyboard Shortcuts | 0/TBD | Not started | - |
 | 5. Progress and Weak Areas | 0/TBD | Not started | - |
