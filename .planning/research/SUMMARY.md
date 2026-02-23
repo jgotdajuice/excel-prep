@@ -1,17 +1,17 @@
 # Project Research Summary
 
-**Project:** excel-prep — Interactive Excel Finance Interview Prep App
-**Domain:** Spreadsheet-based interactive learning platform (finance / investment banking)
-**Researched:** 2026-02-22
-**Confidence:** MEDIUM-HIGH (core stack HIGH; features and architecture MEDIUM; pitfalls MEDIUM)
+**Project:** excel-prep -- Interactive Excel Finance Interview Prep App
+**Domain:** Visual polish, UX improvements, and Vercel deployment for an existing React/Vite SPA (v1.1 milestone)
+**Researched:** 2026-02-23
+**Confidence:** HIGH
 
 ## Executive Summary
 
-This is a client-side SPA that teaches Excel skills for finance interviews through interactive formula challenges. The recommended build is React 19 + Vite 6 + TypeScript 5 with Handsontable (spreadsheet grid) and HyperFormula (formula engine) as the core technical bets. Everything runs in the browser with no backend required for MVP — progress persists to localStorage. The product sits in a clear market gap: no existing tool combines in-browser interactive practice, finance-specific scenario framing, and IB keyboard shortcut drills in a single focused tool.
+ExcelPrep v1.0 is a functional prototype with a complete feature set -- 60+ challenges, formula grading, drill mode, progress tracking, keyboard shortcuts. The v1.1 milestone is a visual and deployment polish pass, not a feature build. The work is well-scoped: establish a CSS design token system (Tailwind v4 `@theme`), unify all pages to a coherent white+green light theme, improve drill question readability with structured text formatting, add onboarding copy, ship to Vercel. The only new npm dependency is `@fontsource-variable/inter` for self-hosted typography. No new frameworks, no new state management, no architectural changes to stores or engines.
 
-The central technical challenge is formula validation. The correct approach is result-based grading — run the user's formula through HyperFormula and compare the computed output to the expected value, not the formula string. This must be built first, configured correctly (Excel-compatibility flags set from day one), and verified against known Excel outputs before any challenge content is written. Getting this wrong destroys user trust and is expensive to recover from.
+The recommended approach is tokens-first: define 6-8 color and typography tokens in `index.css` via Tailwind v4's `@theme` directive, then convert components from scattered inline styles and CSS classes to Tailwind utilities consuming those tokens. Convert the shared shell (`AppShell`) first so all pages inherit the new frame, then work through pages individually. Create 3 small shared UI primitives (`Button`, `Card`, `StatCard`) to replace 15+ inconsistent button/card implementations. The DrillPage dark theme (#111827 background) must be removed to unify the visual language. Vercel deployment requires only a 5-line `vercel.json` with an SPA rewrite rule.
 
-The two biggest risks are technical misconfiguration (HyperFormula defaulting to non-Excel behavior for finance functions) and content scope creep (building shallow coverage of 30+ functions instead of deep coverage of the 10 that appear in 80% of finance interviews). Both risks must be addressed in Phase 1 before challenge content is built. The good news: this is a well-bounded problem with clearly defined technology choices, a clear MVP feature set, and established architecture patterns — the main execution risk is discipline, not discovery.
+The primary risk is CSS conflicts between Tailwind 4's preflight reset and Handsontable's internal DOM styling. Tailwind preflight resets `border`, `padding`, and `box-sizing` on `<table>`, `<td>`, `<th>` elements -- all of which Handsontable renders. This can silently break grid cell borders and padding. The mitigation is straightforward (scoped CSS repair rules on `.hot-container`) but must be verified as the first step after any global CSS addition. A secondary risk is HOT's v16 DOM wrapper height collapse: any new wrapper `<div>` around the grid that lacks explicit flex/height propagation will cause the grid to render at 0px or 150px. Both risks have clear recovery paths but require explicit acceptance criteria on every layout change near the grid.
 
 ---
 
@@ -19,146 +19,133 @@ The two biggest risks are technical misconfiguration (HyperFormula defaulting to
 
 ### Recommended Stack
 
-The stack is a pure frontend SPA with no server infrastructure for MVP. React 19 + Vite 6 + TypeScript 5 provides the application shell. Handsontable 16.2 with its HyperFormula 3.2 plugin integration handles the spreadsheet grid and formula evaluation. Zustand 5 manages global state (current challenge, drill progress, user scores). Tailwind CSS 4 handles styling. All progress persists to localStorage — no backend, no database, no auth.
+No major stack changes for v1.1. The existing React 19 + Vite 7 + TypeScript 5 + Handsontable 16.2 + HyperFormula 3.2 + Zustand 5 + Tailwind CSS 4 stack is unchanged. See STACK.md for full details.
 
-**Core technologies:**
-- **React 19 + Vite 6:** UI framework and build tool — fastest DX for a SPA; no SSR needed
-- **TypeScript 5:** Type safety for formula validation logic and state shapes — catches errors that are painful to debug in this domain
-- **Handsontable 16.2:** Spreadsheet grid with Excel-like keyboard UX — the only library with React wrapper, 400+ formula support via HyperFormula plugin, and non-commercial free license
-- **HyperFormula 3.2:** Headless formula engine — evaluates user formula strings to computed values, 398 built-in functions covering every finance interview function (NPV, IRR, PMT, VLOOKUP, INDEX/MATCH, SUMIFS, XNPV)
-- **Zustand 5:** Client state — minimal boilerplate, hook-based, no Redux ceremony
-- **Tailwind CSS 4:** Styling — zero config, fastest builds, sufficient for a laptop-only SPA
-- **localStorage:** Progress persistence — sufficient for single-user, single-device use case; no server needed
+**New additions (v1.1 only):**
+- **`@fontsource-variable/inter`:** Self-hosted variable font -- eliminates Google Fonts CDN dependency, removes 100-300ms DNS/SSL cold-load penalty, GDPR-clean, ~60KB for all weights
+- **Tailwind v4 `@theme` block in `index.css`:** Replaces scattered hardcoded hex values with named design tokens that auto-generate utility classes (`bg-brand`, `text-muted`, etc.) -- this is the v4 CSS-first approach, NOT `tailwind.config.js`
+- **`vercel.json`:** SPA rewrite rule (5 lines) -- required for React Router routes to work on Vercel's static hosting
 
-Key alternatives rejected: Luckysheet (abandoned), FortuneSheet (pre-stable API), Next.js (no SSR needed), Redux (overkill), IndexedDB (unnecessary complexity over localStorage).
+**Explicitly rejected:**
+- Framer Motion / Motion for React (34KB for hover effects that CSS handles in 0KB)
+- `tailwindcss-motion` plugin (confirmed Tailwind v4 incompatibility -- open GitHub issues)
+- `@tailwindcss/typography` prose plugin (conflicts with Handsontable grid context)
+- Any charting/data viz library (not in scope)
+- `tailwind.config.js` (v3 pattern -- Tailwind v4 with `@tailwindcss/vite` ignores JS config)
 
 ### Expected Features
 
-The product must nail a focused MVP before adding complexity. The feature dependency graph is clear: the formula input grid must exist before anything else — drills, feedback, scoring, weak area tracking all sit on top of it.
+Feature research was grounded in direct codebase inspection of v1.0. The core problem is visual inconsistency -- 15+ hardcoded hex values, arbitrary font sizes, a dark-themed DrillPage clashing with light everything else, wall-of-text challenge prompts, and a browser tab showing "excel-prep-scaffold". See FEATURES.md for the full landscape and prioritization matrix.
 
-**Must have (v1 — table stakes):**
-- Interactive formula input with Excel-compatible evaluation (type formula, get right/wrong + computed result)
-- Finance-specific question bank: minimum 40 challenges across VLOOKUP, INDEX/MATCH, SUMIFS, nested IF, IFERROR, NPV, IRR, PMT (tier-1 functions only)
-- Finance-scenario framing on every question (not generic employee/sales tables — actual DCF/LBO/P&L context)
-- Immediate feedback: correct/incorrect + explanation of why the formula works
-- Structured 3-tier learning path: Beginner / Intermediate / Advanced, walked in sequence
-- Session progress counter (question N of M)
-- Keyboard shortcut drill module: finance IB shortcuts, keypress recognition
+**Must have (P1 -- ship in v1.1):**
+- CSS color token system (6-8 named tokens replacing 15+ scattered hex values)
+- Unified light theme (remove DrillPage dark background)
+- Structured challenge prompt formatting (scenario / data block / task sections)
+- Typography scale (consistent size/weight tokens across all pages)
+- WelcomePage "how it works" section (3 static bullets for first-time users)
+- Answer feedback animation (green scale-up for correct, red shake for wrong)
+- Page title ("ExcelPrep") and favicon (replace Vite defaults)
+- `vercel.json` SPA routing (deploy blocker)
 
-**Should have (v1.x — after core loop validated):**
-- Weak area surfacing — track first-attempt accuracy per function tag, surface weakest areas first
-- Daily streak counter — local state, trivial complexity, meaningful for 1-2 week prep window
-- "Why this formula wins" comparative explanations — editorial upgrade over basic correct/wrong
-- Finance vocabulary sidebar — static content, no backend
+**Should have (P2 -- stretch if time allows):**
+- Returning-user mini-stats on WelcomePage (reads existing Zustand stores)
+- Formula chip styling in prompts (extend existing `.correct-formula` pattern)
 
 **Defer (v2+):**
-- Mini model challenge (5-step DCF / 3-statement build) — requires full multi-cell grid with cell-by-cell validation; HIGH complexity
-- Full Excel simulator (formula bar, cell reference color highlighting) — large frontend investment
-- Spaced repetition algorithm — overkill for the 1-2 week interview prep use case
-
-**Anti-features — deliberately out of scope:** video lectures, social/leaderboard features, VBA content, mobile optimization, badge/achievement systems, AI-generated curriculum, PDF certificates.
-
-**Competitive gap:** ExcelExercises.com is the closest technically but has zero finance content. BIWS/CFI have finance content but are video-heavy and cost $500+/year. This product's combination of in-browser interactive practice + finance scenarios + IB keyboard shortcuts at no cost is unoccupied.
+- Spaced repetition, mini model challenges, mobile layout, dark mode toggle, interactive product tour, analytics
 
 ### Architecture Approach
 
-The architecture is a three-layer SPA: Presentation (React components), Logic/Engine (formula engine, challenge state machine, progress engine), and Data/Persistence (static JSON content, in-memory session state, localStorage). All layers are strictly separated — the formula engine and grader are pure TypeScript functions with no React dependency, making them independently testable and replaceable.
+The redesign is a styling-layer migration, not an architectural change. No stores, data files, engines, routes, or type definitions change. The codebase currently has two parallel styling systems: CSS class names in `index.css` (ChallengePage sub-components) and inline `style={{}}` props (everything else). Both converge to Tailwind utilities consuming centralized `@theme` tokens. See ARCHITECTURE.md for the full component audit, data flow diagrams, and build order.
 
-**Major components:**
-1. **Formula Engine (HyperFormula singleton)** — evaluates user formula strings, returns computed values; must be reset between challenges to prevent cross-challenge data leakage
-2. **Spreadsheet Grid (Handsontable + HyperFormula plugin)** — renders editable cells, handles keyboard navigation, displays formula results in real time
-3. **Grader** — thin synchronous function that calls `hf.getCellValue()` after user submits, compares to `expectedOutput` with numeric tolerance; output-based not string-based
-4. **Challenge Engine (useReducer state machine)** — manages lifecycle: idle → active → submitted → result → next; prevents invalid state transitions
-5. **Content Library (static JSON files)** — challenges, drills, curriculum ordering; schema includes `id`, `targetFunction`, `seedData`, `prompt`, `hint`, `expectedOutput`, `answerCell`, `explanation`, `difficulty`
-6. **Progress Engine + Progress Store** — pure functions computing mastery/weak areas from attempt records; persisted to localStorage with versioned schema
-7. **Drill Mode** — lightweight component for rapid-fire question sets; does NOT use full Handsontable grid (overkill for recognition drills)
+**Major components and their migration scope:**
+1. **`index.css` @theme block** -- single source of truth for all design tokens; generates both CSS variables and Tailwind utility classes
+2. **`AppShell.tsx`** -- convert from 100% inline styles to Tailwind; all pages immediately inherit the new frame
+3. **`ui/Button.tsx`, `ui/Card.tsx`, `ui/StatCard.tsx`** -- new shared primitives replacing 15+ inconsistent implementations
+4. **Page components (Welcome, Drill, Progress, Shortcuts)** -- convert inline styles to Tailwind utilities
+5. **Challenge sub-components (ChallengeList, TierTabs, RightPanel, CompletionScreen)** -- migrate CSS class names to Tailwind; remove old class definitions from `index.css` after each migration
 
-**Build order dictated by dependencies:** Content Library → Formula Engine → Spreadsheet Grid → Grader → Challenge Engine → Challenge Panel UI → Progress Engine + Store → Drill Mode → Curriculum/Learning Path. A single working challenge loop is the minimum viable core.
+**Immutable (do not touch during redesign):**
+- All Zustand stores and selectors
+- All data files in `/src/data/`
+- Formula engine and grader
+- SpreadsheetGrid component (Handsontable integration)
+- Handsontable CSS variable overrides in `index.css` (scoped to `.ht-theme-main`)
+- Routing structure in `App.tsx`
 
 ### Critical Pitfalls
 
-1. **Formula string comparison for grading** — Using `===` on formula strings rejects semantically correct answers (`=VLOOKUP(A2,D:E,2,FALSE)` vs `=VLOOKUP(A2,$D:$E,2,0)`). Use HyperFormula result-value comparison from Phase 1. Never acceptable to ship string matching. Recovery is a full audit of all challenge content.
+Top 5 pitfalls specific to v1.1, ranked by likelihood and recovery cost. See PITFALLS.md for the full set (11 pitfalls total, including v1.0 domain pitfalls that remain relevant).
 
-2. **HyperFormula misconfiguration** — Default HyperFormula config does NOT match Excel behavior (empty cells return `null` not `0`; leap year 1900 bug not replicated; date serials differ). Finance interview prep calibrated against wrong outputs is the worst possible outcome. Fix: initialize with `evaluateNullToZero: true` and `leapYear1900: true` on day one; verify against known Excel outputs for all 10 tier-1 functions before writing challenges.
+1. **Tailwind 4 preflight flattening Handsontable base styles** -- Preflight resets `border`, `padding`, `box-sizing` on `<td>`, `<th>`, `<table>`. HOT renders real instances of these elements. Fix: add scoped CSS repair rules (`.hot-container td { box-sizing: content-box }`) OR import Tailwind without preflight. Verify HOT grid cell borders and padding after every global CSS change.
 
-3. **Keyboard navigation conflicts** — Browser defaults (Tab exits grid, Enter submits parent form, arrows scroll page) break the Excel-like UX. Handsontable handles most of this internally, but custom inputs adjacent to the grid break the focus trap. Test all keyboard paths before adding any surrounding UI.
+2. **Vercel 404 on direct route access** -- Without `vercel.json` SPA rewrites, every non-root URL 404s. Invisible during local dev (`vite dev` handles it). Fix: add `vercel.json` with `"rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]` before the first deploy.
 
-4. **Content scope creep** — Building shallow coverage of 25+ functions instead of deep coverage of the 10 that matter. Prevention: freeze the tier-1 function list in Phase 1 (VLOOKUP, INDEX/MATCH, SUMIFS, IF/nested IF, IFERROR, NPV, IRR, PMT, OFFSET, XLOOKUP), build 5+ challenges per function, gate tier-2 behind 80% pass rate on tier-1.
+3. **HOT v16 DOM wrapper breaking height inheritance** -- Handsontable 16 injects its own root `<div>` inside the container. Adding any wrapper `<div>` around `.hot-container` without explicit `flex: 1; overflow: hidden` breaks the height chain. Grid collapses to 0px or 150px. Fix: verify grid fills its space after every layout change near the grid area. Hard reload, not just HMR.
 
-5. **Progress tracking schema too flat** — Storing only a `Set` of completed challenge IDs makes it impossible to derive weak areas. Design the attempt record schema before writing the first challenge: `{ challengeId, functionTags, difficulty, attemptedAt, firstAttemptCorrect, attemptsBeforeCorrect }`. Version the schema (`v: 1`) for future migration.
+4. **Tailwind `@theme` token naming collision with HOT CSS variables** -- Both use CSS custom properties. HOT variables are `--ht-*` prefixed (safe). App tokens should use `--color-brand-*` or `--color-surface-*` namespaces to avoid collision. Define `@theme` tokens before HOT overrides in `index.css` for predictable cascade order.
+
+5. **Onboarding overlay stealing focus from Handsontable** -- If a welcome overlay is dismissed without explicitly returning focus to the grid, HOT keyboard handling stops. Fix: call `hotRef.current?.hotInstance?.selectCell(0, 0)` on overlay dismiss. Test by typing `=SUM(` immediately after closing any overlay.
 
 ---
 
 ## Implications for Roadmap
 
-The dependency graph from ARCHITECTURE.md gives a clear build order. All three "critical" pitfalls must be prevented in Phase 1 before challenge content is written. The architecture separates cleanly into: foundation (engine + grid), core loop (single challenge end-to-end), content (question bank), and enhancements (progress tracking, drill mode, curriculum).
+The dependency graph is clear and linear: tokens must exist before components can consume them; the shell must be restyled before pages; pages before Challenge sub-components; deployment config before actual deployment. Feature research confirms the CSS token system is the critical gate for all visual work.
 
-### Phase 1: Foundation — Formula Engine and Grid
+### Phase 1: Foundation -- Tokens, Primitives, and Deploy Config
 
-**Rationale:** Everything else depends on this. Grading logic, keyboard UX, and HyperFormula configuration must be locked before content is written — fixing these after content exists is expensive (all expected values may need recalculation). This is the highest-risk phase technically.
-**Delivers:** A working spreadsheet grid wired to HyperFormula; a grader that validates by result value not string; verified Excel-compatibility configuration; keyboard navigation test-passing; decision documented to disable paste-from-Excel in MVP.
-**Addresses:** Formula input table stake; simulated Excel feel.
-**Avoids:** Pitfalls 1 (string grading), 2 (HyperFormula misconfiguration), 3 (keyboard conflicts), 8 (paste-from-Excel half-support).
-**Research flag:** Well-documented patterns (Handsontable + HyperFormula integration is official-docs-covered). Skip research-phase — go straight to implementation.
+**Rationale:** Non-breaking additions that establish the design system and deployment capability. Nothing visual changes yet -- this is pure setup. Everything in subsequent phases depends on tokens existing.
+**Delivers:** `@theme` token block in `index.css`; `vercel.json` SPA rewrite; updated page title and favicon in `index.html`; `Button`, `Card`, `StatCard` shared components (created but not yet consumed); Inter font installed and configured.
+**Addresses:** vercel.json (P1 deploy blocker), page title/favicon (P1 credibility), CSS token system (P1 gate)
+**Avoids:** P6 (token naming collision with HOT) -- establish naming conventions here before any tokens are written. P1 (Vercel 404) -- ship vercel.json as the first committed file.
 
-### Phase 2: Core Learning Loop — Single Challenge End-to-End
+### Phase 2: Shell and Welcome -- First Visual Impact
 
-**Rationale:** Build the minimum viable loop before scaling content. Prove that: grid renders with seed data, user types a formula, grader grades it, explanation displays, progress records. This is the "spine" of the product.
-**Delivers:** Challenge Engine state machine (idle → active → submitted → result → next); Challenge Panel UI; a single working challenge for each of the 3 difficulty tiers; progress schema defined and persisted; session progress counter.
-**Addresses:** Immediate feedback table stake; explanation after each question; session progress counter.
-**Avoids:** Pitfall 5 (flat progress schema — define schema here before content scales); Pitfall 7 (gamification rewarding speed — surface first-attempt accuracy, not completion count).
-**Research flag:** State machine pattern is well-established (useReducer). Progress schema design is product-specific — validate the schema against the weak area surfacing feature requirement before finalizing.
+**Rationale:** AppShell is the outermost shared component -- restyling it immediately updates the frame for all 5 routes. WelcomePage is the landing page and first impression. Together they deliver the most visible impact with the fewest files touched.
+**Delivers:** Restyled AppShell (header, sidebar, nav links, active indicator); restyled WelcomePage with "how it works" section, returning-user stats, and new Button components.
+**Addresses:** Unified light theme frame (P1), WelcomePage onboarding (P1), returning-user stats (P2 stretch)
+**Avoids:** P2 (Tailwind preflight vs HOT) -- verify HOT grid renders identically after AppShell CSS changes.
 
-### Phase 3: Content Build — Finance Question Bank
+### Phase 3: Page Restyling -- Drill, Progress, Shortcuts
 
-**Rationale:** With the core loop proven, build out the tier-1 content library. Content creation is the primary workload in this phase. All challenges must be verified in HyperFormula before adding to the bank.
-**Delivers:** Minimum 40 challenges across 10 tier-1 functions (5+ per function); finance-scenario framing throughout; `curriculum.json` ordering beginner → intermediate → advanced; structured 3-tier learning path; function tags enabling weak area tracking.
-**Addresses:** Finance-specific function coverage (table stake); difficulty tiers; structured learning path; finance-scenario framing differentiator.
-**Avoids:** Pitfall 4 (scope creep — freeze tier-1 list before this phase starts); Pitfall 6 (HyperFormula IF cycle detection — manually verify each challenge formula).
-**Research flag:** Content itself is domain knowledge, not engineering research. No research-phase needed. Validate function priority list against finance interview sources before writing challenges.
+**Rationale:** With the shell set, restyle the remaining pages that use inline styles. DrillPage is the highest-priority target (dark theme removal is the single largest visual inconsistency). ProgressPage and ShortcutsPage are lower complexity.
+**Delivers:** DrillPage unified to light theme with feedback animations; ProgressPage with StatCard components (keep dynamic width as inline style); ShortcutsPage/ShortcutSetup with consistent form controls.
+**Addresses:** Unified light theme -- DrillPage (P1), answer feedback animation (P1), typography scale applied across all pages (P1)
+**Avoids:** P4 (HOT height collapse) -- DrillPage does not contain HOT but shares layout patterns. P5 (focus trap after overlay) -- test keyboard flow after any overlay/modal additions.
 
-### Phase 4: Keyboard Shortcut Module
+### Phase 4: Challenge Components -- CSS Class Migration and Prompt Formatting
 
-**Rationale:** This is an independent feature (no grid dependency) that targets a clear market gap. ExcelExercises has shortcuts but no finance context. Can be built in parallel with or after content build — depends on bandwidth.
-**Delivers:** Dedicated keyboard shortcut drill section; keypress-capture mechanic for IB-specific shortcuts (Alt+=, Ctrl+Shift+L, F2, Ctrl+[, Ctrl+]); browser conflict handling (avoid Ctrl+W, Ctrl+T, Ctrl+N).
-**Addresses:** Keyboard shortcut drills (P1 table stake).
-**Avoids:** Pitfall 3 variant — browser shortcut conflicts require deliberate design; test shortcut capture in target browsers before building out the full module.
-**Research flag:** Browser shortcut interception is a moderately complex area. May need a targeted research spike on which shortcuts are safely interceptable vs. which require app-to-run-fullscreen guidance.
+**Rationale:** ChallengePage sub-components use the CSS class system (System A). This is the most delicate migration because it touches components adjacent to Handsontable. RightPanel is where structured prompt formatting lives.
+**Delivers:** ChallengeList, TierTabs, RightPanel, CompletionScreen migrated from CSS classes to Tailwind utilities; old CSS class definitions removed from `index.css`; structured prompt formatting (scenario / data block / task) in RightPanel; formula chip styling in prompts.
+**Addresses:** Structured challenge prompt formatting (P1 UX problem), formula chip styling (P2 stretch)
+**Avoids:** P2 (Tailwind preflight vs HOT) -- most critical in this phase since changes are adjacent to the grid. P3 (HOT inline style override) -- do not attempt to restyle HOT cell states via CSS; use renderer. P4 (HOT height collapse) -- verify grid height after every layout change.
 
-### Phase 5: Progress Dashboard and Weak Area Surfacing
+### Phase 5: Deployment and Verification
 
-**Rationale:** Once content exists and attempts are being recorded, surface the data meaningfully. Weak area surfacing is a key differentiator (no competitor does this well) and is the v1.x feature users will notice most.
-**Delivers:** Progress Dashboard UI (score ring, weak topic list, recommended next challenge); weak area computation (first-attempt accuracy rate per function tag, sorted); weighted drill queue surfacing weakest areas first; daily streak counter.
-**Addresses:** Weak area surfacing (P2); daily streak (P2); progress dashboard.
-**Avoids:** Pitfall 5 (must use the versioned schema from Phase 2 — no retrofit needed if schema was designed correctly).
-**Research flag:** Standard patterns. localStorage + pure computation. No research-phase needed.
-
-### Phase 6: Explanation Quality and Polish
-
-**Rationale:** The differentiator in explanation quality ("why this formula wins" comparisons) is editorial work, not engineering. This phase upgrades explanation content and adds the finance vocabulary sidebar. No new tech, pure content quality investment.
-**Delivers:** "Why this formula wins" comparative explanations for all tier-1 functions; finance vocabulary quick-reference sidebar (static); explanation shown for both correct and incorrect submissions (pitfall prevention).
-**Addresses:** Comparative explanation differentiator (P2); finance vocabulary sidebar (P2).
-**Research flag:** No research-phase needed. Pure editorial.
+**Rationale:** All visual work is complete. Deploy to Vercel and verify all routes, all pages, all edge cases in production.
+**Delivers:** Live Vercel deployment; all routes verified (no 404); production build clean (`tsc -b && vite build`); full acceptance checklist passed.
+**Addresses:** Vercel deployment (P1)
+**Avoids:** P1 (Vercel 404) -- already mitigated in Phase 1 with vercel.json, but verify on actual deployed URL.
 
 ### Phase Ordering Rationale
 
-- Phases 1-2 are non-negotiable prerequisites — everything else sits on this foundation.
-- Phase 3 (content) must come after Phase 2 (loop proven) to avoid writing content calibrated against a broken grader.
-- Phase 4 (keyboard module) is architecturally independent and can shift earlier if product priority demands it.
-- Phase 5 (progress dashboard) requires accumulated attempt data — can only follow a phase where users are completing challenges.
-- Phase 6 is pure content polish — no dependencies beyond the core loop existing.
+- **Tokens before components:** Every component migration references design tokens. Without tokens, each component would use arbitrary values that need to be re-touched later. This is explicitly called out in both FEATURES.md and ARCHITECTURE.md.
+- **Shell before pages:** AppShell wraps everything. Converting it first means every page immediately gets the new header/sidebar/nav without per-page work.
+- **DrillPage before Challenge components:** DrillPage dark theme removal is the single largest visual inconsistency and uses inline styles (simpler migration). Challenge components use CSS classes adjacent to Handsontable (higher risk).
+- **Challenge components last:** Highest risk due to Handsontable adjacency. By this point, the token system and Tailwind patterns are proven across 4 other pages.
+- **Deploy last:** Ship verified code, not work-in-progress.
 
 ### Research Flags
 
-Phases needing deeper research during planning:
-- **Phase 4 (keyboard shortcuts):** Browser shortcut interception is tricky. Before planning the keyboard module, spike on which IB shortcuts can be captured without browser conflicts and whether a "dedicated window" UX is needed.
+Phases likely needing deeper research during planning:
+- **Phase 4 (Challenge Components + Prompt Formatting):** Tailwind/HOT CSS conflict zone. Prompt text parsing depends on actual prompt string patterns -- verify a sample of prompts can be reliably parsed into scenario/data/task sections before committing to the approach.
 
 Phases with standard patterns (skip research-phase):
-- **Phase 1:** HyperFormula + Handsontable integration is official-docs-covered. Implement directly.
-- **Phase 2:** Challenge state machine with useReducer is a standard React pattern.
-- **Phase 3:** Content creation — domain knowledge, not engineering research.
-- **Phase 5:** localStorage + pure computation — no new patterns needed.
-- **Phase 6:** Editorial work — no engineering research needed.
+- **Phase 1 (Foundation):** Tailwind `@theme`, vercel.json, Fontsource -- all have official docs with exact syntax. Implement directly.
+- **Phase 2 (Shell + Welcome):** Standard inline-to-Tailwind conversion. No novel patterns.
+- **Phase 3 (Page Restyling):** Same conversion pattern as Phase 2, applied to more pages.
+- **Phase 5 (Deployment):** Vercel auto-detects Vite. One config file. Standard deploy flow.
 
 ---
 
@@ -166,47 +153,47 @@ Phases with standard patterns (skip research-phase):
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All core choices verified against official docs and version-specific release notes. HyperFormula 3.2 and Handsontable 16.2 compatibility confirmed. Tailwind 4 and React 19 stability confirmed. |
-| Features | MEDIUM | Core feature landscape well-established; competitor analysis informed by search results (not all features directly verified). Anti-features are well-reasoned but based on product judgment, not user research. |
-| Architecture | MEDIUM | Core patterns (HyperFormula singleton, output-based grading, state machine) verified via official docs. Grading and progress architecture inferred from analogous systems, not sourced from a reference implementation of this exact product type. |
-| Pitfalls | MEDIUM | HyperFormula configuration pitfalls verified against official known-limitations docs (HIGH). Keyboard navigation, gamification, and UX pitfalls supported by multiple sources but some training-data informed. |
+| Stack | HIGH | Only one new npm dependency (`@fontsource-variable/inter`). Tailwind v4 `@theme` syntax verified against official docs. Vercel config verified against official docs. Animation library rejection supported by confirmed v4 incompatibility (open GitHub issues). |
+| Features | HIGH | Feature list derived from direct codebase inspection of v1.0. Problem areas (scattered hex values, dark DrillPage, wall-of-text prompts) are verifiable facts, not assumptions. Competitor analysis cross-referenced against Quizlet, Khan Academy, Duolingo patterns. |
+| Architecture | HIGH | Migration path is well-defined: two existing styling systems (inline + CSS classes) converge to one (Tailwind utilities). Component inventory complete. Build order dictated by clear dependencies. No stores, engines, or data structures change. |
+| Pitfalls | HIGH (v1.1-specific), MEDIUM (v1.0 domain) | Tailwind/HOT conflict documented in official Handsontable theme docs and community forums. Vercel SPA 404 confirmed in official Vercel KB. HOT v16 height regression confirmed in Handsontable forum. v1.0 pitfalls (formula grading, HyperFormula config) already mitigated in the existing codebase. |
 
-**Overall confidence:** MEDIUM-HIGH
+**Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **HyperFormula Excel compatibility for edge cases:** The smoke-test suite (NPV, IRR, PMT, VLOOKUP, nested IF) should be the first thing written in Phase 1. Do not assume compatibility — verify with actual Excel outputs before any challenge content is calibrated.
-- **Browser shortcut interception scope:** Which IB keyboard shortcuts are safely capturable without conflicting with browser defaults is not fully resolved. Needs a focused spike in Phase 4 planning.
-- **Content tier-1 function list validation:** The 10-function tier-1 list is informed by multiple finance interview prep sources but is not uniquely verified. Validate against a finance professional's input before content build starts in Phase 3.
-- **Handsontable non-commercial license scope:** Confirmed free for non-commercial/personal use, but verify the license key string and terms before deployment if the product is ever shared publicly.
+- **Prompt string parsing reliability:** Structured prompt formatting assumes prompts follow a consistent pattern (scenario text, bullet-delimited data, task instruction). A sample audit of prompts across all 60+ challenges should confirm this before committing to a generic parser. If patterns vary significantly, per-challenge format hints may be needed in the data files.
+- **Tailwind preflight impact on HOT -- exact scope:** The CSS repair approach (`.hot-container td { box-sizing: content-box }`) is well-grounded but the exact set of properties that need repair can only be determined by inspection after Tailwind is integrated. This is a "verify during implementation" gap, not a research gap.
+- **Inter font rendering on Windows:** Self-hosted Inter via Fontsource is well-tested on macOS. Rendering on Windows (particularly ClearType hinting) is generally fine for Inter but should be spot-checked if Windows users are in scope.
 
 ---
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- HyperFormula official docs — built-in functions, known limitations, Excel compatibility: https://hyperformula.handsontable.com/
-- Handsontable React docs — formula-calculation integration, version compatibility: https://handsontable.com/docs/react-data-grid/formula-calculation/
-- HyperFormula GitHub — v3.2.0, released 2026-02-19: https://github.com/handsontable/hyperformula
-- Tailwind CSS v4.0 release blog — stable Jan 22 2025: https://tailwindcss.com/blog/tailwindcss-v4
-- React v19 stable release blog — Dec 2024: https://react.dev/blog/2024/12/05/react-19
-- Handsontable software license docs — non-commercial license free for personal/education use: https://handsontable.com/docs/javascript-data-grid/software-license/
+- [Tailwind CSS v4 Theme Variables -- official docs](https://tailwindcss.com/docs/theme) -- `@theme` syntax, custom color namespaces
+- [Tailwind CSS v4.0 release blog](https://tailwindcss.com/blog/tailwindcss-v4) -- CSS-first config, `@theme` replaces `tailwind.config.js`
+- [Vercel project configuration docs](https://vercel.com/docs/project-configuration) -- `rewrites` property syntax
+- [Vercel Vite deployment guide](https://vercel.com/docs/frameworks/frontend/vite) -- auto-detection of Vite, `dist` output directory
+- [Vercel KB: Why is my deployed project giving 404?](https://vercel.com/kb/guide/why-is-my-deployed-project-giving-404) -- SPA routing fix
+- [Handsontable: Theme Customization (React)](https://handsontable.com/docs/react-data-grid/theme-customization/) -- CSS variable overrides, `.ht-theme-main` scope
+- [Handsontable: Migrating from 15.3 to 16.0](https://handsontable.com/docs/javascript-data-grid/migration-from-15.3-to-16.0/) -- DOM wrapper changes
+- [Fontsource -- Inter variable font](https://fontsource.org/fonts/inter/install) -- npm package, import syntax
+- [Motion for React -- bundle size docs](https://motion.dev/docs/react-reduce-bundle-size) -- 34KB minimum confirmed
 
 ### Secondary (MEDIUM confidence)
-- ExcelExercises.com — observed feature set for competitive analysis
-- Sheetzoom features page — competitor reference
-- Fintest.io — Complete Guide to Excel Skills for Finance Interviews — function priority list
-- Wall Street Prep / Wall Street Training — Excel shortcuts reference
-- CFI / BIWS — curriculum and content approach reference
-- NL2Formula paper (arXiv 2402.14853) — formula grading equivalence research
-- Handsontable keyboard navigation forum — Tab key focus-trap behavior
-- Duolingo research blog — streak and retention data
-- Multiple sources on Zustand vs Redux, Vite vs Next.js 2025/2026
+- [Handsontable 16 auto-resize broken -- forum report](https://forum.handsontable.com/t/auto-resize-broken-in-version-16/8890) -- height collapse regression
+- [tailwindcss-motion GitHub -- Tailwind v4 issue #40](https://github.com/romboHQ/tailwindcss-motion/issues/40) -- v4 compat request, still open
+- [tailwindcss-motion GitHub -- typewriter broken on v4 issue #47](https://github.com/romboHQ/tailwindcss-motion/issues/47) -- v4 breakage confirmed
+- [Tailwind CSS v4 preflight disable -- GitHub Issue #15723](https://github.com/tailwindlabs/tailwindcss/issues/15723) -- preflight scope control
+- [Vercel Community: SPA 404 on route refresh](https://community.vercel.com/t/rewrite-to-index-html-ignored-for-react-vite-spa-404-on-routes/8412) -- community confirmation
+- SaaS design trends and typography/color psychology (jetbase.io, medium.com) -- visual design patterns
+- Onboarding UX patterns 2025 (appcues.com) -- first-visit orientation approaches
+- Competitor feature analysis: Quizlet, Khan Academy, Duolingo -- structured question formatting, feedback animations
 
 ### Tertiary (LOW confidence)
-- Jobaaj Learnings — Excel case study problems in IB interviews (single source, function priority list corroboration)
-- General edtech research on gamification engagement vs. retention gap
+- Self-hosting Google Fonts vs CDN performance -- multiple independent sources agree on 100-300ms savings but no controlled benchmark cited
 
 ---
-*Research completed: 2026-02-22*
+*Research completed: 2026-02-23*
 *Ready for roadmap: yes*

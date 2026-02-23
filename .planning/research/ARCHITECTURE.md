@@ -1,404 +1,451 @@
 # Architecture Research
 
-**Domain:** Interactive spreadsheet-based learning platform (Excel interview prep)
-**Researched:** 2026-02-22
-**Confidence:** MEDIUM — Core patterns verified via official docs; grading validation approach inferred from analogous systems
+**Domain:** React SPA visual redesign + Vercel deployment (v1.1 milestone)
+**Researched:** 2026-02-23
+**Confidence:** HIGH
 
 ## Standard Architecture
 
 ### System Overview
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        PRESENTATION LAYER                            │
-├──────────────────┬──────────────────┬──────────────────────────────┤
-│  Spreadsheet UI  │  Challenge Panel  │  Progress / Session UI        │
-│  (Grid + Input)  │  (Prompt, Hint,   │  (Score, Streak, Next Topic)  │
-│                  │   Submit, Result) │                               │
-└────────┬─────────┴────────┬─────────┴──────────────┬───────────────┘
-         │                  │                          │
-┌────────▼──────────────────▼──────────────────────────▼───────────────┐
-│                        LOGIC / ENGINE LAYER                           │
-├──────────────────┬──────────────────┬──────────────────────────────┤
-│  Formula Engine  │  Challenge Engine │  Progress Engine              │
-│  (HyperFormula)  │  (State Machine)  │  (Score, Mastery, Weak Areas) │
-└────────┬─────────┴────────┬─────────┴──────────────┬───────────────┘
-         │                  │                          │
-┌────────▼──────────────────▼──────────────────────────▼───────────────┐
-│                        DATA / PERSISTENCE LAYER                       │
-├──────────────────┬──────────────────┬──────────────────────────────┤
-│  Content Library │  Session State   │  Progress Store               │
-│  (static JSON)   │  (in-memory/React│  (localStorage)              │
-│                  │   state)         │                               │
-└──────────────────┴──────────────────┴──────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                     Browser (Vite SPA)                       │
+├────────────────────────────────┬────────────────────────────┤
+│         Pages Layer            │      Shared Shell           │
+│  ┌──────────┐  ┌──────────┐   │  ┌──────────────────────┐  │
+│  │ Welcome  │  │Challenge │   │  │     AppShell          │  │
+│  │  Page    │  │  Page    │   │  │  (header + sidebar)   │  │
+│  └──────────┘  └──────────┘   │  └──────────────────────┘  │
+│  ┌──────────┐  ┌──────────┐   │                            │
+│  │  Drill   │  │Shortcuts │   │  ┌──────────────────────┐  │
+│  │  Page    │  │  Page    │   │  │   Design Tokens       │  │
+│  └──────────┘  └──────────┘   │  │   (index.css @theme)  │  │
+│  ┌──────────┐                 │  └──────────────────────┘  │
+│  │Progress  │                 │                            │
+│  │  Page    │                 │                            │
+│  └──────────┘                 │                            │
+├────────────────────────────────┴────────────────────────────┤
+│                   Component Layer                            │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
+│  │AppShell  │  │Spreadsh. │  │RightPanel│  │ChalList  │   │
+│  │(inline)  │  │Grid      │  │(CSS cls) │  │(CSS cls) │   │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
+├─────────────────────────────────────────────────────────────┤
+│                     State Layer (Zustand)                    │
+│  ┌──────────────┐  ┌───────────────┐  ┌─────────────────┐  │
+│  │challengeStore│  │  drillStore   │  │  shortcutStore  │  │
+│  └──────────────┘  └───────────────┘  └─────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ### Component Responsibilities
 
-| Component | Responsibility | Typical Implementation |
-|-----------|----------------|------------------------|
-| Spreadsheet Grid | Renders editable cells, captures user keystrokes, displays formula results in real time | Handsontable (React wrapper) with HyperFormula plugin enabled |
-| Formula Engine | Parses Excel-style formulas, builds dependency graph, evaluates cells, exposes getCellValue() API | HyperFormula (headless, decoupled from UI) |
-| Challenge Panel | Shows prompt, hint, submit button, and post-submission explanation | React component, reads from Challenge Engine state |
-| Challenge Engine | State machine managing question lifecycle: idle → active → submitted → graded → next | Custom React state / useReducer |
-| Grader | Compares user formula output to expected output; checks numeric equality or formula-string match | Thin service function called on submit |
-| Content Library | Stores all challenges and drills as structured data (question, seed data, expected output, explanation) | Static JSON files bundled at build time |
-| Progress Engine | Tracks attempts, scores, mastery per function/topic, surfaces weak areas | Pure functions operating on Progress Store |
-| Progress Store | Persists progress across sessions | localStorage (no backend needed for MVP) |
-| Session State | Holds current challenge, user answers, UI state during one session | React component state or Context |
+| Component | Responsibility | Current Styling |
+|-----------|----------------|-----------------|
+| `AppShell` | Header + sidebar nav frame | 100% inline styles |
+| `WelcomePage` | Landing / CTA screen | 100% inline styles |
+| `ChallengePage` | Orchestrates spreadsheet + panels | CSS class names from index.css |
+| `DrillPage` | Rapid-fire drill (idle/active/review) | 100% inline styles, dark bg |
+| `ShortcutsPage` | Wrapper for shortcut sub-components | Inline styles |
+| `ShortcutSetup` | Drill config UI | 100% inline styles |
+| `ProgressPage` | Stats + accuracy bars | 100% inline styles |
+| `RightPanel` | Challenge prompt + feedback | CSS classes from index.css |
+| `ChallengeList` | Sidebar list of challenges | CSS classes from index.css |
+| `TierTabs` | Beginner/Intermediate/Advanced tabs | CSS classes from index.css |
+| `CompletionScreen` | End-of-tier celebration | CSS classes from index.css |
 
----
+## Current Styling Audit
+
+### Split Between Two Systems
+
+The codebase has two parallel styling systems that need to be reconciled during the redesign.
+
+**System A — CSS class names in `src/index.css`** (used by ChallengePage and its sub-components):
+- `.challenge-page`, `.challenge-sidebar`, `.challenge-grid-area`
+- `.tier-tab`, `.tier-tab--active`, `.tier-tab--locked`
+- `.challenge-list`, `.challenge-list-item`
+- `.right-panel`, `.feedback-correct`, `.feedback-incorrect`
+- `.btn`, `.btn-next`, `.btn-skip`, `.btn-hint`, `.btn-retry`
+- `.completion-screen`, `.completion-card`, `.completion-stat-value`
+
+**System B — Inline `style={{}}` props** (used by all other pages/components):
+- `AppShell` — entire header and sidebar
+- `WelcomePage` — entire page and all buttons
+- `DrillPage` — entire page in all three phases (idle, active, review)
+- `ProgressPage` — entire page, stat cards, accuracy bars
+- `ShortcutsPage` / `ShortcutSetup` — container and all form controls
+
+**Color tokens already in use** (hardcoded, not centralized):
+- `#1a6b3c` — Excel green primary (buttons, active states, progress bars)
+- `#1a3a2a` — Excel green dark (headings, sidebar header, active nav)
+- `#f0f4f8` / `#f9fafb` — Page background grays
+- `#e8f5ee` — Light green tint (correct feedback, active list item)
+- `#111827` — Dark card background (DrillPage only)
 
 ## Recommended Project Structure
 
 ```
 src/
+├── index.css                       # MODIFIED: Add @theme tokens; remove CSS classes
+│                                   #   as components migrate; keep Handsontable overrides
 ├── components/
-│   ├── SpreadsheetGrid.tsx     # Handsontable wrapper, formula engine init
-│   ├── ChallengePanel.tsx      # Prompt, hint, submit, explanation
-│   ├── ProgressDashboard.tsx   # Score, weak areas, session summary
-│   └── DrillMode.tsx           # Rapid-fire multiple-choice / short-answer variant
-├── engine/
-│   ├── formulaEngine.ts        # HyperFormula singleton factory and helpers
-│   ├── grader.ts               # Answer validation logic
-│   └── challengeEngine.ts      # State machine for question lifecycle
-├── progress/
-│   ├── progressEngine.ts       # Score computation, mastery, weak-area detection
-│   └── progressStore.ts        # localStorage read/write helpers
-├── content/
-│   ├── challenges/             # One JSON file per topic or per function
-│   │   ├── vlookup.json
-│   │   ├── index-match.json
-│   │   ├── sumifs.json
-│   │   ├── npv-irr.json
-│   │   └── ...
-│   ├── drills/                 # Rapid-fire question sets
-│   │   └── formula-recognition.json
-│   └── curriculum.json         # Ordered learning path (topic → challenge IDs)
-├── types/
-│   └── index.ts                # Shared TypeScript interfaces
-└── App.tsx                     # Route: /drill, /challenge/:id, /progress
+│   ├── AppShell.tsx                # MODIFIED: Convert inline → Tailwind
+│   ├── ui/                         # NEW: Shared primitive components
+│   │   ├── Button.tsx              # Primary/secondary/ghost/danger variants
+│   │   ├── Card.tsx                # White surface with optional border/shadow
+│   │   └── StatCard.tsx            # Metric display (value + label)
+│   ├── ChallengeList.tsx           # MODIFIED: CSS classes → Tailwind
+│   ├── TierTabs.tsx                # MODIFIED: CSS classes → Tailwind
+│   ├── RightPanel.tsx              # MODIFIED: CSS classes → Tailwind
+│   └── CompletionScreen.tsx        # MODIFIED: CSS classes → Tailwind
+├── pages/
+│   ├── WelcomePage.tsx             # MODIFIED: Inline → Tailwind, use Button
+│   ├── DrillPage.tsx               # MODIFIED: Inline → Tailwind (keep dark card)
+│   ├── ProgressPage.tsx            # MODIFIED: Inline → Tailwind, keep dynamic widths
+│   ├── ShortcutsPage.tsx           # MODIFIED: Inline → Tailwind wrapper
+│   └── ChallengePage.tsx           # MINOR: Trim now-redundant class names
+├── components/shortcuts/
+│   └── ShortcutSetup.tsx           # MODIFIED: Inline → Tailwind, use Button
+└── ...
+vercel.json                         # NEW: SPA routing fallback
 ```
 
 ### Structure Rationale
 
-- **engine/:** Separating formula evaluation, grading, and challenge state from React keeps logic testable and replaceable without touching UI.
-- **content/:** Static JSON avoids a database for MVP. Adding a backend later is a drop-in replacement — just change the fetch call.
-- **progress/:** Isolated module makes it easy to swap localStorage for a server later when cross-session persistence across devices is needed.
-
----
+- **`ui/` folder:** Shared primitives (`Button`, `Card`, `StatCard`) eliminate re-implementing the same visual pattern inline across multiple pages. New files — no existing component deleted.
+- **No `styles/` folder:** All design tokens live in `index.css` via Tailwind v4's `@theme`. No need for CSS modules or a separate token file.
+- **Pages modified, not replaced:** Logic, state wiring, and store connections stay intact. Only JSX markup changes from `style={{}}` to `className`.
 
 ## Architectural Patterns
 
-### Pattern 1: Headless Formula Engine + Thin UI Wrapper
+### Pattern 1: Tailwind v4 `@theme` for Design Tokens
 
-**What:** HyperFormula is initialized as a singleton instance separate from the grid component. The grid (Handsontable) is given the HyperFormula instance via its `formulas` plugin config. The Grader calls `getCellValue()` directly on the same HyperFormula instance to read results — no DOM scraping.
+**What:** Define the project's color palette once in `index.css` using the `@theme` directive. Tailwind v4 converts these into CSS custom properties AND generates utility classes automatically.
 
-**When to use:** Always. This is the standard HyperFormula integration pattern per official docs.
+**When to use:** Any value that needs to appear in utility classes (`bg-`, `text-`, `border-`). Do NOT use `@theme` for one-off layout values (a specific pixel offset used only once — keep those inline or in a custom class).
 
-**Trade-offs:** Handsontable's `formulas` plugin uses HyperFormula internally, so both share the same engine instance. Be careful when multiple grids try to share one engine — keep one HyperFormula instance per challenge context.
+**Trade-offs:** Single source of truth for colors; eliminates scattered hardcoded hex values across 10+ files. Requires Tailwind v4 — already installed via `@tailwindcss/vite`.
 
 **Example:**
-```typescript
-// engine/formulaEngine.ts
-import HyperFormula from 'hyperformula';
+```css
+/* src/index.css */
+@import "tailwindcss";
 
-let hfInstance: HyperFormula | null = null;
-
-export function getFormulaEngine(): HyperFormula {
-  if (!hfInstance) {
-    hfInstance = HyperFormula.buildEmpty({ licenseKey: 'gpl-v3' });
-  }
-  return hfInstance;
-}
-
-export function resetFormulaEngine(): void {
-  hfInstance = null;
+@theme {
+  --color-brand:       #1a6b3c;  /* Excel green — primary actions */
+  --color-brand-dark:  #1a3a2a;  /* Excel dark green — headings, nav */
+  --color-brand-light: #e8f5ee;  /* Light green tint — active states */
+  --color-surface:     #ffffff;  /* Card / panel background */
+  --color-base:        #f9fafb;  /* Page background */
+  --color-border:      #e5e7eb;  /* Default border */
+  --color-muted:       #6b7280;  /* Subdued text */
 }
 ```
 
+After this, `bg-brand`, `text-brand-dark`, `border-border` etc. are valid utility classes throughout the entire app. [HIGH confidence — official Tailwind v4 docs](https://tailwindcss.com/docs/theme)
+
+### Pattern 2: Convert Inline Styles — Shell First, Pages Second
+
+**What:** Convert inline `style={{}}` to Tailwind utility classes, starting with the outermost shared component (`AppShell`) then moving to pages. Order matters: do `AppShell` first so all pages inherit the new shell before touching page-specific styling.
+
+**When to use:** Any component participating in the redesign. Components used only inside ChallengePage (System A) are migrated last in a separate phase.
+
+**Trade-offs:** Tailwind utilities are more scannable and purgeable than inline styles. However, for dynamic values computed from state (e.g., `width: widthPct` in `ProgressPage`'s accuracy bars, `color: isUrgent ? '#ef4444' : '#ffffff'` in `DrillPage`), inline styles remain correct — Tailwind cannot generate arbitrary values at runtime.
+
+**Example — converting AppShell header:**
 ```tsx
-// components/SpreadsheetGrid.tsx
-import { HotTable } from '@handsontable/react';
-import { getFormulaEngine } from '../engine/formulaEngine';
+// Before (current state)
+<header style={{ height: '48px', backgroundColor: '#1a3a2a', display: 'flex',
+  alignItems: 'center', padding: '0 16px', flexShrink: 0, boxShadow: '0 1px 4px rgba(0,0,0,0.3)' }}>
 
-<HotTable
-  formulas={{ engine: getFormulaEngine(), sheetName: 'Sheet1' }}
-  data={challengeSeedData}
-  ...
-/>
+// After
+<header className="h-12 bg-brand-dark flex items-center px-4 shrink-0 shadow-sm">
 ```
 
----
+**Keep inline styles when:**
+- Value is computed from JavaScript state at runtime (`widthPct`, `isUrgent`, toggled colors)
+- Value is a Handsontable CSS variable override (already in index.css — leave it)
+- Value is a one-off that will never be reused and is not a design token
 
-### Pattern 2: Output-Based Grading (Not Formula-String Matching)
+### Pattern 3: Shared Button Primitive
 
-**What:** Do not compare the user's formula string to the expected formula string. Instead, run the user's formula through HyperFormula and compare the computed output value to the expected output value.
+**What:** Extract a `Button` component in `src/components/ui/Button.tsx` that accepts a `variant` prop (`primary | secondary | ghost | danger`). Use it everywhere a clickable button appears.
 
-**When to use:** Always for numeric/financial results. Formula-string matching fails on equivalent alternatives (e.g., `=A1+A2` vs `=SUM(A1:A2)` — both correct, both should pass).
+**When to use:** Immediately as part of foundation step. There are at least 15 distinct button implementations across WelcomePage, DrillPage, ProgressPage, ShortcutSetup, RightPanel, and CompletionScreen — all sharing the same hover/focus pattern but with inconsistent padding and border-radius values.
 
-**Trade-offs:** Output comparison is permissive (any correct formula passes) but does not teach canonical function usage. Supplement with explanations showing the preferred formula, not grading on it.
+**Trade-offs:** One file to update when button style changes. The props API adds a small layer of indirection but eliminates the risk of inconsistent button styles across pages.
 
 **Example:**
-```typescript
-// engine/grader.ts
-export function grade(
-  hf: HyperFormula,
-  sheetId: number,
-  userCellAddress: { row: number; col: number },
-  expectedValue: number | string,
-  tolerance = 0.001
-): boolean {
-  const actual = hf.getCellValue({ sheet: sheetId, row: userCellAddress.row, col: userCellAddress.col });
-  if (typeof expectedValue === 'number' && typeof actual === 'number') {
-    return Math.abs(actual - expectedValue) <= tolerance;
-  }
-  return actual === expectedValue;
+```tsx
+// src/components/ui/Button.tsx
+import { clsx } from 'clsx';
+
+type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
+
+const variantClasses: Record<Variant, string> = {
+  primary:   'bg-brand text-white hover:bg-brand-dark',
+  secondary: 'bg-brand-light text-brand-dark border border-brand',
+  ghost:     'bg-transparent text-muted border border-border hover:bg-base',
+  danger:    'bg-red-600 text-white hover:bg-red-700',
+};
+
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: Variant;
+}
+
+export function Button({ variant = 'primary', className, ...props }: ButtonProps) {
+  return (
+    <button
+      className={clsx(
+        'px-4 py-2 text-sm font-semibold rounded-md transition-colors cursor-pointer',
+        variantClasses[variant],
+        className
+      )}
+      {...props}
+    />
+  );
 }
 ```
 
----
+Note: `clsx` is already in `package.json` (`^2.1.1`) and `tailwind-merge` is also available for conflict resolution.
 
-### Pattern 3: Challenge State Machine
+### Pattern 4: Vercel SPA Routing via `vercel.json` Rewrite
 
-**What:** The challenge lifecycle is a finite state machine: `idle → active → submitted → result → (next | retry)`. Each state determines what UI is shown and what actions are allowed. Using `useReducer` in React is the idiomatic way to implement this.
+**What:** A single `vercel.json` at the project root that rewrites all paths to `index.html`, letting React Router handle routing client-side.
 
-**When to use:** Any time a UI flow has discrete stages where only certain actions are valid. Prevents "user submits while already submitted" bugs.
+**When to use:** Required for any Vite SPA deployed to Vercel that uses client-side routing (React Router). Without it, direct navigation to `/challenge` or `/progress` returns a Vercel 404 because no static file exists at those paths.
 
-**Trade-offs:** Slightly more code than ad-hoc boolean flags, but dramatically easier to reason about and extend.
+**Trade-offs:** Zero overhead. Vercel serves actual static files (JS/CSS in `dist/assets/`) before the rewrite rule fires. The rewrite only activates for path-only requests.
 
 **Example:**
-```typescript
-type ChallengeState =
-  | { status: 'idle' }
-  | { status: 'active'; challenge: Challenge }
-  | { status: 'submitted'; challenge: Challenge; userInput: string }
-  | { status: 'result'; challenge: Challenge; passed: boolean };
-
-type ChallengeAction =
-  | { type: 'START'; challenge: Challenge }
-  | { type: 'SUBMIT'; userInput: string }
-  | { type: 'GRADE'; passed: boolean }
-  | { type: 'NEXT' };
-```
-
----
-
-### Pattern 4: Static JSON Content Library
-
-**What:** All challenges, drills, and curriculum ordering live in static JSON files bundled at build time. Each challenge defines: `id`, `title`, `targetFunction`, `seedData` (initial grid values), `prompt`, `hint`, `expectedOutput`, `explanation`, `difficulty`.
-
-**When to use:** MVP and beyond. A database is not needed until content is user-generated or dynamically personalized.
-
-**Trade-offs:** Fast to load, zero infrastructure. Downside: content changes require a redeploy. Acceptable for a focused, finite content library.
-
-**Example schema:**
 ```json
 {
-  "id": "vlookup-basic-01",
-  "targetFunction": "VLOOKUP",
-  "difficulty": 1,
-  "prompt": "In cell D2, write a VLOOKUP formula to find the revenue for the ticker in B2 using the lookup table in columns F:G.",
-  "hint": "VLOOKUP(lookup_value, table_array, col_index_num, [range_lookup])",
-  "seedData": [
-    ["Ticker", "B2", "=B2", "Revenue"],
-    ...
-  ],
-  "expectedOutput": 4200000,
-  "answerCell": { "row": 1, "col": 3 },
-  "explanation": "=VLOOKUP(B2, F:G, 2, FALSE) looks up B2 in the first column of F:G and returns the value in column 2."
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
 ```
 
----
+[HIGH confidence — Vercel official docs](https://vercel.com/docs/rewrites) + community confirmation.
 
 ## Data Flow
 
-### Challenge Flow (Primary)
+### Styling Data Flow (new for v1.1)
 
 ```
-User opens challenge
+src/index.css (@theme tokens)
+    ↓ Tailwind v4 processes at build time
+CSS custom properties (--color-brand: #1a6b3c)
+  + utility classes (bg-brand, text-brand-dark, etc.)
     ↓
-Content Library (JSON) → Challenge Engine: load challenge + seed data
+Component className props
     ↓
-Formula Engine (HyperFormula): initialized with seed data
-    ↓
-Spreadsheet Grid: renders pre-populated grid, user types formula in answer cell
-    ↓
-User clicks Submit
-    ↓
-Challenge Engine: SUBMIT action → transitions to 'submitted'
-    ↓
-Grader: reads cell value from HyperFormula → compares to expectedOutput
-    ↓
-Challenge Engine: GRADE action → transitions to 'result' (passed/failed)
-    ↓
-Challenge Panel: shows explanation
-    ↓
-Progress Engine: records attempt result (function, difficulty, pass/fail)
-    ↓
-Progress Store: persists to localStorage
-    ↓
-User clicks Next → Challenge Engine: NEXT → loads next challenge
+Browser computed styles
 ```
 
-### Drill Flow (Secondary)
-
 ```
-User opens drill mode
+JavaScript state (isUrgent, widthPct, activeColor)
+    ↓ Runtime evaluation only
+Inline style={{}} (dynamic, runtime-computed values)
     ↓
-Content Library (drills JSON): loads question set
-    ↓
-DrillMode component: shows prompt (no full grid — multiple choice or short answer)
-    ↓
-User selects/types answer
-    ↓
-Grader: exact string match or option index match
-    ↓
-Progress Engine: record result
-    ↓
-Next question (auto-advance after brief feedback delay)
+Browser computed styles
 ```
 
-### Progress Read Flow
+### Application State Flow (unchanged)
 
 ```
-App mount
+User Action (click/type/keypress)
     ↓
-Progress Store: read from localStorage
+Page component (WelcomePage, DrillPage, etc.)
     ↓
-Progress Engine: compute mastery per function, weak areas
+Zustand store action (startSession, submitAnswer, gradeCellAction)
     ↓
-Progress Dashboard: render score ring, weak topic list, recommended next challenge
+Store state update
+    ↓
+React re-render → component reads new state via selector
 ```
 
-### State Management
+The redesign does not touch stores, selectors, engines, or data files. Only JSX markup and className/style attributes change.
 
+### Key Data Flows
+
+1. **Theme token to utility class:** `@theme { --color-brand: #1a6b3c }` at CSS build time → `bg-brand` available in all component className props
+2. **Dynamic style:** `accuracy * 100 + '%'` stays as `style={{ width: widthPct }}` — Tailwind cannot generate arbitrary runtime values
+
+## Build Order for Redesign
+
+Follow this sequence to maintain visual consistency and avoid regressions:
+
+**Phase 1 — Foundation (non-breaking, do first)**
+
+1. Add `@theme` token block to `src/index.css` — non-breaking, just adds CSS variables
+2. Create `vercel.json` at project root
+3. Update `<title>` in `index.html` from "excel-prep-scaffold" to "ExcelPrep"
+4. Create `src/components/ui/Button.tsx` — new file, nothing uses it yet
+5. Create `src/components/ui/Card.tsx` — new file, nothing uses it yet
+6. Create `src/components/ui/StatCard.tsx` — new file, nothing uses it yet
+
+**Phase 2 — Shell (all pages immediately inherit the new frame)**
+
+7. Restyle `AppShell.tsx` — header background, sidebar, nav link styles, active indicator
+8. Verify all 5 routes still render correctly with the new shell
+
+**Phase 3 — Pages (one at a time, test each before moving on)**
+
+9. `WelcomePage.tsx` — hero card, headline, CTA buttons (use new `Button` component)
+10. `ProgressPage.tsx` — stat cards (use `Card`/`StatCard`), accuracy bars (keep inline width)
+11. `ShortcutsPage.tsx` wrapper + `ShortcutSetup.tsx` — form controls and buttons
+12. `DrillPage.tsx` — keep dark card aesthetic but use brand token colors where possible
+
+**Phase 4 — Challenge sub-components (migrate CSS class system)**
+
+13. `ChallengeList.tsx` — convert class names to Tailwind utilities
+14. `TierTabs.tsx` — convert class names to Tailwind utilities
+15. `RightPanel.tsx` — convert class names to Tailwind utilities
+16. `CompletionScreen.tsx` — convert class names to Tailwind utilities
+17. After each component: remove its CSS class definitions from `index.css`
+18. Keep Handsontable CSS variable block in `index.css` permanently — do not remove
+
+## Files Modified vs Created
+
+| File | Action | Scope of Change |
+|------|--------|-----------------|
+| `src/index.css` | MODIFY | Add `@theme` block; remove CSS classes progressively as components migrate; Handsontable overrides stay |
+| `index.html` | MODIFY | `<title>` tag only |
+| `src/components/AppShell.tsx` | MODIFY | Replace all `style={{}}` with Tailwind className |
+| `src/pages/WelcomePage.tsx` | MODIFY | Replace all `style={{}}`, use `Button` component |
+| `src/pages/ProgressPage.tsx` | MODIFY | Replace layout/card `style={{}}`, keep dynamic width as inline |
+| `src/pages/DrillPage.tsx` | MODIFY | Replace `style={{}}`, keep dark-card aesthetic via tokens |
+| `src/pages/ShortcutsPage.tsx` | MODIFY | Replace `style={{}}` wrapper |
+| `src/components/shortcuts/ShortcutSetup.tsx` | MODIFY | Replace `style={{}}`, use `Button` |
+| `src/components/ChallengeList.tsx` | MODIFY | CSS class names → Tailwind utility classes |
+| `src/components/TierTabs.tsx` | MODIFY | CSS class names → Tailwind utility classes |
+| `src/components/RightPanel.tsx` | MODIFY | CSS class names → Tailwind utility classes |
+| `src/components/CompletionScreen.tsx` | MODIFY | CSS class names → Tailwind utility classes |
+| `src/components/ui/Button.tsx` | CREATE | New shared primitive |
+| `src/components/ui/Card.tsx` | CREATE | New shared primitive |
+| `src/components/ui/StatCard.tsx` | CREATE | New shared primitive |
+| `vercel.json` | CREATE | SPA routing fallback |
+
+## Vercel Deployment Configuration
+
+### vercel.json (required)
+
+```json
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
 ```
-React component tree
-    ↓
-ChallengeEngine (useReducer) — owns current challenge state
-    ↓
-SpreadsheetGrid (local state) — owns grid display
-    ↓
-ProgressEngine (pure functions, no React state) — operates on Progress Store
-    ↓
-localStorage ← progressStore.save() called after each graded attempt
+
+Placement: project root (`/Users/jam/excel-prep/vercel.json`), same level as `package.json`.
+
+The rule catches all paths that don't resolve to a static file. Vercel always serves actual files in `dist/` first (JS bundles, CSS, SVG), so assets are never affected by the rewrite.
+
+### vite.config.ts (no changes needed)
+
+The current config is complete for Vercel:
+
+```ts
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+});
 ```
 
----
+Vite outputs to `dist/` by default. Vercel auto-detects Vite projects and sets output directory to `dist`. No `base` path configuration is required.
 
-## Scaling Considerations
+### Vercel auto-detected settings
 
-| Scale | Architecture Adjustments |
-|-------|--------------------------|
-| 0-1k users | Single-page app, localStorage, static JSON content — no backend needed |
-| 1k-10k users | Add a thin backend to persist progress server-side; content still static JSON or a lightweight CMS |
-| 10k+ users | CDN for static assets, backend progress API with a database (SQLite → Postgres), optional user accounts |
+- Build command: `npm run build` (runs `tsc -b && vite build`)
+- Output directory: `dist`
+- Install command: `npm install`
+- Framework preset: Vite
 
-### Scaling Priorities
-
-1. **First bottleneck:** Cross-device progress sync. localStorage is device-local. When users ask for this, add a backend progress endpoint. The Progress Store module is the only thing that changes.
-2. **Second bottleneck:** Content authoring. Editing JSON files doesn't scale with a large content team. Move content to a headless CMS or simple admin UI backed by a database.
-
----
+No Vercel dashboard configuration is required beyond importing the repo. The `vercel.json` handles the only non-default behavior.
 
 ## Anti-Patterns
 
-### Anti-Pattern 1: Formula String Comparison for Grading
+### Anti-Pattern 1: Converting Dynamic Values to Tailwind Utility Classes
 
-**What people do:** Check if the user typed `=VLOOKUP(B2,F:G,2,FALSE)` exactly.
-**Why it's wrong:** Multiple formula strings produce identical correct outputs. Rejects valid alternatives, frustrates users, creates content maintenance burden defining every acceptable variant.
-**Do this instead:** Use HyperFormula to evaluate both the user's formula and the expected output value, then compare numeric results with a tolerance.
+**What people do:** Replace `style={{ width: widthPct }}` with `` className={`w-[${widthPct}]`} `` (Tailwind arbitrary value syntax in a template literal).
 
----
+**Why it's wrong:** Tailwind's JIT scanner reads static source files at build time. Template literals that compute class names are not scannable — the generated class (e.g., `w-[73%]`) never appears in the output CSS. The element renders with zero width and no error is thrown.
 
-### Anti-Pattern 2: Full Spreadsheet for Drills
+**Do this instead:** Keep `style={{ width: widthPct }}` for all runtime-computed dimension values. Use `className` only for values that are fully static or toggle between a known finite set of pre-defined classes.
 
-**What people do:** Load a full Handsontable grid for rapid-fire flashcard-style questions.
-**Why it's wrong:** Drills are about formula recognition and recall speed. A full grid is slow to render and adds interaction friction where none is needed.
-**Do this instead:** Use a lightweight component (simple DOM + React) for drill mode. Reserve the full grid for challenge mode where hands-on construction is the point.
+### Anti-Pattern 2: Removing CSS Classes Before Migrating Their Consumers
 
----
+**What people do:** Delete `.challenge-list-item` from `index.css` before updating `ChallengeList.tsx`.
 
-### Anti-Pattern 3: One HyperFormula Instance Shared Across Challenges
+**Why it's wrong:** The component still has `className="challenge-list-item"` — removing the CSS definition silently breaks the styling with no TypeScript or build error.
 
-**What people do:** Create one global HyperFormula instance, reuse it as challenges change.
-**Why it's wrong:** Cell data from a prior challenge leaks into the next. Cross-sheet references produce wrong results. Sheet name collisions cause silent errors.
-**Do this instead:** Destroy and recreate the HyperFormula instance when loading a new challenge (or clear all sheets). `resetFormulaEngine()` in the factory handles this.
+**Do this instead:** Update the component JSX first. Verify it renders correctly. Then remove the corresponding CSS class definition. One component at a time.
 
----
+### Anti-Pattern 3: Creating a tailwind.config.js File
 
-### Anti-Pattern 4: Storing Content in Component State or Global Store
+**What people do:** Add a `tailwind.config.js` to extend the theme, as was standard in Tailwind v3.
 
-**What people do:** Load all challenge JSON into a Redux/Zustand store on app boot.
-**Why it's wrong:** Unnecessary memory usage, slower initial load, adds complexity to the state tree.
-**Do this instead:** Import challenge JSON modules at component render time (dynamic import or static import per route). Content is immutable — it doesn't need reactive state.
+**Why it's wrong:** This project uses Tailwind v4 with the Vite plugin (`@tailwindcss/vite`). Tailwind v4 uses CSS-first configuration via `@theme`. Creating a JS config file is not supported by the Vite plugin and may cause unpredictable behavior.
 
----
+**Do this instead:** All theme customization goes in `src/index.css` under the `@theme` directive. No JS config file.
+
+### Anti-Pattern 4: Using Tailwind for Handsontable CSS Variable Overrides
+
+**What people do:** Move the `--ht-*` CSS variable overrides out of `index.css` into inline styles or component-level Tailwind classes.
+
+**Why it's wrong:** Handsontable reads these variables scoped to its `.ht-theme-main` class selector. They must be defined in global CSS on that specific selector. Tailwind utilities and inline styles on the React wrapper `<div>` do not reach Handsontable's internal shadow-DOM-equivalent structure.
+
+**Do this instead:** Leave the entire Handsontable CSS block in `index.css` unchanged. It is not part of the redesign scope.
 
 ## Integration Points
-
-### External Services
-
-| Service | Integration Pattern | Notes |
-|---------|---------------------|-------|
-| None (MVP) | — | No external APIs needed for MVP |
-| Backend progress API (future) | REST POST on each graded attempt | Replace progressStore.ts localStorage calls only |
 
 ### Internal Boundaries
 
 | Boundary | Communication | Notes |
 |----------|---------------|-------|
-| SpreadsheetGrid ↔ Formula Engine | HyperFormula instance passed via Handsontable `formulas` plugin config | Grid and engine share one HF instance per challenge |
-| Challenge Panel ↔ Challenge Engine | React props + dispatch (useReducer) | Panel is pure presentational; all logic in engine |
-| Grader ↔ Formula Engine | Direct function call: `grader.grade(hfInstance, ...)` | No events; synchronous read after submit |
-| Progress Engine ↔ Progress Store | Function calls: `store.load()` / `store.save()` | No coupling to React state; pure data layer |
-| Content Library ↔ Challenge Engine | Static import or dynamic import of JSON | Engine reads challenge data; never writes to content |
+| Pages ↔ AppShell | `children` prop | Shell redesign is transparent to pages — no prop API changes |
+| Pages ↔ Stores | Zustand hooks (`useChallengeStore`, etc.) | Unchanged by redesign |
+| Components ↔ index.css | className strings | CSS class definitions removed only after consuming component migrates to Tailwind |
+| DrillPage ↔ DrillQuestion/Feedback sub-components | Props | DrillPage outer wrapper styling changes; sub-component props unchanged |
+| SpreadsheetGrid ↔ Handsontable | CSS variables in index.css | Immutable — do not touch |
+| ui/Button ↔ consumers | `variant` + native button props via spread | Drop-in replacement for existing `<button>` elements |
 
----
+### What Does NOT Change
 
-## Build Order Implications
+- All Zustand stores (`challengeStore`, `drillStore`, `shortcutStore`, `safeStorage`)
+- All data files (`data/challenges/`, `data/shortcuts/`)
+- The formula engine (`engine/formulaEngine.ts`, `engine/grader.ts`)
+- The `SpreadsheetGrid` component (Handsontable integration)
+- The `FormulaBar`, `FunctionAutocomplete` components
+- Routing structure in `App.tsx` (routes, paths, nesting)
+- Progress selectors (`store/progressSelectors.ts`)
+- TypeScript types (`types/index.ts`)
+- All tests in `*.test.ts` files
 
-The dependency graph determines phase order:
+## Scaling Considerations
 
-```
-1. Content Library (JSON schema + seed data)
-        ↓ required by
-2. Formula Engine (HyperFormula init + helpers)
-        ↓ required by
-3. Spreadsheet Grid (Handsontable wired to engine)
-        ↓ required by
-4. Grader (reads from engine after user input)
-        ↓ required by
-5. Challenge Engine (state machine around grader + grid)
-        ↓ required by
-6. Challenge Panel UI (renders challenge engine state)
-        ↓
-7. Progress Engine + Store (records grader output)
-        ↓
-8. Progress Dashboard UI (reads progress store)
-        ↓
-9. Drill Mode (simpler alternative flow, shares grader + progress)
-        ↓
-10. Curriculum / Learning Path (orders challenges using content library)
-```
+| Scale | Architecture Adjustments |
+|-------|--------------------------|
+| Current (solo tool) | All patterns above — appropriate, no overengineering |
+| Multiple themes | Use `@theme inline` referencing `:root` variables for runtime theme switching |
+| Component library growth | Extract `ui/` into a Storybook-backed package if shared across multiple apps |
 
-**Implication:** Build the formula engine and a single working challenge (steps 1-6) first. Everything else is additive. A working challenge loop — grid renders, user types formula, grader says pass/fail, explanation shows — is the minimum viable core. Progress tracking, drill mode, and curriculum ordering can be layered on without touching the core.
+### Scaling Priorities
 
----
+1. **First bottleneck:** Visual inconsistency between pages. The redesign eliminates this by establishing centralized tokens and shared primitives before touching any page.
+2. **Second bottleneck:** Handsontable bundle size (~800KB gzipped). Not a redesign concern — already handled by existing bundling setup.
 
 ## Sources
 
-- HyperFormula official documentation — formula calculation integration: https://hyperformula.handsontable.com/guide/basic-usage.html
-- Handsontable React formula-calculation docs: https://handsontable.com/docs/react-data-grid/formula-calculation/
-- Handsontable blog on HyperFormula integration patterns: https://handsontable.com/blog/supercharge-your-web-application-with-excel-like-capabilities-from-hyperformula
-- HyperFormula GitHub — headless architecture overview: https://github.com/handsontable/hyperformula
-- Handsontable events and hooks (React): https://handsontable.com/docs/react-data-grid/events-and-hooks/
-- JavaScript Spreadsheets architecture overview (Medium/Jspreadsheet): https://medium.com/@jspreadsheet/javascript-spreadsheets-guide-building-excel-like-interfaces-for-web-developers-2bb493da8a91
-- Spaced repetition / progress tracking with localStorage (LeetCode tracker pattern): https://github.com/javydevx/leetcode-tracker
-- State machine pattern for challenge flows: https://gameprogrammingpatterns.com/state.html
+- [Tailwind CSS v4 Theme Variables — official docs](https://tailwindcss.com/docs/theme) — HIGH confidence
+- [Tailwind CSS v4.0 release announcement](https://tailwindcss.com/blog/tailwindcss-v4) — HIGH confidence
+- [Vercel Rewrites — official docs](https://vercel.com/docs/rewrites) — HIGH confidence
+- [Vercel Community: SPA 404 on route refresh](https://community.vercel.com/t/rewrite-to-index-html-ignored-for-react-vite-spa-404-on-routes/8412) — MEDIUM confidence, community verified against official docs
 
 ---
-*Architecture research for: Interactive Excel Interview Prep — spreadsheet learning platform*
-*Researched: 2026-02-22*
+*Architecture research for: React SPA visual redesign + Vercel deployment (ExcelPrep v1.1)*
+*Researched: 2026-02-23*

@@ -1,12 +1,177 @@
 # Pitfalls Research
 
-**Domain:** Interactive Excel interview prep web app (embedded spreadsheet grid, formula evaluation, finance-focused challenge system, progress tracking)
-**Researched:** 2026-02-22
-**Confidence:** MEDIUM — formula engine and keyboard behavior findings verified against official docs; UX/pedagogical pitfalls verified across multiple sources; some specifics are training-data informed
+**Domain:** Interactive Excel interview prep web app — Vite/React/Handsontable SPA
+**Researched:** 2026-02-23 (updated; original 2026-02-22)
+**Confidence:** HIGH (Vercel SPA routing, HOT CSS specificity, Tailwind 4 preflight); MEDIUM (focus trap behavior, HOT v16 DOM change height impact, formula grading); LOW noted per finding
 
 ---
 
-## Critical Pitfalls
+## v1.1 Milestone Pitfalls (Visual Polish + Vercel Deployment)
+
+These pitfalls are specific to adding visual redesign, UX improvements, and Vercel deployment to the existing working prototype. They are distinct from the original domain pitfalls (formula grading, content scope, etc.) which are preserved below.
+
+---
+
+### Pitfall P1: Vercel 404 on Direct Route Access (SPA Routing)
+
+**What goes wrong:**
+Navigating directly to `/challenge`, `/drill`, `/progress`, or `/shortcuts` — or refreshing any of these routes — returns Vercel's own 404 page. React Router handles routing client-side, but Vercel is a static host and looks for a file at that path. No file exists. The problem does not appear in `vite dev` or `vite preview` and is invisible until after deployment.
+
+**Why it happens:**
+Vercel serves files from `dist/`. `/challenge` has no matching file, so Vercel 404s before React loads. BrowserRouter-based SPAs must tell Vercel to rewrite all non-asset paths to `index.html`.
+
+**How to avoid:**
+Add `vercel.json` to project root before the first deploy:
+```json
+{
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
+```
+Use `(.*)` form, not `/:path*` — the former is more reliable for all nested paths. Test by opening the Vercel preview URL and refreshing on a non-root route.
+
+**Warning signs:**
+- Works in `vite dev` and `vite preview` with no issues
+- After Vercel deploy: Vercel's own 404 page ("404: NOT_FOUND") appears on refresh
+- Any deep-linked URL shared with someone else 404s for them
+
+**Phase to address:** Deployment phase — add `vercel.json` as the first committed file when setting up deployment, before any other deploy work.
+
+---
+
+### Pitfall P2: Tailwind 4 Preflight Flattening Handsontable's Base Styles
+
+**What goes wrong:**
+Tailwind 4's preflight resets `border`, `margin`, `padding`, and `box-sizing` globally on all HTML elements, including `<table>`, `<td>`, `<th>`, and `<button>`. Handsontable renders real instances of these elements inside its grid. After Tailwind's preflight fires, HOT's own theme CSS must fight the reset — and some styles lose silently: cell borders disappear, cell padding collapses, and context menu buttons lose their button appearance.
+
+**Why it happens:**
+Tailwind 4 injects preflight into the cascade at the `base` layer. HOT's CSS has no `@layer` declaration, so its specificity is determined purely by cascade order. Preflight is intentionally broad and hits real HTML elements, not HOT-specific class names.
+
+**How to avoid:**
+The project already has `.hot-container` wrappers in `index.css`. After adding Tailwind theming, add targeted CSS repair for HOT's container scope:
+```css
+/* In index.css, after @import "tailwindcss" */
+.hot-container td,
+.hot-container th,
+.hot-container table {
+  box-sizing: content-box; /* HOT expects content-box, not border-box */
+}
+```
+Alternatively, import Tailwind without preflight (v4 method):
+```css
+/* Replace @import "tailwindcss" with: */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+```
+This removes Tailwind's normalize entirely, leaving HOT unaffected. The tradeoff is losing cross-browser normalization for the app's own elements.
+
+**Warning signs:**
+- Grid cell borders become inconsistent or disappear after adding Tailwind theme CSS
+- Cell padding looks wrong (too tight or collapsed to zero)
+- Right-click context menu buttons lose their visual form
+- DevTools show `.hot-container td { padding: 0 }` from a Tailwind rule winning over HOT's rule
+
+**Phase to address:** Visual redesign phase — verify HOT grid renders identically before and after any global CSS addition. Make this the first check before writing any new styles.
+
+---
+
+### Pitfall P3: HOT Inline Styles Override CSS Variables and Cannot Be Themed
+
+**What goes wrong:**
+Handsontable applies many styles as inline `style` attributes directly on `<td>` elements via JavaScript — not as class-based rules. CSS variable overrides on `.ht-theme-main` work for HOT's own rule-based styles, but cannot override `element.style.backgroundColor` set inline. The `answerCell` custom renderer in this project already sets `td.style.outline` directly — this is correct but means those states cannot be changed via CSS variables or class selectors.
+
+**Why it happens:**
+HOT uses inline styles for performance-critical operations (selection highlight, read-only state, active cell border). These have specificity of 1-0-0-0, beating any class or variable override. The theme system controls HOT's CSS rules only.
+
+**How to avoid:**
+- Keep using `td.style.*` in the `answerCell` renderer for per-cell visual state (correct/incorrect feedback) — this is intentional and correct
+- Do NOT attempt to change those states via CSS variables or new class selectors — it will appear to work in some cell states but fail silently in others
+- HOT's selection highlight (`--ht-selection-background`, `--ht-selection-border-color`) IS CSS-variable controlled — safe to customize via the existing block in `index.css`
+- For any new cell visual state introduced during redesign, check HOT's DevTools first: if the style shows as `element.style { }`, it must be changed in the renderer, not in CSS
+
+**Warning signs:**
+- Added CSS rule appears in DevTools "Styles" panel but is struck through (overridden by inline style)
+- Style applies on first render but reverts after HOT re-renders the cell (e.g., on selection)
+- Behavior differs between normal cells and answer cells
+
+**Phase to address:** Visual redesign phase — audit which cell visual states are CSS-variable controlled vs. inline-style controlled before writing any new theme CSS.
+
+---
+
+### Pitfall P4: HOT v16 DOM Wrapper Breaking Height Inheritance After Layout Refactor
+
+**What goes wrong:**
+Handsontable 16.0 (September 2025; this project uses `^16.2.0`) changed DOM mounting: the container `<div>` is now a mounting point, and HOT injects its own root `<div>` inside it. A known auto-resize regression was introduced — the `.handsontable` root no longer fills its parent without explicit CSS. The project already patches this with `index.css` rules for `.hot-container > div`, `.hot-container .ht-root-wrapper`, and `.hot-container .ht-grid`. Any redesign that adds new wrapper elements around `.hot-container` can break this height chain and make the grid collapse.
+
+**Why it happens:**
+Flex/grid height propagation requires every ancestor to have explicit height or `flex: 1`. Adding a new wrapper `<div>` during redesign (e.g., for a card border, shadow, or panel) without passing height through breaks the chain. The grid collapses to 0px or to HOT's internal default of ~150px.
+
+**How to avoid:**
+- Before adding any wrapper around the grid area, confirm it includes `display: flex; flex-direction: column; flex: 1; overflow: hidden` — never `height: auto`
+- After any layout change near the grid, resize the browser window to verify the grid fills its space and does not collapse
+- Verify the `.hot-container > div` selector in `index.css` still matches the actual DOM structure after any refactor
+- Do a hard reload (not just a hot-module reload) when testing height, as React fast refresh can hide collapse bugs
+
+**Warning signs:**
+- Grid shows as 0px tall or ~150px (HOT's internal default)
+- Grid looks correct on first load but collapses after navigating away and returning
+- Browser resize corrects the height but initial render is wrong
+- The grid renders correctly in dev mode but collapses in production build
+
+**Phase to address:** Visual redesign phase — check grid height as an acceptance criterion for every layout change that touches anything between `#root` and `.hot-container`.
+
+---
+
+### Pitfall P5: Onboarding Overlay Stealing Focus from Handsontable Permanently
+
+**What goes wrong:**
+When a welcome/onboarding modal is dismissed, if focus is not explicitly returned to a grid cell, the browser leaves focus in a detached node or drops it to `document.body`. HOT's keyboard handling stops working: the user clicks a cell, it appears selected, but typing does nothing. HOT uses `keydown` events on its own managed element — if focus is not inside HOT's managed scope, events are not received.
+
+**Why it happens:**
+An overlay component traps focus while open (correct behavior). On close, most implementations either let focus go to `body` or return it to the element that opened the overlay. Neither is inside HOT's grid — HOT's focus model is internal and must be re-engaged explicitly.
+
+**How to avoid:**
+- On overlay dismiss, call `hotRef.current?.hotInstance?.selectCell(0, 0)` (or the first unanswered challenge cell)
+- If using a focus-trap library, confirm `returnFocusOnDeactivate` is set AND the return target is a specific HOT cell, not just the container `div`
+- Never use `autoFocus` on overlay inputs without a matching `onClose` focus-return handler
+- Test keyboard behavior as the first action after closing the overlay: type `=SUM(` and confirm the formula bar updates and cell value changes
+
+**Warning signs:**
+- After closing the onboarding overlay, clicking a cell works (visual selection) but pressing keys does nothing
+- Chrome DevTools `focus` event log shows focus going to `body` on overlay close
+- HOT's formula bar stops showing cell content after overlay interaction
+
+**Phase to address:** UX/onboarding phase — add "close overlay then type in cell with keyboard" as an explicit acceptance criterion for any overlay component.
+
+---
+
+### Pitfall P6: Tailwind 4 `@theme` Token Naming Collision with HOT CSS Variables
+
+**What goes wrong:**
+Tailwind 4 replaces `tailwind.config.js` with a CSS-first `@theme` directive that defines design tokens as CSS custom properties (e.g., `--color-primary: #1a6b3c`). HOT also uses CSS custom properties for its theme system (e.g., `--ht-cell-background`). If tokens are named without discipline — particularly in the `--color-*` or `--background-*` namespace — a Tailwind token can accidentally clobber a HOT variable or vice versa, depending on CSS cascade order.
+
+**Why it happens:**
+Both systems use the same CSS custom property mechanism. HOT's variables are all prefixed `--ht-*` which provides natural isolation, but Tailwind's generated CSS properties (particularly for color) use generic names that can bleed into adjacent components.
+
+**How to avoid:**
+- Keep all HOT variable overrides in `.ht-theme-main { }` scope — they are already there in `index.css`
+- Prefix all custom design tokens with `--app-*` or `--brand-*` (e.g., `--app-green: #1a6b3c`) rather than `--color-green` to avoid collision with Tailwind's own generated color variables
+- Define all `@theme` tokens at the top of `index.css` before HOT variable overrides so cascade order is predictable
+- After adding any new `@theme` tokens, inspect `--ht-*` variables in DevTools to confirm they are unchanged
+
+**Warning signs:**
+- A design token change unexpectedly changes HOT's selection color or cell background
+- HOT's CSS variable overrides appear correct in isolation but lose their value at runtime
+- Browser DevTools computed styles show a `--ht-*` variable resolving to an unexpected value
+
+**Phase to address:** Visual redesign phase (theme setup) — establish naming conventions before writing any `@theme` tokens.
+
+---
+
+## Original Domain Pitfalls (v1.0 — Core Functionality)
+
+These pitfalls apply to the formula grading engine, challenge content, and progress system. They remain relevant for v1.1 since changes to challenge rendering and UI flow must not regress these behaviors.
+
+---
 
 ### Pitfall 1: Grading Formulas by String Comparison Instead of Result Equivalence
 
@@ -134,8 +299,6 @@ Persist to localStorage on every attempt completion. Derive "weak areas" from `f
 
 ---
 
-## Moderate Pitfalls
-
 ### Pitfall 6: HyperFormula's Circular Reference Detection Rejects Valid IF Branches
 
 **What goes wrong:**
@@ -181,6 +344,8 @@ For MVP scope, disable paste-from-Excel as a supported flow entirely rather than
 | Storing progress as flat `Set` of completed IDs | Trivial to write | Cannot derive weak areas, attempt count, recency; requires schema migration | Never for this app — schema matters from the first attempt stored |
 | Inlining challenge data as JS constants | Fast to add challenges | No dynamic loading, bundle grows with every challenge, no CMS workflow | Acceptable for MVP (<50 challenges), refactor before content scales |
 | HyperFormula default config (no Excel-compat flags) | Zero setup | Silent numeric discrepancies in finance functions | Never — set `evaluateNullToZero: true` and `leapYear1900: true` on init |
+| Style HOT cells with `!important` in global CSS | Quick visual override without touching renderers | Creates an arms race; breaks when HOT updates CSS structure; masks the correct approach (renderer-based styling) | Never — use custom renderers instead |
+| Use Tailwind utility classes directly on HOT wrapper elements | Fast iteration on layout | Preflight conflicts compound; hard to debug which layer is winning | Acceptable for layout wrappers (flex, padding outside the grid), never for styles that touch HOT internals |
 
 ---
 
@@ -189,9 +354,13 @@ For MVP scope, disable paste-from-Excel as a supported flow entirely rather than
 | Integration | Common Mistake | Correct Approach |
 |-------------|----------------|------------------|
 | HyperFormula + Handsontable | Treating them as one unified library; they are separate packages with their own release cycles | Install and configure both independently; consult HyperFormula's integration-with-handsontable guide explicitly |
-| HyperFormula in React/Vue | Passing HyperFormula instance directly into reactive state; Vue's reactivity system will try to deeply proxy it, causing errors | Wrap the instance in `markRaw()` in Vue, or store outside component state in React (`useRef`, module-level var) |
-| localStorage progress | Writing raw JS objects without `JSON.stringify`/`JSON.parse`; storing sensitive attempt data without version key | Always version the stored schema (`v: 1`) so future schema changes can migrate or reset cleanly |
-| HyperFormula formula evaluation | Forgetting to call `getCellValue()` after `setCellContents()` — the engine is synchronous but the API requires explicit read | Always read back the computed value after setting; never cache the formula string as the displayed result |
+| HyperFormula in React | Passing HyperFormula instance directly into reactive state; React may proxy it, breaking the engine | Store outside component state (`useRef` or module-level var) — already correct in this project's `SpreadsheetGrid.tsx` |
+| localStorage progress | Writing raw JS objects without `JSON.stringify`/`JSON.parse`; storing data without version key | Always version the stored schema (`v: 1`) so future schema changes can migrate or reset cleanly |
+| Handsontable + Tailwind 4 | Apply Tailwind utility classes to `<HotTable>` component directly | Wrap HOT in a `div` with Tailwind classes; never apply Tailwind to HOT's own rendered elements |
+| Handsontable + CSS variables | Override `--ht-*` variables at the wrong scope (e.g., on `:root` instead of `.ht-theme-main`) | Scope all `--ht-*` overrides to `.ht-theme-main` selector as already done in `index.css` |
+| Handsontable + React Router | HyperFormula singleton persists across route navigation, causing "sheet already exists" errors | Already handled with `useEffect` cleanup on unmount in `SpreadsheetGrid.tsx` — do not remove this during refactoring |
+| Vite + Vercel | Assuming dev-server behavior matches Vercel's static hosting | Test with `vite build && vite preview` before claiming deployment-ready; add `vercel.json` before first push |
+| Tailwind 4 `@theme` tokens + HOT CSS variables | Both use CSS custom properties — naming them similarly causes confusion | Keep HOT variables prefixed `--ht-*`; keep app design tokens prefixed `--app-*` or `--brand-*` |
 
 ---
 
@@ -202,6 +371,8 @@ For MVP scope, disable paste-from-Excel as a supported flow entirely rather than
 | Re-evaluating all cells on every keystroke | Lag while typing a formula in larger grids | Use HyperFormula's built-in dependency graph; it recalculates only dirty cells — don't force full sheet recalc manually | Noticeable at ~50+ cells with inter-cell dependencies |
 | Storing all attempt history in one localStorage key | Slow JSON parse on page load as history grows | Split storage: config/metadata in one key, attempt log in another keyed by function tag | After ~500 stored attempts |
 | Rendering all challenges in the DOM at once | Slow initial load, especially if challenges include grid snapshots | Lazy-load challenge data; only load the active challenge + prefetch next | After ~30 challenges with associated grid state |
+| Triggering HOT `render()` call on every CSS class change | Grid flickers on every state update; excessive repaints | Keep `hot.render()` calls in effects that only fire when `cellGrades` or `isLocked` truly change (already correct in current code) | Any new state variable added that inadvertently ends up in `useEffect` deps alongside `hot.render()` |
+| Animating the HOT container with CSS transitions | Grid width/height transitions cause HOT to compute layout mid-animation, producing misaligned columns | Never animate the HOT container dimensions; animate sibling/parent panels only | Immediately on first animated resize |
 
 ---
 
@@ -211,20 +382,27 @@ For MVP scope, disable paste-from-Excel as a supported flow entirely rather than
 |---------|-------------|-----------------|
 | Showing "Wrong" with no explanation | User knows they failed but not why; cannot self-correct; disengages | Always show the correct formula, a plain-English explanation of why it works, and what their formula did differently |
 | Drilling functions in alphabetical or random order | No pedagogical progression; beginners hit NPV/IRR before understanding IF | Enforce a learning path: IF → VLOOKUP → INDEX/MATCH → SUMIFS → financial functions (NPV/IRR/PMT). Gate harder challenges until precursor functions reach 70%+ accuracy |
-| Feedback that says "Correct!" then immediately moves on | No time to internalize why the answer was right | Show the explanation for 2-3 seconds (or on explicit "Next" tap) even on correct answers — the explanation reinforces retention |
-| Allowing unlimited retries before showing the answer | User can brute-force multi-choice challenges without learning | After 2 wrong attempts, reveal the answer and explanation; do not allow a third attempt on the same challenge instance |
-| No indication of what will appear in an actual interview | User finishes all challenges not knowing which functions matter most | Tag each function with frequency ("Appears in ~80% of finance interviews") so users can prioritize if time is short |
+| Wall-of-text challenge prompts rendered with `white-space: pre-wrap` only | Dense scenario text is intimidating; user skips reading it | Parse prompts into semantic sections: scenario context, task instruction, expected output — use structured JSX not raw text |
+| Progress bar that only shows session progress (resets on refresh) | Users feel they're not making progress between sessions | Ensure progress bar draws from persisted Zustand store, not local component state |
+| Color-only feedback (green/red cell outlines) for correct/incorrect answers | Inaccessible to colorblind users; confusing without instructions | Add icon or text label alongside the color indicator: "Correct" / "Try again" text in the feedback section |
+| Onboarding that doesn't explain the keyboard-first nature of HOT | New users try to click-then-type; get confused when Enter doesn't commit | Onboarding must say "Type formula, press Enter to submit" with a visual demo or animation |
+| Redesign that changes nav layout without updating keyboard tab order | Power users relying on Tab to navigate between UI sections get disoriented | After redesign, tab through the entire app manually to confirm focus order matches visual order |
 
 ---
 
 ## "Looks Done But Isn't" Checklist
 
-- [ ] **Formula grading:** Appears to work on happy-path strings — verify it passes when user types `=IF(B2>0,1,0)` vs `=IF(B2>0,TRUE,FALSE)` for a challenge expecting a boolean result
-- [ ] **HyperFormula config:** Engine initializes without errors — verify `evaluateNullToZero` and `leapYear1900` are set; run known-value smoke tests for NPV, IRR, PMT
-- [ ] **Keyboard navigation:** Tab moves between cells in grid — verify Tab does NOT escape the grid to browser chrome; verify Enter does NOT submit a form; verify Escape cancels edit without navigating away
-- [ ] **Progress persistence:** localStorage write confirmed in DevTools — verify data survives hard refresh; verify schema has function tags and timestamps, not just challenge IDs
-- [ ] **Explanation display:** "Show explanation" button works — verify explanation appears for BOTH correct and incorrect submissions, not just incorrect
-- [ ] **Learning path ordering:** All challenges are accessible — verify beginner tier requires no prior function knowledge; verify advanced challenges are gated until precursor accuracy thresholds met
+- [ ] **Vercel deployment:** `vercel.json` rewrite rule present — verify by refreshing `/challenge`, `/drill`, `/progress` directly on the deployed URL
+- [ ] **HOT grid height:** After any layout change, confirm grid fills its container by resizing the browser window to a narrow viewport and back; do a hard reload (not hot reload)
+- [ ] **Tailwind preflight conflict:** After adding any new global CSS, open HOT grid and verify cell borders, cell padding, and context menu still render correctly
+- [ ] **Onboarding dismiss:** After closing the welcome/onboarding overlay, immediately type `=SUM(` with keyboard only — confirm formula bar updates and no keys are silently dropped
+- [ ] **HOT CSS variable scope:** All `--ht-*` overrides are scoped to `.ht-theme-main`, not `:root` — verify in DevTools computed styles
+- [ ] **HyperFormula cleanup:** Navigate to a challenge, then navigate away and back — confirm no "sheet already exists" console error
+- [ ] **Progress persists:** Reload the page mid-challenge-set and confirm completed challenges still show as complete
+- [ ] **Production build:** Run `npm run build` without TypeScript errors before claiming deploy-ready (`tsc -b && vite build`)
+- [ ] **Formula grading:** Verify semantically equivalent formulas (e.g., `=IF(B2>0,1,0)` vs `=IF(B2>0,TRUE,FALSE)` for a challenge expecting boolean) both grade as correct
+- [ ] **HyperFormula config:** Confirm `evaluateNullToZero` and `leapYear1900` are set in the engine initializer
+- [ ] **Keyboard navigation in grid:** Tab/Enter/Escape/arrow keys behave like Excel; Tab does NOT escape to browser chrome
 
 ---
 
@@ -232,11 +410,14 @@ For MVP scope, disable paste-from-Excel as a supported flow entirely rather than
 
 | Pitfall | Recovery Cost | Recovery Steps |
 |---------|---------------|----------------|
+| Vercel 404 on routes | LOW | Add `vercel.json` with rewrite rule, redeploy (< 5 minutes) |
+| Tailwind preflight broke HOT borders | MEDIUM | Add targeted CSS reset rules in `.hot-container` scope; inspect DevTools computed styles on each affected HOT element to identify the exact property being clobbered |
+| HOT height collapse after layout refactor | MEDIUM | Trace the flex/height chain from `#root` down to `.hot-container`; add `height: 100%; overflow: hidden` to each new wrapper in the chain |
+| Focus not returning to HOT after overlay close | LOW | Add explicit `hotRef.current?.hotInstance?.selectCell(0, 0)` call in the overlay's `onClose` handler |
+| Inline style override war with HOT renderers | HIGH | If `!important` overrides have accumulated trying to style HOT cells, stop and rewrite as a custom renderer — there is no recovery other than doing it correctly |
+| HyperFormula "sheet already exists" after refactor removed cleanup effect | MEDIUM | Restore the `useEffect` cleanup that calls `hfInstance.removeSheet()` on unmount — this already exists in `SpreadsheetGrid.tsx` and must not be removed |
 | String-match grading shipped | HIGH | Audit all challenges to document all valid formula variants; replace string comparison with result-value comparison; re-test every challenge |
 | HyperFormula bad config shipped | MEDIUM | Add config flags in one line; re-run smoke tests; identify any challenges whose "correct" answer was calibrated against wrong HyperFormula output and fix expected values |
-| Progress schema too flat | MEDIUM | Write migration: on load, detect schema version 0 (no `v` key), convert existing data to v1 schema with best-effort timestamps; some historical accuracy stats will be lost |
-| Keyboard navigation broken by surrounding UI | LOW-MEDIUM | Identify which DOM elements intercept events; add `tabindex="-1"` or `event.stopPropagation()` at the conflict point; re-test all keyboard paths |
-| Content scope too broad | LOW | Retire tier-2 challenges from the visible learning path; add filter so only tier-1 shows by default; tier-2 accessible via "Advanced" toggle |
 
 ---
 
@@ -244,30 +425,41 @@ For MVP scope, disable paste-from-Excel as a supported flow entirely rather than
 
 | Pitfall | Prevention Phase | Verification |
 |---------|------------------|--------------|
+| Vercel SPA 404 on route refresh | Deployment setup (first task) | Refresh `/challenge` and `/drill` on deployed URL directly |
+| Tailwind preflight vs HOT base styles | Visual redesign (first CSS change) | Inspect HOT grid borders and cell padding in DevTools after adding global theme |
+| HOT inline styles override CSS specificity | Visual redesign (before adding cell state styles) | Attempt to override answer cell outline via CSS; confirm renderer approach is used instead |
+| HOT v16 DOM wrapper height collapse | Visual redesign (any layout change near grid) | Resize browser window; navigate away and back to HOT routes |
+| Onboarding overlay stealing HOT focus | UX/onboarding phase | Close overlay then type formula with keyboard only |
+| Tailwind `@theme` naming vs HOT variable names | Visual redesign (theme setup, first day) | Inspect `--ht-*` variables in DevTools after adding any new `@theme` tokens |
 | String-match formula grading | Phase 1 — Grid and formula engine | Grading unit tests: semantically equivalent formulas produce "Correct" |
 | HyperFormula misconfiguration | Phase 1 — Grid and formula engine | Smoke-test suite: known Excel outputs match HyperFormula output for all 10 tier-1 functions |
 | Keyboard navigation conflicts | Phase 1 — Grid and formula engine | Manual test: Tab/Enter/Escape/arrows behave like Excel inside the grid |
-| Content scope creep | Phase 1 — Content scoping (before Phase 2) | Frozen tier-1 function list with written rationale; no new functions added until tier-1 complete |
 | Progress tracking schema | Phase 2 — Challenge system and progress | Schema document written before first challenge stores data; attempt records include function tags and timestamps |
-| HyperFormula IF cycle detection | Phase 2 — Challenge content review | Each challenge formula manually evaluated in HyperFormula before merging |
 | Gamification rewarding speed over accuracy | Phase 2 — Challenge system design | No timer-based scoring; visible metric is first-attempt accuracy rate |
-| Copy-paste from Excel | Phase 1 — Grid setup | Decision documented: paste-from-Excel not supported in MVP; UI note added |
 
 ---
 
 ## Sources
 
-- HyperFormula Known Limitations (official docs): https://hyperformula.handsontable.com/guide/known-limitations.html — HIGH confidence
-- HyperFormula Compatibility with Microsoft Excel (official docs): https://hyperformula.handsontable.com/guide/compatibility-with-microsoft-excel.html — HIGH confidence
-- Handsontable keyboard navigation forum / issue tracker: https://forum.handsontable.com/t/how-to-disable-focus-outside-table-when-using-tab-and-shift-tab-for-navigate-cell-in-handsontable/7434 — MEDIUM confidence
-- CodeMirror Tab handling documentation: https://codemirror.net/examples/tab/ — HIGH confidence (Tab key design is deliberate and documented)
-- HyperFormula GitHub discussions (Vue reactivity issue): https://hyperformula.handsontable.com/guide/integration-with-vue.html — MEDIUM confidence
-- Gamification gap research (engagement vs. retention): elearningindustry.com/the-learning-retention-formula — MEDIUM confidence (multiple sources corroborate engagement vs. retention gap)
-- NL2Formula paper (exact match vs. execution result grading): https://arxiv.org/html/2402.14853v1 — MEDIUM confidence (academic, directly relevant to formula grading problem)
-- Finance Excel interview function priorities: fintest.io, wallstreetmojo.com, chandoo.org — MEDIUM confidence (multiple sources agree on VLOOKUP/INDEX-MATCH/SUMIFS as top-tier)
-- LocalStorage pitfalls: supertokens.com/blog/localstorage-vs-session-storage — MEDIUM confidence
+**v1.1 Polish & Deploy pitfalls:**
+- [Vercel KB: Why is my deployed project giving 404?](https://vercel.com/kb/guide/why-is-my-deployed-project-giving-404) — HIGH confidence
+- [Fixing Routing Issues in Vite React App on Vercel — DEV Community](https://dev.to/pwnkdm/fixing-routing-issues-in-vite-react-app-on-vercel-1o49) — HIGH confidence
+- [Handsontable: Theme Customization (React)](https://handsontable.com/docs/react-data-grid/theme-customization/) — HIGH confidence
+- [Handsontable: Migrating from 15.3 to 16.0](https://handsontable.com/docs/javascript-data-grid/migration-from-15.3-to-16.0/) — HIGH confidence
+- [Handsontable 16 auto-resize broken forum report](https://forum.handsontable.com/t/auto-resize-broken-in-version-16/8890) — MEDIUM confidence
+- [Tailwind CSS v4 preflight disable — GitHub Issue #15723](https://github.com/tailwindlabs/tailwindcss/issues/15723) — HIGH confidence
+- [Tailwind CSS v4 migration guide (DesignRevision)](https://designrevision.com/blog/tailwind-4-migration) — MEDIUM confidence
+- [Focus trap accessibility for React modals — DEV Community](https://dev.to/colettewilson/how-i-approach-keyboard-accessibility-for-modals-in-react-152p) — MEDIUM confidence
+- [Handsontable CSS styles overwrite forum thread](https://forum.handsontable.com/t/css-styles-overwrite/1889) — MEDIUM confidence
+- Project codebase: `/Users/jam/excel-prep/src/index.css`, `/Users/jam/excel-prep/src/components/SpreadsheetGrid.tsx`
+
+**Original domain pitfalls:**
+- HyperFormula Known Limitations: https://hyperformula.handsontable.com/guide/known-limitations.html — HIGH confidence
+- HyperFormula Compatibility with Microsoft Excel: https://hyperformula.handsontable.com/guide/compatibility-with-microsoft-excel.html — HIGH confidence
+- Finance Excel interview function priorities: fintest.io, wallstreetmojo.com, chandoo.org — MEDIUM confidence
+- NL2Formula paper (exact match vs. execution result grading): https://arxiv.org/html/2402.14853v1 — MEDIUM confidence
 
 ---
 
-*Pitfalls research for: Interactive Excel Interview Prep Web App*
-*Researched: 2026-02-22*
+*Pitfalls research for: Vite + React + Handsontable SPA — interactive Excel interview prep*
+*Researched: 2026-02-23 (updated from 2026-02-22)*

@@ -1,8 +1,30 @@
 # Feature Research
 
-**Domain:** Excel interview prep / finance interactive learning web app
-**Researched:** 2026-02-22
-**Confidence:** MEDIUM — core feature landscape well-established; specific implementation patterns informed by analogous platforms (ExcelExercises, Sheetzoom, CFI, Duolingo), verified by multiple sources.
+**Domain:** Polish & Deploy (v1.1) — visual redesign, UX, drill text formatting, Vercel deployment for a React/Vite SPA learning tool
+**Researched:** 2026-02-23
+**Confidence:** HIGH — architecture verified by direct codebase inspection; UX patterns confirmed from multiple sources including official Vercel docs and comparable learning tools (Duolingo, Quizlet, Khan Academy)
+
+---
+
+## Context: What Already Exists (From Codebase Inspection)
+
+v1.0 features that are **done and working** — not in scope for v1.1:
+- React 19 + Vite 7 + TypeScript + Tailwind 4 + Zustand + react-router-dom v7
+- AppShell: dark green header (#1a3a2a), gray sidebar (220px), NavLink-based navigation
+- WelcomePage: white card, green CTA, one-line description, returning-user detection via localStorage
+- ChallengePage: Handsontable grid + right panel (prompt, hint, feedback, explanation accordion)
+- DrillPage: dark-card UI (#111827), countdown timer, MC/typing modes, auto-advance feedback
+- ProgressPage: 3-stat overview, tier-grouped accuracy bars, "Focus on this" weakest-category card
+- 60+ finance challenges in `/src/data/challenges/` (beginner/intermediate/advanced)
+- localStorage persistence via Zustand stores
+
+**The core problem:** The app is functional but looks like a prototype because:
+1. No unified color token system — hex values (#1a3a2a, #1a6b3c, #145530, #1a4a7a, #c0392b) scattered across 8+ files
+2. No typography scale — font sizes are arbitrary per-component (32px, 22px, 18px, 16px, 15px, 14px, 13px, 12px, 11px, 10px with no system)
+3. DrillPage uses a dark theme (#111827 background) that clashes with the light theme everywhere else
+4. Challenge prompts render as raw strings with bullet chars (•) and line breaks — wall of text in a 280px sidebar
+5. No vercel.json — all non-root routes (e.g., /challenge, /drill) return 404 on Vercel
+6. Page title is "excel-prep-scaffold" and favicon is the default Vite logo
 
 ---
 
@@ -10,122 +32,105 @@
 
 ### Table Stakes (Users Expect These)
 
-Features users assume exist. Missing these = product feels incomplete.
+Features a polished learning tool must have. Missing = product looks unfinished.
 
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| Interactive formula input with validation | Primary value prop — users type a formula and get right/wrong feedback | HIGH | Requires an in-browser spreadsheet grid or formula input field that evaluates Excel-compatible syntax. Handsontable and Jspreadsheet are the standard JS libraries for this. Without this, the product is just flashcards. |
-| Immediate feedback on answer (right/wrong + explanation) | Every drill-based learning platform from Duolingo to Codewars does this — absence feels broken | LOW | Show the correct formula, explain why it works, and show what the output evaluates to. Explanation quality is what differentiates here, not the mechanic itself. |
-| Finance-specific function coverage | The user's entire purpose — if VLOOKUP, INDEX/MATCH, SUMIFS, NPV, IRR, PMT aren't present, the product doesn't address the interview | MEDIUM | Must cover: VLOOKUP/HLOOKUP, INDEX/MATCH/XLOOKUP, SUMIFS/COUNTIFS/AVERAGEIFS, IF/nested IF/IFS, NPV, IRR, PMT, PV, basic financial ratio formulas, IFERROR/ISERROR |
-| Difficulty tiers | Finance interview prep has a clear 3-tier structure (basic → intermediate → advanced) used by all competitors | LOW | Basic = SUM/IF/VLOOKUP; Intermediate = nested IF, SUMIFS, INDEX/MATCH; Advanced = NPV/IRR/PMT, multi-function combinations for modeling |
-| Structured learning path | Users arriving as beginners need a curriculum, not a random question bank | MEDIUM | Must define start-to-interview-ready path. Competitors like CFI and BIWS all have sequenced curricula. No path = user doesn't know where to start. |
-| Session progress within a drill set | Users expect to see "Question 3 of 10" or similar — absence creates anxiety and abandonment | LOW | Simple counter in UI. Trivial to implement. |
-| Explanation after each question | Expected by anyone who's used Duolingo, Khan Academy, or any quiz platform | LOW | Minimum: show the correct formula and what output it produces. Better: explain the "why" (e.g., why INDEX/MATCH is better than VLOOKUP for this case). |
-| Keyboard shortcut drills | Investment banks literally take mice away from analysts — shortcut speed is tested | MEDIUM | ExcelExercises.com already has a shortcut lesson module. Finance-specific shortcuts: Alt+=, Ctrl+Shift+L, F2, Ctrl+[, Ctrl+]. Flash-card style recognition drill is the minimum. |
-
----
+| Feature | Why Expected | Complexity | Existing State | Notes |
+|---------|--------------|------------|----------------|-------|
+| Consistent color token system | Polished SaaS products define 5-8 named colors, applied uniformly. Scattered hex values produce visual noise — buttons that should look the same don't. | LOW | Not done — 15+ hardcoded hex values across files | Define CSS custom properties (`--color-brand`, `--color-brand-dark`, `--color-surface`, `--color-border`, `--color-text-primary`, `--color-text-muted`) in `index.css`. Replace all hardcoded values. |
+| Consistent typography scale | Polished tools use a defined type scale (e.g., 12/13/14/16/18/22/28px with paired weights). Current code has arbitrary sizes per-component. | LOW | Not done | Add CSS custom properties or Tailwind config for `--text-xs` through `--text-2xl`. Apply consistently across all pages. |
+| Coherent spacing scale | Spacing should follow a 4px base unit. WelcomePage uses `padding: '48px 56px'` which is fine; other pages mix 8/10/12/16/18/20/24/28/32/40 with no system. | LOW | Not done | Pick Tailwind's default scale (4/8/12/16/20/24/32/40/48/56/64px) and stick to it throughout |
+| Page title and favicon | Browser tab shows "excel-prep-scaffold". Favicon is the Vite triangle. Both kill credibility for anyone shown the app. | LOW | Not done | Update `<title>` in `index.html` to "ExcelPrep — Finance Interview Prep". Create a simple SVG favicon (green square with "E" or "X"). |
+| Unified light theme | All pages should use the same light surface. DrillPage uses `backgroundColor: '#111827'` (near-black), creating jarring visual break. | MEDIUM | Not done — DrillPage is dark, everything else is light | Replace DrillPage dark backgrounds with white/light-gray (#f9fafb). Adapt text colors accordingly (white text → dark). |
+| Structured drill/challenge question text | Challenge prompts (displayed in the 280px right panel) are 6-8 line raw strings with bullet chars (•) and newlines. Drill prompts are shorter but still plain prose. Both are hard to scan. | MEDIUM | Not done | Create a `formatPrompt()` render utility that identifies and styles: (1) scenario description, (2) data section (formula-chip styled code block), (3) task instruction. No library needed — CSS classes + JSX render function. |
+| First-visit orientation on WelcomePage | New user lands on a card with app name + 1 sentence + 2 buttons. No explanation of how the app works or what to do first. | LOW | Partial — description text exists but insufficient | Add a 3-item "How it works" section: "Type formulas in the grid → get graded instantly → track your weak spots". Static copy, no new state. |
+| Vercel SPA routing config | React Router v7 uses client-side routing. Without a server-side catch-all, Vercel serves 404 for any URL that isn't `/`. All nav links break in production. | LOW | Not done — no vercel.json exists | Add `vercel.json` with SPA rewrite rule (5 lines of JSON). |
+| Smooth answer feedback | Correct/wrong answer feedback appears instantly with no visual transition. Learning tools (Duolingo, Quizlet) use brief animations to reinforce the right/wrong moment. | LOW | Partial — `completion-pop` keyframe exists but not applied to drill feedback | Add CSS `@keyframes` for correct (green flash/scale) and incorrect (red shake). Apply on `.feedback-correct` and `.feedback-incorrect`. |
 
 ### Differentiators (Competitive Advantage)
 
-Features that set the product apart. Not required, but valued.
+Features that elevate ExcelPrep above a generic quiz. These align with "impressive to a Deloitte/CPA audience."
 
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| Finance-scenario framing for every question | Every competitor uses generic data (sales tables, employee lists). Finance-specific scenarios (DCF input cells, P&L model, three-statement linkage) build mental models that transfer to actual interviews | MEDIUM | E.g., "You're building an LBO model. Revenue is in B3, EBITDA margin in B4. Write a formula to calculate EBITDA." Context creates retention. No extra tech complexity — just content work. |
-| Challenge mode: build a mini model (not just a single formula) | Single-formula drills are table stakes. Competitors stop there. An end-to-end "build this DCF from scratch" challenge tests integration — the actual skill interviewers probe | HIGH | Requires a multi-cell spreadsheet grid, a reference solution, and cell-by-cell or formula-by-formula validation. Significant complexity. Worth deferring to v1.x. |
-| Weak area surfacing (automatic) | Progress tracking that identifies which functions the user keeps getting wrong and surfaces them first | MEDIUM | Simple version: count wrong answers per formula tag, sort by error rate, weight toward those in drill queue. Does not require full spaced repetition algorithm — weighted random is good enough for a 1-2 week prep window. |
-| Session streak and daily goal | Duolingo data: 7-day streak users are 3.6x more likely to stay engaged. For a user with a 1-2 week interview deadline, a daily streak is directly motivational | LOW | Streak counter + "you've hit your goal today" state. LocalStorage is sufficient — no backend needed for MVP. |
-| "Why this formula wins" explanations | Most explanations just show the correct answer. A comparison-style explanation ("VLOOKUP fails when columns are reordered; INDEX/MATCH doesn't — here's why that matters in a real model") is rare and high value | LOW | Pure content quality. Zero tech complexity over a basic explanation. The differentiator is editorial investment, not engineering. |
-| IB keyboard shortcuts as a dedicated module | ExcelExercises has shortcuts but no finance context. WST publishes a shortcut cheat sheet. No one drills shortcuts specifically for IB workflows (e.g., Alt+A+T for AutoFilter, Ctrl+Shift+End for range selection) | MEDIUM | Requires a keypress-capture mechanism in browser. Feasibility note: browsers intercept some shortcuts (Ctrl+W closes tab). Must design around browser conflicts. |
-| Finance vocabulary quick-reference sidebar | Users drilling NPV need to know what discount rate and terminal value mean — in-context definitions reduce tab-switching to Google | LOW | Static content panel. No backend. High value for beginners. |
-| Simulated Excel feel (formula bar, cell reference highlighting) | ExcelExercises uses an actual in-browser Excel simulator. Muscle memory built in a visually different environment transfers poorly. Matching Excel's visual language (A1 notation, formula bar, colored cell references) improves transfer | HIGH | Significant frontend work. A full grid implementation (Handsontable, Jspreadsheet, or custom canvas) is the hardest single piece of the product. Worth investing in for core drills; can start minimal. |
+| Feature | Value Proposition | Complexity | Existing State | Notes |
+|---------|-------------------|------------|----------------|-------|
+| Finance-professional visual identity | Excel-green (#1a6b3c) used as the single brand accent on a clean white canvas creates domain-credibility that generic blue SaaS tools don't have. The current mixed dark/light aesthetic undermines this. | MEDIUM | Mixed — some green, some dark, some arbitrary grays | Unify: white card surfaces, brand-green for primary actions and active states, muted gray for secondary text. Remove the dark theme from DrillPage. |
+| Structured scenario cards in challenge prompts | Break wall-of-text into labeled sections — a "Scenario" header, a styled data block (monospace, light background), and a bold "Task:" line. Used by Khan Academy and Quizlet to reduce cognitive load. | MEDIUM | Not done | `PromptCard` component or `formatChallengePrompt()` utility in the render layer. Parses existing prompt strings — no data file changes needed if prompts follow consistent patterns. |
+| Returning-user progress summary on WelcomePage | User comes back the next day and sees "14/60 challenges done, 68% accuracy" above the CTA. Creates continuity and motivation. Duolingo equivalent: streak count + last session summary. | LOW | Partial — `hasStarted` flag exists, but no stats surface on WelcomePage | Read from `challengeStore` + `drillStore` (already Zustand stores with localStorage persistence). Render a 2-stat mini card when `hasStarted === true`. |
+| Formula syntax highlighting in prompts | `=VLOOKUP(A2, B2:D10, 3, FALSE)` rendered in a styled code chip (monospace, green-tinted background) rather than inline text. Already done for the explanation area (`.correct-formula` class exists). | LOW | Partial — `.correct-formula` exists in explanation accordion; not applied to prompt text | Extend the pattern: detect formula-like substrings in prompt text and wrap in `<code className="formula-chip">`. Or add explicit `formulaRefs` field to challenge data. |
 
----
+### Anti-Features (Commonly Requested, Often Problematic)
 
-### Anti-Features (Deliberately NOT Build)
-
-| Anti-Feature | Why Requested | Why Avoid | Alternative |
-|--------------|---------------|-----------|-------------|
-| Video lecture content | "Explain the concept first, then drill" feels complete | Passive video is the least effective learning method for skill retention. Users in a 1-2 week crunch can't afford to watch 20-minute lectures. CFI's video-based courses are slower to internalize than active recall. | Brief text explanation + immediate practice. Reveal explanation after the question, not before. |
-| Full LBO / DCF model builder at launch | Looks impressive; interviews test full models | A complete model builder requires weeks of engineering (formula dependency graph, step validation, branching instructions). It ships late and buggy. | Single-formula drills first. A 5-step mini model challenge (v1.x) is the right size — not a 50-cell LBO. |
-| Social / leaderboard features | Gamification looks good on a pitch deck | A solo study tool for a specific interview in 1-2 weeks has zero network effect. Building leaderboards adds auth complexity, backend, and social dynamics without any value for the actual user. | Daily streak (local state) achieves the motivational goal without the social infrastructure. |
-| VBA / macro content | "Complete Excel coverage" sounds thorough | Interviews don't test VBA for analyst roles. Including it dilutes the focused value prop and increases content scope massively. | Explicit out-of-scope callout so users know it was a deliberate choice, not an oversight. |
-| Mobile optimization | Accessibility | Finance interviews are done on laptops. The embedded spreadsheet grid is inherently unusable on mobile. Building a mobile-responsive version costs engineering time with no payoff for this user. | Laptop-first. A "best viewed on desktop" notice is sufficient. |
-| Gamification badges / achievements system | Fun, engaging | A full badge/achievement system requires a content taxonomy, backend state, badge design assets, and copy. It's 2+ weeks of scope for marginal retention benefit in a 1-2 week product window. | Streak counter + score per drill set captures 80% of the motivational value at 10% of the complexity. |
-| AI-generated personalized curriculum | "Adaptive learning" sounds premium | Personalized curriculum generation requires enough user history to be meaningful. A beginner in week 1 doesn't have enough signal. The added complexity (LLM calls, state management, fallback logic) delays shipping core drills. | A fixed but sensibly ordered curriculum (Beginner → Intermediate → Advanced) plus weak-area queue surfacing is sufficient for the actual use case. |
-| PDF certificate of completion | Looks professional | Zero value in finance interviews — no hiring manager cares. Adds backend complexity (PDF generation, user auth, email). | Skip entirely. |
+| Feature | Why Requested | Why Problematic | Alternative |
+|---------|---------------|-----------------|-------------|
+| Full design system / component library (shadcn/ui, Radix) | "Professional apps use design systems" | Mid-milestone installation creates a full migration effort. Existing CSS classes in `index.css` are functional. The overhead far exceeds value for a personal tool on a 2-day build window. | Define CSS custom properties for color and spacing tokens. Achieve visual consistency without a third-party component library. |
+| Dark mode toggle | Common SaaS feature | Explicitly out of scope per PROJECT.md. The DrillPage dark theme is itself the problem to fix — adding a toggle enshrines the inconsistency. | Remove DrillPage dark background. Keep light theme only. |
+| Interactive product tour (tooltips, multi-step walkthrough) | "Help new users" | A 3-5 step interactive tour requires substantial engineering. The app is simple enough that well-written static copy on WelcomePage handles orientation. No returning user wants to replay a tour. | Static "How it works" bullets on WelcomePage. |
+| Decorative animations beyond feedback | "Makes it feel polished" | Page transition animations, loading skeletons, and hover particle effects are gimmicky for a professional study tool targeting finance interviews. | Limit animation to meaningful feedback moments (correct/wrong flash). Keep all navigation transitions instant. |
+| Google Fonts or custom webfonts | "Better typography" | Adds a network dependency, FOUC risk, and complexity for no perceptible gain. System font stack (`-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto`) renders excellently on Mac/Windows laptops — the only target device. | Improve the existing system font stack with CSS token-defined weights and sizes. |
+| Analytics / telemetry | "Know how users study" | This is a single-user personal tool. Adding a third-party script (Mixpanel, Plausible) adds complexity and potential privacy friction. | LocalStorage persistence is sufficient. |
 
 ---
 
 ## Feature Dependencies
 
 ```
-[Interactive formula input grid]
-    └──required by──> [Finance-specific formula drills]
-                          └──required by──> [Difficulty tiers]
-                          └──required by──> [Weak area surfacing]
+[CSS color token system]
+    └──required before──> [Unified light theme (DrillPage)]
+    └──required before──> [Visual redesign across all pages]
+    └──required before──> [Formula chip styling in prompts]
 
-[Answer feedback (right/wrong)]
-    └──required by──> [Explanation after each question]
-    └──required by──> [Session progress counter]
+[vercel.json SPA rewrite rule]
+    └──required for──> [Vercel deployment — all routes work]
 
-[Per-formula tagging]
-    └──required by──> [Weak area surfacing]
-    └──required by──> [Structured learning path]
+[Structured prompt formatting]
+    └──depends on──> [Prompt data shape] (inspected — prompts are raw strings with bullet chars, consistent enough to parse)
+    └──enhances──> [Challenge right panel readability]
+    └──independent of──> [DrillPage dark theme removal] (separate components)
 
-[Session state (local)]
-    └──required by──> [Session progress counter]
-    └──required by──> [Streak counter]
-    └──required by──> [Weak area surfacing]
+[Returning-user stats on WelcomePage]
+    └──requires──> [challengeStore + drillStore Zustand stores] (already exist)
+    └──note──> Both stores already persist to localStorage; WelcomePage already reads `hasStarted`
 
-[Multi-cell spreadsheet grid]
-    └──required by──> [Challenge mode: mini model build]
-    └──enhances──> [Finance-scenario framing]
+[Feedback animation]
+    └──requires──> [Unified light theme on DrillPage] (dark background makes green flash invisible)
+    └──extends──> [existing `completion-pop` @keyframes pattern]
 
-[Keyboard shortcut drill module]
-    ──independent of──> [Formula drills] (separate mechanic, can build in parallel)
+[Page title + favicon]
+    └──no dependencies — standalone 15-minute tasks]
 ```
 
 ### Dependency Notes
 
-- **Formula input grid required before anything else:** The embedded spreadsheet or formula input is the technical foundation. Everything else — drills, feedback, scoring, weak areas — sits on top of it. Build this first or nothing else works.
-- **Tagging (formula → category) unlocks weak area surfacing:** Each question must be tagged with the function(s) it tests (e.g., `SUMIFS`, `NPV`). Without this metadata, you can't track which areas the user struggles with. Tagging is a content/data decision, not a build, but it must happen before weak area tracking.
-- **Session state is prerequisite for streak + weak areas:** Both features read from stored history. LocalStorage covers MVP; no backend needed.
-- **Mini model challenge requires full grid, not just input field:** A single formula input field (text box) is sufficient for formula drills. A multi-step model challenge needs a real spreadsheet grid with multiple cells, formula dependency evaluation, and cell-by-cell validation. These are different build scopes.
-- **Keyboard shortcut drills conflict with browser shortcuts:** Ctrl+W, Ctrl+T, Ctrl+N are claimed by browsers. Must design around these — either avoid them or open app in a dedicated window with custom shortcut capture logic.
+- **Color tokens first.** Define CSS custom properties before touching any component. This makes every subsequent edit consistent and prevents re-touching the same files twice.
+- **DrillPage dark theme before feedback animation.** The dark background (#111827) makes a green correct-flash nearly invisible. Remove the dark background first, then add the animation.
+- **Prompt formatting is render-layer only.** The prompt strings live in `/src/data/challenges/*.ts`. Formatting happens in `RightPanel.tsx` (renders `.challenge-prompt`) and `DrillPage.tsx` (renders `currentQuestion.prompt`). No data file changes required for basic formatting.
+- **vercel.json is a deploy prerequisite.** Without it, every test of the deployed URL from a non-root route returns 404. Ship this first.
 
 ---
 
-## MVP Definition
+## MVP Definition for v1.1 Polish & Deploy
 
-### Launch With (v1)
+### Launch With (must ship)
 
-Minimum viable product — what's needed to validate the core learning loop before adding complexity.
+- [ ] **vercel.json with SPA catch-all rewrite** — without this the deployed app 404s on any non-root route. 5-minute task. Zero risk.
+- [ ] **Page title + favicon** — "excel-prep-scaffold" in the browser tab is an instant credibility kill. Update `index.html` title. Create a minimal green SVG favicon.
+- [ ] **CSS color token system** — 5-6 CSS custom properties replace 15+ scattered hex values. Gate for all other visual work.
+- [ ] **Remove DrillPage dark theme** — unify all pages to white/light surfaces. The dark card (#111827) is the single largest visual inconsistency.
+- [ ] **Structured challenge prompt formatting** — the wall-of-text scenario in the 280px right panel is the clearest UX problem. Break into labeled sections (scenario, data block, task).
+- [ ] **Typography scale** — apply consistent size/weight CSS tokens across AppShell, WelcomePage, DrillPage, ProgressPage.
+- [ ] **WelcomePage "how it works" section** — 3 bullets explaining the learning loop for first-time users. Static copy.
+- [ ] **Answer feedback animation** — green scale-up for correct, red shake for wrong. Pure CSS. Makes the drill feel like a real learning tool.
 
-- [ ] Formula input field with Excel-compatible evaluation — type a formula, get evaluated output with right/wrong judgment
-- [ ] Finance-specific question bank: VLOOKUP, INDEX/MATCH, SUMIFS, nested IF, IFERROR, NPV, IRR, PMT (minimum 40 questions across Beginner/Intermediate/Advanced)
-- [ ] Finance-scenario framing on every question (not generic data tables)
-- [ ] Immediate feedback: correct/incorrect + explanation of why the answer works
-- [ ] Structured learning path: three tiers (Beginner / Intermediate / Advanced) the user walks through in order
-- [ ] Session progress counter (question N of M)
-- [ ] Keyboard shortcut drills as a dedicated section (keypress recognition, finance IB shortcuts)
+### Add After Core (v1.1 stretch, if time allows)
 
-### Add After Validation (v1.x)
-
-Add once core loop is confirmed working and user has used the product for at least one practice session.
-
-- [ ] Weak area surfacing — track wrong answers per formula tag, surface weakest areas first in drill queue
-- [ ] Daily streak counter — local state, motivational, trivial to add
-- [ ] "Why this formula wins" comparative explanations — editorial upgrade, no new tech
-- [ ] Finance vocabulary sidebar — static content, no backend
+- [ ] **Returning-user mini-stats on WelcomePage** — "X challenges done, Y% accuracy" when `hasStarted` is true. Reads from Zustand stores.
+- [ ] **Formula chip styling in prompts** — extend `.correct-formula` CSS pattern to inline formula references in prompt text.
 
 ### Future Consideration (v2+)
 
-Defer until product-market fit is established or post-interview feedback validates demand.
-
-- [ ] Challenge mode: end-to-end mini model build (5-step DCF or 3-statement linkage) — high complexity, high value, but requires full grid implementation
-- [ ] Full simulated Excel grid with formula bar and cell reference highlighting — large frontend investment, high fidelity benefit
-- [ ] Spaced repetition algorithm — overkill for 1-2 week prep window; useful if product evolves into longer-term learning tool
+- [ ] **Spaced repetition scheduling** — replace weighted random drill queue with SM-2 algorithm. Significant engine work; overkill for 1-2 week prep window.
+- [ ] **Mini model challenge (multi-step DCF)** — high value, high complexity. Already identified as v1.x in v1.0 research.
+- [ ] **Mobile layout** — explicitly out of scope per PROJECT.md.
+- [ ] **Interactive product tour** — unnecessary given app simplicity; revisit if the app gets more users.
 
 ---
 
@@ -133,60 +138,49 @@ Defer until product-market fit is established or post-interview feedback validat
 
 | Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| Formula input + evaluation | HIGH | HIGH | P1 |
-| Finance-specific question bank | HIGH | MEDIUM (content work) | P1 |
-| Finance-scenario framing | HIGH | LOW (content framing) | P1 |
-| Immediate feedback + explanation | HIGH | LOW | P1 |
-| Structured learning path (3 tiers) | HIGH | LOW | P1 |
-| Session progress counter | MEDIUM | LOW | P1 |
-| Keyboard shortcut drills | HIGH | MEDIUM | P1 |
-| Weak area surfacing | HIGH | MEDIUM | P2 |
-| Daily streak counter | MEDIUM | LOW | P2 |
-| Comparative "why it wins" explanations | HIGH | LOW | P2 |
-| Finance vocabulary sidebar | MEDIUM | LOW | P2 |
-| Mini model challenge (multi-step) | HIGH | HIGH | P3 |
-| Full Excel grid simulator | MEDIUM | HIGH | P3 |
-| Spaced repetition algorithm | LOW (for 2wk window) | HIGH | P3 |
+| vercel.json SPA rewrite | HIGH (deploy blocker) | LOW (5 lines JSON) | P1 |
+| Page title + favicon | HIGH (credibility) | LOW (15 min) | P1 |
+| CSS color token system | HIGH (enables all polish) | LOW (CSS vars) | P1 |
+| Remove DrillPage dark theme | HIGH (visual coherence) | LOW-MEDIUM (inline style sweep) | P1 |
+| Structured prompt formatting | HIGH (UX problem) | MEDIUM (render util + CSS) | P1 |
+| Typography scale | MEDIUM (polish) | LOW (CSS vars + apply) | P1 |
+| WelcomePage "how it works" | MEDIUM (onboarding) | LOW (static copy + layout) | P1 |
+| Answer feedback animation | MEDIUM (learning feel) | LOW (CSS keyframes) | P1 |
+| Returning-user stats on Welcome | MEDIUM (motivation) | MEDIUM (Zustand reads) | P2 |
+| Formula chip in prompts | LOW-MEDIUM (readability) | LOW (CSS + markup) | P2 |
 
 **Priority key:**
-- P1: Must have for launch
-- P2: Should have, add when possible
-- P3: Nice to have, future consideration
+- P1: Ship in v1.1
+- P2: Ship if time allows, otherwise v1.2
+- P3: Defer to v2+
 
 ---
 
 ## Competitor Feature Analysis
 
-| Feature | ExcelExercises.com | Sheetzoom | CFI / BIWS | Our Approach |
-|---------|-------------------|-----------|------------|--------------|
-| In-browser formula practice | Yes — Excel simulator | Yes — Excel add-in | No — download Excel files | Yes — embedded grid or input field |
-| Finance-specific content | Generic Excel, no finance focus | Generic Excel | Finance-specific but video-heavy | Finance-specific throughout |
-| Keyboard shortcut drills | Yes — dedicated module | Not documented | BIWS cheat sheets (PDF) | Yes — dedicated drill module |
-| Progress tracking | Score + gamification (XP, levels) | "Intelligent feedback" — details unclear | Course completion % | Weak area tracking + streak |
-| Spaced repetition | Not documented | Not documented | No | Lightweight weighted-random (v1.x) |
-| Difficulty tiers | Yes — beginner to advanced | Yes — beginner to advanced | Yes — sequenced courses | Yes — 3 tiers |
-| Finance scenario framing | No | No | Yes (BIWS) | Yes — every question |
-| Explanation quality | Basic | "Intelligent feedback" | High (BIWS) | High — include "why this formula wins" comparisons |
-| Model-building challenges | No | No | Yes — full model builds | v1.x mini model challenge |
-| Price | Free with some paid | Freemium | $497/yr (BIWS), $99-499/yr (CFI) | Free (personal project) |
-
-**Gap the product fills:** None of the existing tools combine (1) in-browser interactive practice, (2) finance-specific scenario framing, and (3) keyboard shortcut drills in a single focused tool aimed at interview prep. ExcelExercises is the closest technically but has no finance content. BIWS has finance content but is video-heavy and expensive.
+| Feature | Quizlet | Khan Academy | Duolingo | Our Approach |
+|---------|---------|--------------|----------|--------------|
+| Question text formatting | Structured card: term on top, definition revealed below. Clear separation. | Labeled problem sections with scaffolded steps. Math notation rendered properly. | Short prompts (1-2 lines max). Visual context image where helpful. | Parse existing prompt strings into three labeled sections: scenario, data block (styled code), task line. No library needed. |
+| Visual identity | Blue accent (#4255ff) on white. Consistent throughout. | Blue/teal accent, white surfaces. Consistent font scale. | Custom green + cartoon illustrations. Consistent throughout. | Excel-green (#1a6b3c) accent on white surfaces. Professional/finance-appropriate. Must unify DrillPage to match. |
+| First-time onboarding | Subject picker → "Create a study set" or "Search". No tutorial. | Course overview with progress steps. First lesson is gentle. | Animated walkthrough with character. A/B tests onboarding flows heavily. | 3-bullet "How it works" static section on WelcomePage. No interactive tour needed for this use case. |
+| Feedback on answers | Color flash (green/red) + correct answer reveal. | Right/wrong + step-by-step explanation. | Sound + animation + XP pop + streak update. | CSS flash animation (correct = green scale, wrong = red shake) + existing explanation accordion. |
+| Progress tracking | Study streak + accuracy per card set. | Mastery bars per topic. | XP, streaks, leagues, hearts. | Per-function accuracy bars + weakest-category highlight (already built). |
+| Deployment model | Multi-tenant SaaS. | Multi-tenant SaaS. | Native app + web. | Static SPA on Vercel free tier. Requires vercel.json SPA catch-all. |
 
 ---
 
 ## Sources
 
-- [ExcelExercises.com — shortcut lessons and dashboard](https://excelexercises.com/shortcut-lessons.html) (MEDIUM confidence — observed features from search results and site structure)
-- [Sheetzoom features page](https://www.sheetzoom.com/Features) (MEDIUM confidence — directly fetched)
-- [CFI Excel for Finance courses](https://corporatefinanceinstitute.com/topic/excel/) (MEDIUM confidence — multiple corroborating sources)
-- [Breaking Into Wall Street — Excel tutorials](https://breakingintowallstreet.com/kb/excel/) (MEDIUM confidence — search results)
-- [Wall Street Prep — Excel shortcuts](https://www.wallstreetprep.com/knowledge/excel-shortcuts/) (MEDIUM confidence — search results)
-- [Fintest.io — Complete Guide to Excel Skills for Finance Interviews](https://www.fintest.io/magazine/the-complete-guide-to-excel-skills-for-finance-interviews/) (MEDIUM confidence — directly fetched, detailed function list)
-- [Duolingo — spaced repetition and streak research](https://blog.duolingo.com/spaced-repetition-for-learning/) (HIGH confidence — official Duolingo research blog)
-- [Jobaaj Learnings — Excel case studies in IB interviews](https://www.jobaajlearnings.com/blog/common-excel-case-study-problems-in-ib-interviews) (LOW confidence — single source)
-- [Wall Street Training — Advanced Excel Shortcuts PDF](https://www.wallst-training.com/resources/WST_Excel_Shortcuts.pdf) (MEDIUM confidence — industry training firm)
+- Codebase inspection: `/Users/jam/excel-prep/src/` — all components, pages, index.css, vite.config.ts, package.json, index.html
+- Vercel SPA routing (official): https://vercel.com/docs/frameworks/frontend/vite
+- Vercel SPA routing pattern: https://medium.com/today-i-solved/deploy-spa-with-react-router-to-vercel-d10a6b2bfde8
+- SaaS design systems 2025: https://jetbase.io/blog/saas-design-trends-best-practices
+- SaaS UX typography and color psychology: https://medium.com/@fineartdesignagency/the-psychology-behind-saas-design-color-typography-and-layout-for-conversions-cb16a126ccf2
+- Onboarding UX patterns 2025: https://www.appcues.com/blog/user-onboarding-ui-ux-patterns
+- Learning tool visual design (Duolingo): https://www.frontmatter.io/blog/duolingo-technology-and-design-shape-learning-journeys
+- Quiz question formatting / structured layout: https://api.bookwidgets.com/blog/2025/12/how-to-create-structured-multimedia-quizzes-for-in-the-classroom
 
 ---
 
-*Feature research for: Excel interview prep / finance interactive learning web app*
-*Researched: 2026-02-22*
+*Feature research for: Excel Interview Prep v1.1 Polish & Deploy*
+*Researched: 2026-02-23*
