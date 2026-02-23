@@ -52,10 +52,8 @@ export function ShortcutDrill() {
     currentIndex,
     timeRemaining,
     showQuitConfirm,
-    requestQuit,
     confirmQuit,
     cancelQuit,
-    submitAnswer,
     submitMultipleChoiceAnswer,
   } = store;
 
