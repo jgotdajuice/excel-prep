@@ -38,7 +38,7 @@ Build a client-side SPA that teaches Excel functions for finance interviews thro
   4. `index.html` has app name ("ExcelPrep") as page title and a custom favicon (not Vite defaults)
   5. `ui/Button.tsx` and `ui/Card.tsx` shared components exist and are importable
   6. Handsontable grid renders correctly with no visual regressions after Tailwind token additions (preflight does not break grid borders/padding)
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 06-01-PLAN.md — Design tokens, Inter font, page identity, vercel.json, HOT preflight repair
@@ -93,7 +93,7 @@ v1.1: Phases 6 -> 7 -> 8 -> 9
 | 3. Content Library | 4/4 | Complete | 2026-02-23 |
 | 4. Keyboard Shortcuts | 2/2 | Complete | 2026-02-23 |
 | 5. Progress and Weak Areas | 3/3 | Complete | 2026-02-23 |
-| 6. Design Foundation | 0/2 | In Progress | — |
+| 6. Design Foundation | 1/2 | In Progress|  |
 | 7. Shell, Welcome, and Page Restyling | 0/0 | Pending | — |
 | 8. Challenge Components and Prompt Formatting | 0/0 | Pending | — |
 | 9. Deployment and Verification | 0/0 | Pending | — |

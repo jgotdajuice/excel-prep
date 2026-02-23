@@ -15,9 +15,9 @@ Requirements for Polish & Deploy milestone.
 
 ### Visual Design
 
-- [ ] **VIS-01**: App uses a consistent CSS design token system (color, typography, spacing) defined via Tailwind v4 `@theme` — no scattered hardcoded hex values
+- [x] **VIS-01**: App uses a consistent CSS design token system (color, typography, spacing) defined via Tailwind v4 `@theme` — no scattered hardcoded hex values
 - [ ] **VIS-02**: All pages use a unified light theme with Excel-green (#1a6b3c) accent and white surfaces — no dark-themed pages (DrillPage dark background removed)
-- [ ] **VIS-03**: Typography uses a professional font (Inter) with consistent size/weight scale across all pages
+- [x] **VIS-03**: Typography uses a professional font (Inter) with consistent size/weight scale across all pages
 - [ ] **VIS-04**: Shared UI primitives (Button, Card) replace inconsistent per-page implementations
 
 ### User Experience
@@ -25,7 +25,7 @@ Requirements for Polish & Deploy milestone.
 - [ ] **UX-01**: WelcomePage includes a "How it works" section explaining the learning loop for first-time users
 - [ ] **UX-02**: Challenge and drill prompts use structured formatting (scenario label, data block, task instruction) instead of wall-of-text paragraphs
 - [ ] **UX-03**: Correct/incorrect answer feedback includes visual animation (green flash for correct, red shake for wrong)
-- [ ] **UX-04**: Browser tab shows app name ("ExcelPrep") and a custom favicon (not Vite defaults)
+- [x] **UX-04**: Browser tab shows app name ("ExcelPrep") and a custom favicon (not Vite defaults)
 
 ### Deployment
 
@@ -65,14 +65,14 @@ Deferred to future release.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| VIS-01 | Phase 6 | Pending |
+| VIS-01 | Phase 6 | Complete |
 | VIS-02 | Phase 7 | Pending |
-| VIS-03 | Phase 6 | Pending |
+| VIS-03 | Phase 6 | Complete |
 | VIS-04 | Phase 6 | Pending |
 | UX-01 | Phase 7 | Pending |
 | UX-02 | Phase 8 | Pending |
 | UX-03 | Phase 7 | Pending |
-| UX-04 | Phase 6 | Pending |
+| UX-04 | Phase 6 | Complete |
 | DEPLOY-01 | Phase 9 | Pending |
 | DEPLOY-02 | Phase 9 | Pending |
 | DEPLOY-03 | Phase 9 | Pending |

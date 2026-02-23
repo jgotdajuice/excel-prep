@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-23)
 
 ## Current Position
 
-Phase: 6 — Design Foundation (next to plan)
-Plan: —
-Status: Requirements and roadmap defined; ready to plan Phase 6
-Last activity: 2026-02-23 — v1.1 research, requirements, and roadmap complete
+Phase: 6 — Design Foundation
+Plan: 1 of 2 complete
+Status: In progress — Plan 06-01 complete, Plan 06-02 next
+Last activity: 2026-02-23 — 06-01 design foundation executed (tokens, Inter font, favicon, vercel.json)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 10%
 
 ## Performance Metrics
 
@@ -32,6 +32,7 @@ Progress: [░░░░░░░░░░] 0%
 | 03-content-library | 4 | 25 min | 6.25 min |
 | 04-keyboard-shortcuts | 2 | ~6 min | 3 min |
 | 05-progress-and-weak-areas | 3 | ~23 min | 7.7 min |
+| Phase 06-design-foundation P01 | 2 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -54,6 +55,8 @@ v1.1 decisions:
 - No animation library — CSS transitions/keyframes only
 - Deploy target: Vercel free tier
 - DrillPage dark background (#111827) must be removed for visual consistency
+- [Phase 06-design-foundation]: CSS token names use --color-brand (not --color-brand-green) for clean bg-brand utility classes
+- [Phase 06-design-foundation]: HOT preflight repair targets .hot-container (scoped) to avoid global table overrides
 
 ### Pending Todos
 
@@ -61,12 +64,12 @@ None.
 
 ### Blockers/Concerns
 
-- [v1.1]: Tailwind preflight may conflict with Handsontable grid styles — verify after Phase 6 token setup
+- [v1.1 RESOLVED by 06-01]: Tailwind preflight may conflict with Handsontable grid styles — addressed with .hot-container preflight repair CSS
 - [v1.1]: Drill question text is wall-of-text — addressed in Phase 8 (UX-02)
 - [v1.0 RESOLVED]: All 15 v1.0 requirements shipped and verified
 
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: v1.1 planning complete (research + requirements + roadmap)
-Resume file: /gsd:plan-phase 6 → /gsd:execute-phase 6
+Stopped at: Completed 06-01-PLAN.md — design foundation (tokens, Inter font, favicon, vercel.json)
+Resume file: /gsd:execute-phase 6 (Plan 06-02 next)
