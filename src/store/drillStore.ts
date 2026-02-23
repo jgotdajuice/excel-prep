@@ -1,9 +1,124 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { DrillQuestion, Tier } from '../types';
+import type { Challenge, DrillQuestion, Tier } from '../types';
 import { challengeToDrillQuestion } from '../types';
 import { challenges } from '../data/challenges';
 import { safeLocalStorage } from './safeStorage';
+import { computeCategoryAccuracies } from './progressSelectors';
+// challengeStore and drillStore are mutually dependent:
+//   challengeStore imports DrillAnswerRecord + useDrillStore from drillStore.
+//   drillStore imports useChallengeStore from challengeStore (here, below).
+//
+// This circular import is safe in ESM because:
+//   1. drillStore is evaluated first (challengeStore depends on it).
+//   2. useDrillStore is created synchronously at the bottom of this file.
+//   3. By the time challengeStore module body runs, useDrillStore is defined.
+//   4. useChallengeStore is only referenced inside startSession() —
+//      a function body, never at module init time — so the reference is
+//      resolved after both modules are fully evaluated.
+import { useChallengeStore } from './challengeStore';
+
+// ── Weighted queue helpers ────────────────────────────────────────────────────
+
+/**
+ * Cumulative-weight random selection — picks one item proportional to its weight.
+ * Returns the selected item. Items with higher weight are chosen more often.
+ */
+function weightedPick<T>(items: T[], weights: number[]): T {
+  const total = weights.reduce((s, w) => s + w, 0);
+  let r = Math.random() * total;
+  for (let i = 0; i < items.length; i++) {
+    r -= weights[i];
+    if (r <= 0) return items[i];
+  }
+  return items[items.length - 1];
+}
+
+/**
+ * Build a weighted drill question list from candidates.
+ *
+ * Algorithm:
+ * 1. Group candidates by category. Compute per-category weight: max(0.05, 1 - accuracy).
+ *    Categories with 0 attempts use accuracy = 0.5 (neutral weight = 0.5).
+ * 2. Guarantee 1 question per category (up to targetCount).
+ * 3. Fill remaining slots via cumulative-weight random WITHOUT replacement.
+ * 4. Shuffle and return up to targetCount.
+ *
+ * Weight math: 30% accuracy → weight 0.70, 80% accuracy → weight 0.20, ratio ≈ 3.5x.
+ * This satisfies the "roughly 2-3x" spec for weak-area prioritisation.
+ */
+function buildWeightedQueue(
+  candidates: Challenge[],
+  accuracyMap: Map<string, number>,
+  targetCount: number,
+): Challenge[] {
+  // Edge case: no filtering needed
+  if (candidates.length <= targetCount) {
+    return [...candidates].sort(() => Math.random() - 0.5);
+  }
+
+  // Group by category
+  const byCategory = new Map<string, Challenge[]>();
+  for (const c of candidates) {
+    const cat = c.category ?? 'General';
+    const group = byCategory.get(cat);
+    if (group) {
+      group.push(c);
+    } else {
+      byCategory.set(cat, [c]);
+    }
+  }
+
+  const categories = [...byCategory.keys()];
+
+  // Compute weight per category
+  const categoryWeights = new Map<string, number>();
+  for (const cat of categories) {
+    const accuracy = accuracyMap.get(cat) ?? 0.5; // 0-attempt → neutral
+    const weight = Math.max(0.05, 1 - accuracy);
+    categoryWeights.set(cat, weight);
+  }
+
+  // Step 1: Guarantee minimum 1 question per category
+  const guaranteed: Challenge[] = [];
+  const pool: Challenge[] = [];
+
+  for (const [cat, group] of byCategory.entries()) {
+    // Pick one random challenge from this category as the guaranteed entry
+    const idx = Math.floor(Math.random() * group.length);
+    guaranteed.push(group[idx]);
+    // Remaining go into the weighted pool
+    for (let i = 0; i < group.length; i++) {
+      if (i !== idx) pool.push(group[i]);
+    }
+  }
+
+  // If guaranteed already fills (or exceeds) targetCount, shuffle and return
+  if (guaranteed.length >= targetCount) {
+    return guaranteed.sort(() => Math.random() - 0.5).slice(0, targetCount);
+  }
+
+  // Step 2: Fill remaining slots via weighted random without replacement
+  const remaining = targetCount - guaranteed.length;
+  const extras: Challenge[] = [];
+  const available = [...pool];
+
+  for (let i = 0; i < remaining && available.length > 0; i++) {
+    const weights = available.map((c) => {
+      const cat = c.category ?? 'General';
+      return categoryWeights.get(cat) ?? 0.5;
+    });
+    const picked = weightedPick(available, weights);
+    extras.push(picked);
+    // Remove picked item from available pool (no duplicates)
+    const pickIdx = available.indexOf(picked);
+    if (pickIdx >= 0) available.splice(pickIdx, 1);
+  }
+
+  // Combine guaranteed + extras, shuffle, and return
+  const combined = [...guaranteed, ...extras];
+  return combined.sort(() => Math.random() - 0.5).slice(0, targetCount);
+}
 
 export type DrillAnswerStatus = 'correct' | 'incorrect' | 'timeout';
 
@@ -95,8 +210,12 @@ export const useDrillStore = create<DrillStore>()(
           ? challenges
           : challenges.filter((c) => c.tier === tier);
 
-        const shuffled = [...filtered].sort(() => Math.random() - 0.5);
-        const selected = shuffled.slice(0, 10);
+        // Build accuracy map from current challenge + drill history for weighting.
+        const { challenges: allChallenges, statuses } = useChallengeStore.getState();
+        const accuracies = computeCategoryAccuracies(allChallenges, statuses, get().allAnswers);
+        const accuracyMap = new Map(accuracies.map((a) => [a.category, a.accuracy]));
+
+        const selected = buildWeightedQueue(filtered, accuracyMap, 10);
         const questions = selected.map(challengeToDrillQuestion);
         const seconds = getTimerSeconds(tier);
 
