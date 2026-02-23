@@ -5,34 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** A beginner can rapidly learn the Excel functions and patterns that finance interviews test, through active practice rather than passive reading.
-**Current focus:** Phase 2 — Challenge Loop (in progress)
+**Current focus:** Phase 2 complete — next up Phase 3 (Content Library)
 
 ## Current Position
 
-Phase: 2 of 5 (Challenge Loop)
-Plan: 2 of 3 in current phase
-Status: Phase 2 Plan 02 complete
-Last activity: 2026-02-23 — Plan 02-02 complete (challenge UI: SpreadsheetGrid challenge mode, RightPanel, ChallengeList, CompletionScreen, /challenge route)
+Phase: 2 of 5 (Challenge Loop) — COMPLETE
+Plan: 3 of 3 in current phase — all plans executed and verified
+Status: Phase 2 complete — human verification passed
+Last activity: 2026-02-23 — Plan 02-03 complete (human verification: 4 bugs found & fixed, all 5 success criteria pass)
 
-Progress: [████░░░░░░] 40%
+Progress: [██████░░░░] 60%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: 4 min
-- Total execution time: 0.29 hours
+- Total plans completed: 5
+- Average duration: 7 min
+- Total execution time: 0.58 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-formula-engine | 2 | 10 min | 5 min |
-| 02-challenge-loop | 2 | 7 min | 3.5 min |
+| 02-challenge-loop | 3 | 32 min | 10.7 min |
 
 **Recent Trend:**
-- Last 5 plans: 6 min, 4 min, 3 min, 4 min
-- Trend: Stable
+- Last 5 plans: 4 min, 3 min, 4 min, 25 min (human verify + bug fixes)
+- Trend: Verification plan was longer due to 4 bug fixes
 
 *Updated after each plan completion*
 
@@ -63,6 +63,10 @@ Recent decisions affecting current work:
 - [02-02]: hfInstance exported from SpreadsheetGrid — ChallengePage reads computed cell values without duplicating engine construction
 - [02-02]: challenge key prop on HotTable forces full remount on challenge switch — ensures HOT reinitializes with new seed data
 - [02-02]: Custom renderer receives gradeStatus via CellMeta cast — HOT passes CellMeta to renderer's cellProperties argument
+- [02-03]: Refs pattern breaks Handsontable re-render loop — isLockedRef, cellGradesRef, onGradeCellRef, answerCellSetRef keep cells callback stable
+- [02-03]: Skip setSelectedCell in challenge mode — FormulaBar hidden, no selection state tracking needed
+- [02-03]: .hot-container CSS height propagation needed — HotTable wrapper div doesn't inherit flex parent height without explicit rules
+- [02-03]: answerCellSetRef updated every render — cellsCallbackRef reads from ref to avoid stale closure from first render
 
 ### Pending Todos
 
@@ -72,12 +76,12 @@ None.
 
 - [Phase 1 RESOLVED]: HyperFormula Excel compatibility verified — all 12 GRID-02 functions pass smoke tests
 - [Phase 1 RESOLVED]: Grid UI complete — Handsontable wired to HyperFormula, formula bar, autocomplete, routing all working
-- [Phase 2 IN PROGRESS]: Plans 02-01 and 02-02 complete — full challenge loop UI live; Plan 02-03 (localStorage persistence + progress tracking) is next
+- [Phase 2 RESOLVED]: Full challenge loop verified end-to-end — all 5 success criteria pass, 4 bugs fixed during verification
 - [Phase 4]: Browser shortcut interception scope is not fully resolved — spike needed to confirm which IB shortcuts are safely capturable without browser conflicts
 - [Phase 3]: Tier-1 function list should be validated against a finance professional's input before content build starts
 
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 02-02-PLAN.md (challenge UI — full interactive loop at /challenge route)
-Resume file: .planning/phases/02-challenge-loop/02-03-PLAN.md
+Stopped at: Phase 2 complete — all plans executed and human-verified
+Resume file: Phase 3 — run `/gsd:plan-phase 3` to begin Content Library
