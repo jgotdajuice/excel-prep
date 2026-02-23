@@ -22,7 +22,7 @@ Build a client-side SPA that teaches Excel functions for finance interviews thro
 
 - [ ] **Phase 6: Design Foundation** - CSS design tokens, shared UI primitives, Inter font, page title/favicon, vercel.json
 - [x] **Phase 7: Shell, Welcome, and Page Restyling** - AppShell restyle, WelcomePage onboarding, DrillPage light theme, ProgressPage/ShortcutsPage polish, feedback animations (completed 2026-02-23)
-- [ ] **Phase 8: Challenge Components and Prompt Formatting** - CSS class migration to Tailwind, structured prompt formatting, formula chip styling
+- [x] **Phase 8: Challenge Components and Prompt Formatting** - CSS class migration to Tailwind, structured prompt formatting, formula chip styling (completed 2026-02-23)
 - [ ] **Phase 9: Deployment and Verification** - Vercel deploy, route verification, production build validation
 
 ## Phase Details
@@ -71,11 +71,11 @@ Plans:
   2. Challenge prompts render with structured layout: scenario label, data block (styled as code/table), task instruction — not a single paragraph
   3. Drill question prompts use the same structured formatting
   4. Handsontable grid still renders correctly after adjacent component CSS changes (no height collapse, no border loss)
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans executed
 
 Plans:
-- [ ] 08-01-PLAN.md — formatPrompt utility + ChallengeList, TierTabs, CompletionScreen Tailwind migration
-- [ ] 08-02-PLAN.md — RightPanel + ChallengePage layout + DrillQuestionCard migration, prompt formatting integration, CSS cleanup
+- [x] 08-01-PLAN.md — formatPrompt utility + ChallengeList, TierTabs, CompletionScreen Tailwind migration
+- [x] 08-02-PLAN.md — RightPanel + ChallengePage layout + DrillQuestionCard migration, prompt formatting integration, CSS cleanup
 
 ### Phase 9: Deployment and Verification
 **Goal**: Deploy the polished app to Vercel and verify all routes and features work in production
@@ -104,5 +104,5 @@ v1.1: Phases 6 -> 7 -> 8 -> 9
 | 5. Progress and Weak Areas | 3/3 | Complete | 2026-02-23 |
 | 6. Design Foundation | 2/2 | Complete | 2026-02-23 |
 | 7. Shell, Welcome, and Page Restyling | 3/3 | Complete   | 2026-02-23 |
-| 8. Challenge Components and Prompt Formatting | 1/2 | In Progress|  |
+| 8. Challenge Components and Prompt Formatting | 2/2 | Complete | 2026-02-23 |
 | 9. Deployment and Verification | 0/0 | Pending | — |

@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-23)
 ## Current Position
 
 Phase: 8 — Challenge Components and Prompt Formatting
-Plan: 1 of 2 complete
-Status: Phase 08 in progress — plan 01 done
-Last activity: 2026-02-23 — 08-01 formatPrompt utility + ChallengeList, TierTabs, CompletionScreen Tailwind migration
+Plan: 2 of 2 complete
+Status: Phase 08 complete
+Last activity: 2026-02-23 — 08-02 RightPanel/ChallengePage/DrillQuestion/DrillPage Tailwind migration + CSS cleanup
 
-Progress: [█████░░░░░] 50% (phase 08, 1 of 2 plans done)
+Progress: [██████████] 100% (phase 08, 2 of 2 plans done)
 
 ## Performance Metrics
 
@@ -36,6 +36,8 @@ Progress: [█████░░░░░] 50% (phase 08, 1 of 2 plans done)
 | Phase 06-design-foundation P02 | 2 | 2 tasks | 2 files |
 | Phase 07-shell-welcome-page-restyling P02 | 7 | 2 tasks | 4 files |
 | Phase 07-shell-welcome-page-restyling P03 | 2 | 2 tasks | 4 files |
+| Phase 08-challenge-components-prompt-formatting P01 | 3 | 3 tasks | 7 files |
+| Phase 08-challenge-components-prompt-formatting P02 | 3 | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -76,6 +78,10 @@ v1.1 decisions:
 - [Phase 08-01]: ChallengeList locked+active state uses separate clsx conditions for locked/non-locked hover paths
 - [Phase 08-01]: CompletionScreen Card uses padding={false} + className px-12 py-10 to override Card default p-6
 - [Phase 08-01]: completion-pop keyframe stays in index.css, referenced via Tailwind arbitrary animate-[completion-pop_0.5s_ease-out]
+- [Phase 08-02]: RightPanel uses w-[280px] min-w-[280px] shrink-0 — exact match of old .right-panel for Handsontable sibling layout
+- [Phase 08-02]: ChallengePage grid area uses flex-1 overflow-hidden flex flex-col — preserves Handsontable height propagation chain
+- [Phase 08-02]: DrillQuestionCard onMouseEnter/Leave handlers removed — Tailwind hover: classes replace inline style mutations
+- [Phase 08-02]: index.css reduced to 114 lines — only @import, @theme, preflight repair, reset, animation keyframes, HOT overrides, formula-bar
 
 ### Pending Todos
 
@@ -84,11 +90,12 @@ None.
 ### Blockers/Concerns
 
 - [v1.1 RESOLVED by 06-01]: Tailwind preflight may conflict with Handsontable grid styles — addressed with .hot-container preflight repair CSS
-- [v1.1 RESOLVED by 08-01]: Drill question text is wall-of-text — formatPrompt utility now splits prompts into scenario/data/task sections; PromptDisplay will be integrated in 08-02
+- [v1.1 RESOLVED by 08-01]: Drill question text is wall-of-text — formatPrompt utility now splits prompts into scenario/data/task sections
+- [v1.1 RESOLVED by 08-02]: PromptDisplay integrated in RightPanel (challenge prompts) and DrillPage (drill prompts)
 - [v1.0 RESOLVED]: All 15 v1.0 requirements shipped and verified
 
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 08-01-PLAN.md — formatPrompt utility, ChallengeList/TierTabs/CompletionScreen Tailwind migration
-Resume file: /gsd:execute-phase 8
+Stopped at: Completed 08-02-PLAN.md — RightPanel/ChallengePage/DrillQuestion Tailwind migration, CSS cleanup, Phase 8 complete
+Resume file: /gsd:execute-phase 9
