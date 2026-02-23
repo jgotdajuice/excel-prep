@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useChallengeStore } from '../store/challengeStore';
 import { useDrillStore } from '../store/drillStore';
+import { challenges as seedChallenges } from '../data/challenges';
 import {
   computeCategoryAccuracies,
   weakestCategory,
@@ -85,9 +86,16 @@ export function ProgressPage() {
   const navigate = useNavigate();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
-  const { challenges, statuses, hintUsageCount, setActiveTier, isTierUnlocked } =
+  const { challenges, statuses, hintUsageCount, setActiveTier, isTierUnlocked, loadChallenges } =
     useChallengeStore();
   const { allAnswers } = useDrillStore();
+
+  // Ensure challenges are loaded (needed if user navigates to /progress directly)
+  useEffect(() => {
+    if (challenges.length === 0) {
+      loadChallenges(seedChallenges);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const accuracies = computeCategoryAccuracies(challenges, statuses, allAnswers);
   const stats = overallStats(challenges, statuses, allAnswers, hintUsageCount);

@@ -128,6 +128,22 @@ export function SpreadsheetGrid({
     localStorage.setItem('hasStarted', 'true');
   }, []);
 
+  // Clear HyperFormula sheet on unmount to prevent SheetSizeLimitExceededError
+  // when React remounts HotTable via key change between challenges
+  useEffect(() => {
+    if (!isChallenge) return;
+    return () => {
+      try {
+        const sheetId = hfInstance.getSheetId('Sheet1');
+        if (sheetId !== undefined) {
+          hfInstance.removeSheet(sheetId);
+        }
+      } catch {
+        // ignore cleanup errors
+      }
+    };
+  }, [isChallenge, challenge?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // When grades or lock state change, re-render grid cells to update outlines
   useEffect(() => {
     if (!isChallenge) return;
