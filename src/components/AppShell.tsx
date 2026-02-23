@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { NavLink, Link } from 'react-router-dom';
+import { clsx } from 'clsx';
 
 interface AppShellProps {
   children: ReactNode;
@@ -20,83 +21,30 @@ const NAV_ITEMS: NavItem[] = [
 
 export function AppShell({ children }: AppShellProps) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh',
-        overflow: 'hidden',
-      }}
-    >
+    <div className="flex flex-col h-screen overflow-hidden">
       {/* Header */}
-      <header
-        style={{
-          height: '48px',
-          minHeight: '48px',
-          backgroundColor: '#1a3a2a',
-          display: 'flex',
-          alignItems: 'center',
-          padding: '0 16px',
-          flexShrink: 0,
-          boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
-        }}
-      >
+      <header className="h-12 min-h-12 bg-brand-dark flex items-center px-4 shrink-0 shadow-md">
         <Link
           to="/"
-          style={{
-            color: '#ffffff',
-            fontSize: '18px',
-            fontWeight: 700,
-            letterSpacing: '-0.3px',
-            textDecoration: 'none',
-          }}
+          className="text-white text-lg font-bold tracking-tight no-underline"
         >
           ExcelPrep
         </Link>
       </header>
 
       {/* Body: sidebar + main content */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      <div className="flex flex-1 overflow-hidden">
         {/* Left sidebar */}
-        <aside
-          style={{
-            width: '220px',
-            minWidth: '220px',
-            backgroundColor: '#f5f5f5',
-            borderRight: '1px solid #d0d0d0',
-            display: 'flex',
-            flexDirection: 'column',
-            padding: '16px 0',
-            flexShrink: 0,
-            overflowY: 'auto',
-          }}
-        >
-          <p
-            style={{
-              fontSize: '11px',
-              fontWeight: 600,
-              color: '#888',
-              textTransform: 'uppercase',
-              letterSpacing: '0.8px',
-              padding: '0 16px',
-              margin: '0 0 8px 0',
-            }}
-          >
+        <aside className="w-[220px] min-w-[220px] bg-base border-r border-border flex flex-col py-4 shrink-0 overflow-y-auto">
+          <p className="text-[11px] font-semibold text-muted uppercase tracking-widest px-4 mb-2">
             Topics
           </p>
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+          <ul className="list-none m-0 p-0">
             {NAV_ITEMS.map((item) =>
               item.disabled ? (
                 <li
                   key={item.label}
-                  style={{
-                    padding: '8px 16px',
-                    fontSize: '13px',
-                    color: '#aaa',
-                    fontWeight: 400,
-                    cursor: 'default',
-                    borderLeft: '3px solid transparent',
-                  }}
+                  className="py-2 px-4 text-[13px] text-muted/60 font-normal cursor-default border-l-3 border-transparent"
                 >
                   {item.label}
                 </li>
@@ -104,15 +52,14 @@ export function AppShell({ children }: AppShellProps) {
                 <li key={item.label}>
                   <NavLink
                     to={item.to}
-                    style={({ isActive }) => ({
-                      display: 'block',
-                      padding: '8px 16px',
-                      fontSize: '13px',
-                      textDecoration: 'none',
-                      color: isActive ? '#1a3a2a' : '#555',
-                      fontWeight: isActive ? 600 : 400,
-                      borderLeft: isActive ? '3px solid #1a6b3c' : '3px solid transparent',
-                    })}
+                    className={({ isActive }) =>
+                      clsx(
+                        'block py-2 px-4 text-[13px] no-underline border-l-3 transition-colors',
+                        isActive
+                          ? 'text-brand-dark font-semibold border-brand'
+                          : 'text-text-primary/70 font-normal border-transparent hover:bg-base hover:text-text-primary'
+                      )
+                    }
                   >
                     {item.label}
                   </NavLink>
@@ -123,14 +70,7 @@ export function AppShell({ children }: AppShellProps) {
         </aside>
 
         {/* Main content area — fills remaining space */}
-        <main
-          style={{
-            flex: 1,
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
-          }}
-        >
+        <main className="flex-1 overflow-hidden flex flex-col">
           {children}
         </main>
       </div>
