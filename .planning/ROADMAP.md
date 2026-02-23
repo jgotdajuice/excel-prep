@@ -12,7 +12,7 @@ Build a client-side SPA that teaches Excel functions for finance interviews thro
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Formula Engine** - Interactive spreadsheet grid wired to a verified, Excel-compatible formula engine
+- [x] **Phase 1: Formula Engine** - Interactive spreadsheet grid wired to a verified, Excel-compatible formula engine (completed 2026-02-23)
 - [ ] **Phase 2: Challenge Loop** - Single end-to-end challenge flow: grid renders, user enters formula, grader grades it, explanation appears
 - [ ] **Phase 3: Content Library** - Finance-framed question bank and structured beginner-to-interview-ready learning path
 - [ ] **Phase 4: Keyboard Shortcuts** - Independent drill module for finance/IB keyboard shortcuts with keypress capture
@@ -29,7 +29,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. All 12 finance-relevant functions (VLOOKUP, INDEX/MATCH, SUMIFS, IF/nested IF, NPV, IRR, PMT, XNPV, SUM, AVERAGE, COUNT, COUNTIF) evaluate correctly in the grid
   3. HyperFormula produces outputs matching known Excel values for NPV, IRR, PMT, VLOOKUP, and nested IF before any challenge content is written
   4. Grid keyboard navigation (Tab between cells, Enter to confirm, arrow keys) works without triggering browser defaults
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 Plans:
 - [x] 01-01-PLAN.md — Project scaffold, HyperFormula engine factory, Excel-compat smoke tests (TDD)
 - [ ] 01-02-PLAN.md — Spreadsheet grid UI, formula bar, function autocomplete, app shell
@@ -86,7 +86,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Formula Engine | 1/2 | In progress | - |
+| 1. Formula Engine | 1/2 | Complete    | 2026-02-23 |
 | 2. Challenge Loop | 0/TBD | Not started | - |
 | 3. Content Library | 0/TBD | Not started | - |
 | 4. Keyboard Shortcuts | 0/TBD | Not started | - |
