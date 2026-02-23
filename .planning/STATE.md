@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** A beginner can rapidly learn the Excel functions and patterns that finance interviews test, through active practice rather than passive reading.
-**Current focus:** Phase 3 (Content Library) — Plan 02 complete; Plan 04 next
+**Current focus:** Phase 3 complete — Content Library verified end-to-end
 
 ## Current Position
 
-Phase: 3 of 5 (Content Library) — Plan 02 complete
-Plan: 4 of 4 complete in current phase (all content-library plans done — 01, 03, 02 completed)
-Status: Plan 03-02 complete — tier tabs, tier gating, locked challenge display at /challenge
-Last activity: 2026-02-23 — Plan 03-02 complete (TierTabs, challengeStore tier state, ChallengeList locked state)
+Phase: 3 of 5 (Content Library) — Complete
+Plan: 4 of 4 complete in current phase
+Status: Phase 3 complete — all verification criteria pass, 1 bug fixed (RightPanel tier scoping)
+Last activity: 2026-02-23 — Phase 3 human verification passed
 
 Progress: [████████░░] 80%
 
@@ -85,6 +85,7 @@ Recent decisions affecting current work:
 - [Phase 03-02]: statuses[] remains globally indexed by challenges[] — gradeCellAction/retry/skip map tierChallenges[currentIndex].id back to global position
 - [Phase 03-02]: currentIndex tracks position within tierChallenges (not global challenges array)
 - [Phase 03-02]: Locked tier shows challenge titles with lock icons — clickable to reveal inline prereq message
+- [Phase 03-04]: RightPanel must use tierChallenges[currentIndex] not challenges[currentIndex] — currentIndex is tier-scoped
 
 ### Pending Todos
 
@@ -101,5 +102,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 03-02-PLAN.md — tier tabs, tier gating, locked challenge display
-Resume file: Phase 3, Plan 04 OR Phase 4, Plan 02 — run appropriate gsd:execute-phase command
+Stopped at: Phase 3 complete — all 4 plans executed, human verification passed
+Resume file: Phase 5 next — run /gsd:plan-phase 5
