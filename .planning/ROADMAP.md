@@ -32,7 +32,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 2/2 plans complete
 Plans:
 - [x] 01-01-PLAN.md — Project scaffold, HyperFormula engine factory, Excel-compat smoke tests (TDD)
-- [ ] 01-02-PLAN.md — Spreadsheet grid UI, formula bar, function autocomplete, app shell
+- [x] 01-02-PLAN.md — Spreadsheet grid UI, formula bar, function autocomplete, app shell
 
 ### Phase 2: Challenge Loop
 **Goal**: Users can complete a finance-scenario challenge from start to finish — the grid loads with seed data, they enter a formula, they get graded on the computed result, and they see an explanation of why the answer works
@@ -44,9 +44,9 @@ Plans:
   3. User sees distinct, clear feedback for "wrong value" versus "formula syntax error" (not a generic error message)
   4. After every submission (correct or incorrect), user sees an explanation of how the formula works and why it produces the expected result
   5. User can move to the next challenge after seeing their result
-**Plans:** 3 plans
+**Plans:** 1/3 plans complete
 Plans:
-- [ ] 02-01-PLAN.md — Challenge types, grading engine (TDD), Zustand store, seed challenge data
+- [x] 02-01-PLAN.md — Challenge types, grading engine (TDD), Zustand store, seed challenge data
 - [ ] 02-02-PLAN.md — SpreadsheetGrid challenge mode, ChallengePage, RightPanel, ChallengeList, CompletionScreen, routing
 - [ ] 02-03-PLAN.md — Human verification of end-to-end challenge flow
 
@@ -90,8 +90,8 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Formula Engine | 1/2 | Complete    | 2026-02-23 |
-| 2. Challenge Loop | 0/3 | Planned | - |
+| 1. Formula Engine | 2/2 | Complete    | 2026-02-23 |
+| 2. Challenge Loop | 1/3 | In Progress | - |
 | 3. Content Library | 0/TBD | Not started | - |
 | 4. Keyboard Shortcuts | 0/TBD | Not started | - |
 | 5. Progress and Weak Areas | 0/TBD | Not started | - |

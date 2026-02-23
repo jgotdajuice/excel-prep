@@ -9,15 +9,15 @@
 
 - [x] **GRID-01**: User can type Excel formulas into an interactive spreadsheet grid and see computed results
 - [x] **GRID-02**: Grid supports finance-relevant functions: VLOOKUP, INDEX/MATCH, SUMIFS, IF/nested IF, NPV, IRR, PMT, XNPV, SUM, AVERAGE, COUNT, COUNTIF
-- [ ] **GRID-03**: User's formula is graded by comparing computed output value against expected result (not string matching)
-- [ ] **GRID-04**: User sees clear error feedback distinguishing "wrong value" from "formula syntax error"
+- [x] **GRID-03**: User's formula is graded by comparing computed output value against expected result (not string matching)
+- [x] **GRID-04**: User sees clear error feedback distinguishing "wrong value" from "formula syntax error"
 
 ### Learning System
 
-- [ ] **LEARN-01**: User can complete challenge-based tasks with finance-scenario prompts (e.g., "Calculate the IRR of this investment...")
+- [x] **LEARN-01**: User can complete challenge-based tasks with finance-scenario prompts (e.g., "Calculate the IRR of this investment...")
 - [ ] **LEARN-02**: User can do rapid-fire formula drills (scenario presented → user writes the correct formula)
 - [ ] **LEARN-03**: User sees an explanation after each question showing why the answer works and how the formula operates
-- [ ] **LEARN-04**: All challenges use finance/IB/accounting scenario framing rather than generic examples
+- [x] **LEARN-04**: All challenges use finance/IB/accounting scenario framing rather than generic examples
 - [ ] **LEARN-05**: User can follow a structured learning path from beginner to interview-ready
 - [ ] **LEARN-06**: Drill queue surfaces frequently-missed formulas more often (weighted-random)
 
@@ -63,12 +63,12 @@
 |-------------|-------|--------|
 | GRID-01 | Phase 1 | Complete |
 | GRID-02 | Phase 1 | Complete (01-01) |
-| GRID-03 | Phase 2 | Pending |
-| GRID-04 | Phase 2 | Pending |
-| LEARN-01 | Phase 2 | Pending |
+| GRID-03 | Phase 2 | Complete (02-01) |
+| GRID-04 | Phase 2 | Complete (02-01) |
+| LEARN-01 | Phase 2 | Complete (02-01) |
 | LEARN-02 | Phase 3 | Pending |
 | LEARN-03 | Phase 2 | Pending |
-| LEARN-04 | Phase 2 | Pending |
+| LEARN-04 | Phase 2 | Complete (02-01) |
 | LEARN-05 | Phase 3 | Pending |
 | LEARN-06 | Phase 5 | Pending |
 | PROG-01 | Phase 5 | Pending |
@@ -84,4 +84,4 @@
 
 ---
 *Requirements defined: 2026-02-22*
-*Last updated: 2026-02-22 after roadmap creation — all requirements mapped*
+*Last updated: 2026-02-23 after plan 02-01 — GRID-03, GRID-04, LEARN-01, LEARN-04 marked complete*
