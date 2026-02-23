@@ -3,85 +3,85 @@
 **Defined:** 2026-02-22
 **Core Value:** A beginner can rapidly learn the Excel functions and patterns that finance interviews test, through active practice rather than passive reading.
 
-## v1 Requirements
+## v1.0 Requirements (Complete)
 
-### Spreadsheet Engine
+All 15 v1.0 requirements shipped and verified. See MILESTONES.md for archive.
 
-- [x] **GRID-01**: User can type Excel formulas into an interactive spreadsheet grid and see computed results
-- [x] **GRID-02**: Grid supports finance-relevant functions: VLOOKUP, INDEX/MATCH, SUMIFS, IF/nested IF, NPV, IRR, PMT, XNPV, SUM, AVERAGE, COUNT, COUNTIF
-- [x] **GRID-03**: User's formula is graded by comparing computed output value against expected result (not string matching)
-- [x] **GRID-04**: User sees clear error feedback distinguishing "wrong value" from "formula syntax error"
+- [x] GRID-01..04, LEARN-01..06, PROG-01..03, KEYS-01..02
 
-### Learning System
+## v1.1 Requirements
 
-- [x] **LEARN-01**: User can complete challenge-based tasks with finance-scenario prompts (e.g., "Calculate the IRR of this investment...")
-- [x] **LEARN-02**: User can do rapid-fire formula drills (scenario presented → user writes the correct formula)
-- [x] **LEARN-03**: User sees an explanation after each question showing why the answer works and how the formula operates
-- [x] **LEARN-04**: All challenges use finance/IB/accounting scenario framing rather than generic examples
-- [x] **LEARN-05**: User can follow a structured learning path from beginner to interview-ready
-- [x] **LEARN-06**: Drill queue surfaces frequently-missed formulas more often (weighted-random)
+Requirements for Polish & Deploy milestone.
 
-### Progress Tracking
+### Visual Design
 
-- [x] **PROG-01**: User's completed challenges and scores persist across browser sessions
-- [x] **PROG-02**: User can see weak areas tagged by function/concept with accuracy rates per topic
-- [x] **PROG-03**: User receives suggested next topics based on their performance and gaps
+- [ ] **VIS-01**: App uses a consistent CSS design token system (color, typography, spacing) defined via Tailwind v4 `@theme` — no scattered hardcoded hex values
+- [ ] **VIS-02**: All pages use a unified light theme with Excel-green (#1a6b3c) accent and white surfaces — no dark-themed pages (DrillPage dark background removed)
+- [ ] **VIS-03**: Typography uses a professional font (Inter) with consistent size/weight scale across all pages
+- [ ] **VIS-04**: Shared UI primitives (Button, Card) replace inconsistent per-page implementations
 
-### Keyboard Shortcuts
+### User Experience
 
-- [x] **KEYS-01**: User can practice Excel keyboard shortcuts through interactive drills
-- [x] **KEYS-02**: Shortcut drills cover finance-workflow-relevant shortcuts (navigation, formatting, formula entry)
+- [ ] **UX-01**: WelcomePage includes a "How it works" section explaining the learning loop for first-time users
+- [ ] **UX-02**: Challenge and drill prompts use structured formatting (scenario label, data block, task instruction) instead of wall-of-text paragraphs
+- [ ] **UX-03**: Correct/incorrect answer feedback includes visual animation (green flash for correct, red shake for wrong)
+- [ ] **UX-04**: Browser tab shows app name ("ExcelPrep") and a custom favicon (not Vite defaults)
+
+### Deployment
+
+- [ ] **DEPLOY-01**: App is deployed to Vercel with a working production URL
+- [ ] **DEPLOY-02**: All client-side routes (/challenge, /drill, /progress, /shortcuts) work on direct URL access (no 404s)
+- [ ] **DEPLOY-03**: Production build passes TypeScript check and Vite build with no errors
 
 ## v2 Requirements
+
+Deferred to future release.
 
 ### Learning Enhancements
 
 - **LEARN-V2-01**: Full mini-model builders (build a complete DCF or LBO step by step)
 - **LEARN-V2-02**: Timed challenge mode simulating interview pressure
-- **LEARN-V2-03**: Formula equivalence grading (accept multiple valid formula approaches)
+- **LEARN-V2-03**: Spaced repetition algorithm replacing weighted-random queue
 
 ### Content
 
-- **CONT-V2-01**: Advanced function coverage (XIRR, OFFSET, INDIRECT, array formulas)
+- **CONT-V2-01**: Advanced function coverage (XIRR, INDIRECT, array formulas)
 - **CONT-V2-02**: Industry-specific question banks (PE, hedge fund, corporate finance)
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Video lectures | Passive learning; slower than active practice for interview prep |
-| Mobile optimization | Spreadsheet grids don't work on mobile; user confirmed laptop only |
+| Dark mode toggle | Light theme only for v1.1; clean professional look |
+| Mobile optimization | Spreadsheet grids don't work on mobile; laptop only |
+| Sound effects | Unnecessary for professional study tool |
+| Custom domain | Vercel subdomain sufficient for now |
+| Interactive product tour | App is simple enough; static copy on WelcomePage covers orientation |
+| Analytics/telemetry | Single-user tool; localStorage sufficient |
+| Video lectures | Passive learning; slower than active practice |
 | VBA/macros | Finance interviews focus on formulas and functions |
-| Social/leaderboard | Solo study tool; zero network effect benefit |
-| Full LBO/DCF model builder | Weeks of engineering; defer to v2 as mini-model builders |
-| Backend/database | localStorage sufficient for single-user progress tracking |
-| OAuth/accounts | Solo user on one machine; no auth needed |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GRID-01 | Phase 1 | Complete |
-| GRID-02 | Phase 1 | Complete (01-01) |
-| GRID-03 | Phase 2 | Complete (02-01) |
-| GRID-04 | Phase 2 | Complete (02-01) |
-| LEARN-01 | Phase 2 | Complete (02-01) |
-| LEARN-02 | Phase 3 | Complete |
-| LEARN-03 | Phase 2 | Complete |
-| LEARN-04 | Phase 2 | Complete (02-01) |
-| LEARN-05 | Phase 3 | Complete |
-| LEARN-06 | Phase 5 | Complete (05-02) |
-| PROG-01 | Phase 5 | Complete |
-| PROG-02 | Phase 5 | Complete (05-02) |
-| PROG-03 | Phase 5 | Complete (05-02) |
-| KEYS-01 | Phase 4 | Complete |
-| KEYS-02 | Phase 4 | Complete |
+| VIS-01 | Phase 6 | Pending |
+| VIS-02 | Phase 7 | Pending |
+| VIS-03 | Phase 6 | Pending |
+| VIS-04 | Phase 6 | Pending |
+| UX-01 | Phase 7 | Pending |
+| UX-02 | Phase 8 | Pending |
+| UX-03 | Phase 7 | Pending |
+| UX-04 | Phase 6 | Pending |
+| DEPLOY-01 | Phase 9 | Pending |
+| DEPLOY-02 | Phase 9 | Pending |
+| DEPLOY-03 | Phase 9 | Pending |
 
 **Coverage:**
-- v1 requirements: 15 total
-- Mapped to phases: 15
-- Unmapped: 0 ✓
+- v1.1 requirements: 11 total
+- Mapped to phases: 11
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-22*
-*Last updated: 2026-02-23 after plan 05-02 — LEARN-06, PROG-02, PROG-03 marked complete*
+*Last updated: 2026-02-23 after v1.1 milestone start*

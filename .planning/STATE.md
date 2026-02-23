@@ -9,10 +9,10 @@ See: .planning/PROJECT.md (updated 2026-02-23)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 6 — Design Foundation (next to plan)
 Plan: —
-Status: Defining requirements for v1.1
-Last activity: 2026-02-23 — Milestone v1.1 started
+Status: Requirements and roadmap defined; ready to plan Phase 6
+Last activity: 2026-02-23 — v1.1 research, requirements, and roadmap complete
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -38,7 +38,7 @@ Progress: [░░░░░░░░░░] 0%
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
-Key decisions carried forward from v1.0:
+Key decisions carried forward:
 
 - Stack: React 19 + Vite 7 + TypeScript 5 + Handsontable 16.2 + HyperFormula 3.2 + Zustand 5 + Tailwind CSS 4
 - HyperFormula singleton (`hfInstance`) requires explicit sheet cleanup on unmount to prevent SheetSizeLimitExceededError
@@ -46,17 +46,27 @@ Key decisions carried forward from v1.0:
 - Refs pattern for stable Handsontable callbacks — prevents re-render loops
 - currentIndex is tier-scoped (within tierChallenges, not global challenges array)
 
+v1.1 decisions:
+- Visual direction: Modern SaaS aesthetic (clean, light, professional) — NOT Bloomberg terminal dark theme
+- Color scheme: Excel-green (#1a6b3c) accent + white surfaces
+- Font: Inter via @fontsource-variable/inter (self-hosted, no CDN)
+- Tailwind v4 @theme for token system (CSS-first, no tailwind.config.js)
+- No animation library — CSS transitions/keyframes only
+- Deploy target: Vercel free tier
+- DrillPage dark background (#111827) must be removed for visual consistency
+
 ### Pending Todos
 
 None.
 
 ### Blockers/Concerns
 
-- [v1.1]: Drill question text is wall-of-text — needs structured formatting (user reported)
+- [v1.1]: Tailwind preflight may conflict with Handsontable grid styles — verify after Phase 6 token setup
+- [v1.1]: Drill question text is wall-of-text — addressed in Phase 8 (UX-02)
 - [v1.0 RESOLVED]: All 15 v1.0 requirements shipped and verified
 
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Defining v1.1 requirements
-Resume file: Complete requirements → roadmap → /gsd:plan-phase 6
+Stopped at: v1.1 planning complete (research + requirements + roadmap)
+Resume file: /gsd:plan-phase 6 → /gsd:execute-phase 6

@@ -2,15 +2,15 @@
 
 ## Overview
 
-Build a client-side SPA that teaches Excel functions for finance interviews through active practice. The work flows from engine to experience to content to progress: first prove the formula evaluation is correct, then build the challenge loop that teaches through it, then fill the content library, then add the keyboard shortcut module, then surface what the user has learned and where they need work. Each phase delivers a coherent capability that the next phase builds on.
+Build a client-side SPA that teaches Excel functions for finance interviews through active practice. v1.0 delivered the complete learning engine (formula grid, challenges, drills, shortcuts, progress tracking). v1.1 transforms the functional prototype into a polished, deployable product with professional visual design, improved UX, and live hosting on Vercel.
 
 ## Phases
 
 **Phase Numbering:**
-- Integer phases (1, 2, 3): Planned milestone work
-- Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
+- Phases 1-5: v1.0 milestone (complete)
+- Phases 6-9: v1.1 milestone (Polish & Deploy)
 
-Decimal phases appear between their surrounding integers in numeric order.
+### v1.0 — Core Learning Engine (Complete)
 
 - [x] **Phase 1: Formula Engine** - Interactive spreadsheet grid wired to a verified, Excel-compatible formula engine (completed 2026-02-23)
 - [x] **Phase 2: Challenge Loop** - Single end-to-end challenge flow: grid renders, user enters formula, grader grades it, explanation appears (completed 2026-02-23)
@@ -18,92 +18,78 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Keyboard Shortcuts** - Independent drill module for finance/IB keyboard shortcuts with keypress capture (completed 2026-02-23)
 - [x] **Phase 5: Progress and Weak Areas** - Session persistence, per-function accuracy tracking, weighted drill queue, next-topic suggestions (completed 2026-02-23)
 
+### v1.1 — Polish & Deploy
+
+- [ ] **Phase 6: Design Foundation** - CSS design tokens, shared UI primitives, Inter font, page title/favicon, vercel.json
+- [ ] **Phase 7: Shell, Welcome, and Page Restyling** - AppShell restyle, WelcomePage onboarding, DrillPage light theme, ProgressPage/ShortcutsPage polish, feedback animations
+- [ ] **Phase 8: Challenge Components and Prompt Formatting** - CSS class migration to Tailwind, structured prompt formatting, formula chip styling
+- [ ] **Phase 9: Deployment and Verification** - Vercel deploy, route verification, production build validation
+
 ## Phase Details
 
-### Phase 1: Formula Engine
-**Goal**: Users can type Excel formulas into a working spreadsheet grid and see computed results — with an engine verified to match Excel behavior for finance functions
-**Depends on**: Nothing (first phase)
-**Requirements**: GRID-01, GRID-02
+### Phase 6: Design Foundation
+**Goal**: Establish the design token system, shared UI primitives, and deployment config that all subsequent visual work depends on — without changing any existing visuals yet
+**Depends on**: Phase 5 (v1.0 complete)
+**Requirements**: VIS-01, VIS-03, VIS-04, UX-04
 **Success Criteria** (what must be TRUE):
-  1. User can click a cell, type a formula (e.g., `=SUM(A1:A3)`), and see the computed result displayed in that cell
-  2. All 12 finance-relevant functions (VLOOKUP, INDEX/MATCH, SUMIFS, IF/nested IF, NPV, IRR, PMT, XNPV, SUM, AVERAGE, COUNT, COUNTIF) evaluate correctly in the grid
-  3. HyperFormula produces outputs matching known Excel values for NPV, IRR, PMT, VLOOKUP, and nested IF before any challenge content is written
-  4. Grid keyboard navigation (Tab between cells, Enter to confirm, arrow keys) works without triggering browser defaults
-**Plans:** 2/2 plans complete
-Plans:
-- [x] 01-01-PLAN.md — Project scaffold, HyperFormula engine factory, Excel-compat smoke tests (TDD)
-- [x] 01-02-PLAN.md — Spreadsheet grid UI, formula bar, function autocomplete, app shell
+  1. `@theme` block in `index.css` defines color tokens (brand, surface, border, text) and typography tokens (font-family, size scale) — all pages can reference them via Tailwind utilities
+  2. `@fontsource-variable/inter` is installed and configured as the default font family
+  3. `vercel.json` exists with SPA rewrite rule
+  4. `index.html` has app name ("ExcelPrep") as page title and a custom favicon (not Vite defaults)
+  5. `ui/Button.tsx` and `ui/Card.tsx` shared components exist and are importable
+  6. Handsontable grid renders correctly with no visual regressions after Tailwind token additions (preflight does not break grid borders/padding)
+**Plans:** 0 plans
 
-### Phase 2: Challenge Loop
-**Goal**: Users can complete a finance-scenario challenge from start to finish — the grid loads with seed data, they enter a formula, they get graded on the computed result, and they see an explanation of why the answer works
-**Depends on**: Phase 1
-**Requirements**: GRID-03, GRID-04, LEARN-01, LEARN-03, LEARN-04
+### Phase 7: Shell, Welcome, and Page Restyling
+**Goal**: Restyle the app shell and all non-challenge pages to the new design system — unified light theme with green accent, professional typography, onboarding copy, and feedback animations
+**Depends on**: Phase 6 (tokens and primitives must exist)
+**Requirements**: VIS-02, UX-01, UX-03
 **Success Criteria** (what must be TRUE):
-  1. User is presented with a finance-scenario prompt (not a generic example) and a pre-populated grid with relevant seed data
-  2. After submitting a formula, user sees whether their computed output matches the expected value — graded by result value, not formula string
-  3. User sees distinct, clear feedback for "wrong value" versus "formula syntax error" (not a generic error message)
-  4. After every submission (correct or incorrect), user sees an explanation of how the formula works and why it produces the expected result
-  5. User can move to the next challenge after seeing their result
-**Plans:** 3/3 plans complete
-Plans:
-- [x] 02-01-PLAN.md — Challenge types, grading engine (TDD), Zustand store, seed challenge data
-- [x] 02-02-PLAN.md — SpreadsheetGrid challenge mode, ChallengePage, RightPanel, ChallengeList, CompletionScreen, routing
-- [x] 02-03-PLAN.md — Human verification of end-to-end challenge flow (4 bugs found & fixed)
+  1. AppShell (header, sidebar, nav links) uses Tailwind utilities consuming design tokens — no inline styles
+  2. WelcomePage includes a "How it works" section with 3 bullets explaining the learning loop
+  3. DrillPage uses light theme (white/light surfaces) — no dark background (#111827 removed)
+  4. ProgressPage and ShortcutsPage use shared Card/StatCard/Button components
+  5. Correct answer shows green flash animation; incorrect shows red shake animation
+  6. All pages have consistent typography (Inter font, size scale from tokens)
+**Plans:** 0 plans
 
-### Phase 3: Content Library
-**Goal**: Users have a full set of finance interview formulas to practice — organized from beginner to interview-ready — plus a rapid-fire drill mode for recognition practice
-**Depends on**: Phase 2
-**Requirements**: LEARN-02, LEARN-05
+### Phase 8: Challenge Components and Prompt Formatting
+**Goal**: Migrate challenge sub-components from CSS classes to Tailwind utilities and implement structured prompt formatting to fix the wall-of-text problem
+**Depends on**: Phase 7 (patterns proven on simpler pages first)
+**Requirements**: UX-02
 **Success Criteria** (what must be TRUE):
-  1. User can launch a rapid-fire drill session where a scenario is presented and they write (or select) the correct formula in quick succession without the full challenge grid flow
-  2. User sees a structured learning path with at least three tiers (beginner, intermediate, advanced) and can follow it in sequence
-  3. The content library covers at minimum the 10 tier-1 finance interview functions with at least 4 challenges per function, all using finance/IB/accounting scenario framing
-  4. User cannot advance to intermediate tier challenges without demonstrating readiness on beginner-tier content
-**Plans:** 4/4 plans complete
-Plans:
-- [x] 03-01-PLAN.md — Type extensions (Tier, drill fields, DrillQuestion), 60+ challenge content across 3 tier files, engine verification tests
-- [x] 03-02-PLAN.md — TierTabs component, challengeStore tier state + gating logic, ChallengePage + ChallengeList tier integration
-- [x] 03-03-PLAN.md — drillStore state machine, DrillPage at /drill, drill components (question/feedback/review), sidebar nav links
-- [x] 03-04-PLAN.md — Human verification of tiered challenges, gating, and drill mode (1 bug fixed)
+  1. ChallengeList, TierTabs, RightPanel, and CompletionScreen use Tailwind utilities — old CSS class definitions removed from `index.css`
+  2. Challenge prompts render with structured layout: scenario label, data block (styled as code/table), task instruction — not a single paragraph
+  3. Drill question prompts use the same structured formatting
+  4. Handsontable grid still renders correctly after adjacent component CSS changes (no height collapse, no border loss)
+**Plans:** 0 plans
 
-### Phase 4: Keyboard Shortcuts
-**Goal**: Users can drill the finance/IB keyboard shortcuts that interviewers expect through an interactive keypress-recognition module
-**Depends on**: Phase 1 (project structure; otherwise architecturally independent)
-**Requirements**: KEYS-01, KEYS-02
+### Phase 9: Deployment and Verification
+**Goal**: Deploy the polished app to Vercel and verify all routes and features work in production
+**Depends on**: Phase 8 (all visual work complete)
+**Requirements**: DEPLOY-01, DEPLOY-02, DEPLOY-03
 **Success Criteria** (what must be TRUE):
-  1. User can enter a dedicated keyboard shortcut drill mode separate from the formula challenge flow
-  2. User is shown a shortcut action and must press the correct key combination — the app detects the actual keypress
-  3. Shortcut drills cover finance-workflow-relevant shortcuts (formula entry, navigation, selection, formatting) drawn from IB Excel practice
-  4. Browser-conflicting shortcuts (Ctrl+W, Ctrl+T, Ctrl+N) are either avoided or handled gracefully with clear guidance to the user
-**Plans:** 2/2 plans complete
-Plans:
-- [ ] 04-01-PLAN.md — Shortcut types, IB shortcut dataset (~30 shortcuts), drill session Zustand store
-- [ ] 04-02-PLAN.md — Drill UI components (setup, drill, feedback, summary), /shortcuts route, sidebar NavLink upgrade
-
-### Phase 5: Progress and Weak Areas
-**Goal**: Users can see what they know, what they are weak at, and what to practice next — with progress persisting across browser sessions
-**Depends on**: Phase 3 (requires accumulated attempt data from completed challenges and drills)
-**Requirements**: PROG-01, PROG-02, PROG-03, LEARN-06
-**Success Criteria** (what must be TRUE):
-  1. User's completed challenges and scores are preserved when they close the browser and return in a new session
-  2. User can view a progress dashboard showing their accuracy rate broken down by function/concept (e.g., "VLOOKUP: 60%, nested IF: 40%")
-  3. User receives a specific suggested next topic based on their weakest areas, not a generic recommendation
-  4. In drill mode, formulas the user has frequently missed appear more often than formulas they have answered correctly (weighted-random queue)
-**Plans:** 3 plans
-Plans:
-- [x] 05-01-PLAN.md — Zustand persist middleware on both stores, safeStorage, hintUsageCount, progress selector functions
-- [x] 05-02-PLAN.md — ProgressPage dashboard (accuracy bars, stats, weak-area suggestions), weighted drill queue, route + nav wiring
-- [x] 05-03-PLAN.md — Human verification of persistence, dashboard, and weighted drill (2 bugs found & fixed)
+  1. App is live on a Vercel URL
+  2. All routes (/challenge, /drill, /progress, /shortcuts) load correctly on direct URL access (no 404s)
+  3. `npm run build` (tsc -b && vite build) passes with zero errors
+  4. Challenge flow works end-to-end on production (load challenge, enter formula, see grade + explanation)
+  5. Progress persists across page refreshes on production
+**Plans:** 0 plans
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
+v1.0: Phases 1 → 2 → 3 → 4 → 5 (complete)
+v1.1: Phases 6 → 7 → 8 → 9
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Formula Engine | 2/2 | Complete    | 2026-02-23 |
+| 1. Formula Engine | 2/2 | Complete | 2026-02-23 |
 | 2. Challenge Loop | 3/3 | Complete | 2026-02-23 |
 | 3. Content Library | 4/4 | Complete | 2026-02-23 |
-| 4. Keyboard Shortcuts | 1/2 | Complete    | 2026-02-23 |
+| 4. Keyboard Shortcuts | 2/2 | Complete | 2026-02-23 |
 | 5. Progress and Weak Areas | 3/3 | Complete | 2026-02-23 |
+| 6. Design Foundation | 0/0 | Pending | — |
+| 7. Shell, Welcome, and Page Restyling | 0/0 | Pending | — |
+| 8. Challenge Components and Prompt Formatting | 0/0 | Pending | — |
+| 9. Deployment and Verification | 0/0 | Pending | — |
