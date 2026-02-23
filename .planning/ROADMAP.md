@@ -87,7 +87,10 @@ Plans:
   3. `npm run build` (tsc -b && vite build) passes with zero errors
   4. Challenge flow works end-to-end on production (load challenge, enter formula, see grade + explanation)
   5. Progress persists across page refreshes on production
-**Plans:** 0 plans
+**Plans:** 1 plans
+
+Plans:
+- [ ] 09-01-PLAN.md — Production build validation, Vercel deploy, route and feature verification
 
 ## Progress
 
@@ -105,4 +108,4 @@ v1.1: Phases 6 -> 7 -> 8 -> 9
 | 6. Design Foundation | 2/2 | Complete | 2026-02-23 |
 | 7. Shell, Welcome, and Page Restyling | 3/3 | Complete   | 2026-02-23 |
 | 8. Challenge Components and Prompt Formatting | 2/2 | Complete | 2026-02-23 |
-| 9. Deployment and Verification | 0/0 | Pending | — |
+| 9. Deployment and Verification | 0/1 | Pending | — |
