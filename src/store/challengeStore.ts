@@ -1,8 +1,10 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Challenge, ChallengeStatus, GradeResult, Tier } from '../types';
 import { gradeCell } from '../engine/grader';
 import { useDrillStore } from './drillStore';
 import type { DrillAnswerRecord } from './drillStore';
+import { safeLocalStorage } from './safeStorage';
 
 interface CellGrade {
   row: number;
@@ -27,6 +29,14 @@ interface ChallengeStore {
   isLocked: boolean;         // Grid locked after grading
   startTime: number | null;  // Timer start timestamp (ms)
   elapsedSeconds: number;
+
+  // Persisted metrics
+  hintUsageCount: number;
+
+  // Internal: hydrated status record from localStorage (keyed by challengeId)
+  // Used by loadChallenges to rebuild statuses[] after challenges are available.
+  // Not exposed externally — do not use outside the store.
+  _hydratedStatusRecord: Record<string, ChallengeStatus>;
 
   // Actions
   loadChallenges: (challenges: Challenge[]) => void;
@@ -110,189 +120,236 @@ function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5);
 }
 
-export const useChallengeStore = create<ChallengeStore>((set, get) => ({
-  // Initial state
-  challenges: [],
-  currentIndex: 0,
-  statuses: [],
-  cellGrades: [],
-  activeTier: 'beginner',
-  tierChallenges: [],
-  hintVisible: false,
-  explanationVisible: false,
-  isLocked: false,
-  startTime: null,
-  elapsedSeconds: 0,
+// Shape of what gets written to localStorage
+interface PersistedChallengeState {
+  challengeStatuses: Record<string, ChallengeStatus>;
+  hintUsageCount: number;
+}
 
-  // ── Actions ────────────────────────────────────────────────────────────────
-
-  loadChallenges: (challenges) => {
-    const beginnerChallenges = shuffle(challenges.filter(c => c.tier === 'beginner'));
-    set({
-      challenges,
+export const useChallengeStore = create<ChallengeStore>()(
+  persist(
+    (set, get) => ({
+      // Initial state
+      challenges: [],
       currentIndex: 0,
-      statuses: challenges.map(() => 'unattempted' as ChallengeStatus),
+      statuses: [],
       cellGrades: [],
-      hintVisible: false,
-      explanationVisible: false,
-      isLocked: false,
-      startTime: Date.now(),
-      elapsedSeconds: 0,
       activeTier: 'beginner',
-      tierChallenges: beginnerChallenges,
-    });
-  },
-
-  setChallenge: (index) => {
-    set({
-      currentIndex: index,
-      cellGrades: [],
+      tierChallenges: [],
       hintVisible: false,
       explanationVisible: false,
       isLocked: false,
-      startTime: Date.now(),
+      startTime: null,
       elapsedSeconds: 0,
-    });
-  },
+      hintUsageCount: 0,
+      _hydratedStatusRecord: {},
 
-  gradeCellAction: (row, col, cellValue) => {
-    const { challenges, currentIndex, cellGrades, statuses, tierChallenges } = get();
-    // currentIndex refers to index within tierChallenges
-    const challenge = tierChallenges[currentIndex];
-    if (!challenge) return;
+      // ── Actions ────────────────────────────────────────────────────────────────
 
-    const answerCell = challenge.answerCells.find(
-      (ac) => ac.row === row && ac.col === col,
-    );
-    if (!answerCell) return;
+      loadChallenges: (challenges) => {
+        const { _hydratedStatusRecord } = get();
+        const beginnerChallenges = shuffle(challenges.filter(c => c.tier === 'beginner'));
 
-    const result = gradeCell(cellValue, answerCell);
+        // If we have a hydrated status record from localStorage, use it to restore
+        // persisted statuses. Otherwise initialize all to 'unattempted'.
+        const hasHydratedData = Object.keys(_hydratedStatusRecord).length > 0;
+        const statuses: ChallengeStatus[] = hasHydratedData
+          ? challenges.map(c => _hydratedStatusRecord[c.id] ?? 'unattempted')
+          : challenges.map(() => 'unattempted' as ChallengeStatus);
 
-    // Replace any existing grade for this cell, then add new result
-    const updatedGrades: CellGrade[] = [
-      ...cellGrades.filter((g) => !(g.row === row && g.col === col)),
-      { row, col, result },
-    ];
+        set({
+          challenges,
+          currentIndex: 0,
+          statuses,
+          cellGrades: [],
+          hintVisible: false,
+          explanationVisible: false,
+          isLocked: false,
+          startTime: Date.now(),
+          elapsedSeconds: 0,
+          activeTier: 'beginner',
+          tierChallenges: beginnerChallenges,
+        });
+      },
 
-    const allAnswerCellsGraded =
-      updatedGrades.length === challenge.answerCells.length;
+      setChallenge: (index) => {
+        set({
+          currentIndex: index,
+          cellGrades: [],
+          hintVisible: false,
+          explanationVisible: false,
+          isLocked: false,
+          startTime: Date.now(),
+          elapsedSeconds: 0,
+        });
+      },
 
-    if (allAnswerCellsGraded) {
-      const overallStatus = computeOverallStatus(updatedGrades);
-      // Map back to global index for status tracking
-      const globalIdx = challenges.findIndex(c => c.id === challenge.id);
-      const updatedStatuses = [...statuses];
-      if (globalIdx >= 0) {
-        updatedStatuses[globalIdx] = overallStatus;
-      }
-      set({
-        cellGrades: updatedGrades,
-        statuses: updatedStatuses,
-        isLocked: true,
-      });
-    } else {
-      set({ cellGrades: updatedGrades });
-    }
-  },
+      gradeCellAction: (row, col, cellValue) => {
+        const { challenges, currentIndex, cellGrades, statuses, tierChallenges } = get();
+        // currentIndex refers to index within tierChallenges
+        const challenge = tierChallenges[currentIndex];
+        if (!challenge) return;
 
-  showHint: () => set({ hintVisible: true }),
+        const answerCell = challenge.answerCells.find(
+          (ac) => ac.row === row && ac.col === col,
+        );
+        if (!answerCell) return;
 
-  toggleExplanation: () =>
-    set((state) => ({ explanationVisible: !state.explanationVisible })),
+        const result = gradeCell(cellValue, answerCell);
 
-  retry: () => {
-    const { statuses, currentIndex, challenges, tierChallenges } = get();
-    const challenge = tierChallenges[currentIndex];
-    const updatedStatuses = [...statuses];
-    if (challenge) {
-      const globalIdx = challenges.findIndex(c => c.id === challenge.id);
-      if (globalIdx >= 0) {
-        updatedStatuses[globalIdx] = 'unattempted';
-      }
-    }
-    set({
-      cellGrades: [],
-      isLocked: false,
-      explanationVisible: false,
-      statuses: updatedStatuses,
-      startTime: Date.now(),
-      elapsedSeconds: 0,
-    });
-  },
+        // Replace any existing grade for this cell, then add new result
+        const updatedGrades: CellGrade[] = [
+          ...cellGrades.filter((g) => !(g.row === row && g.col === col)),
+          { row, col, result },
+        ];
 
-  skip: () => {
-    const { statuses, currentIndex, challenges, tierChallenges } = get();
-    const challenge = tierChallenges[currentIndex];
-    const updatedStatuses = [...statuses];
-    if (challenge) {
-      const globalIdx = challenges.findIndex(c => c.id === challenge.id);
-      if (globalIdx >= 0) {
-        updatedStatuses[globalIdx] = 'skipped';
-      }
-    }
-    const nextIndex = Math.min(currentIndex + 1, tierChallenges.length - 1);
-    set({
-      statuses: updatedStatuses,
-      currentIndex: nextIndex,
-      cellGrades: [],
-      hintVisible: false,
-      explanationVisible: false,
-      isLocked: false,
-      startTime: Date.now(),
-      elapsedSeconds: 0,
-    });
-  },
+        const allAnswerCellsGraded =
+          updatedGrades.length === challenge.answerCells.length;
 
-  nextChallenge: () => {
-    const { currentIndex, tierChallenges } = get();
-    if (currentIndex < tierChallenges.length - 1) {
-      get().setChallenge(currentIndex + 1);
-    }
-  },
+        if (allAnswerCellsGraded) {
+          const overallStatus = computeOverallStatus(updatedGrades);
+          // Map back to global index for status tracking
+          const globalIdx = challenges.findIndex(c => c.id === challenge.id);
+          const updatedStatuses = [...statuses];
+          if (globalIdx >= 0) {
+            updatedStatuses[globalIdx] = overallStatus;
+          }
+          set({
+            cellGrades: updatedGrades,
+            statuses: updatedStatuses,
+            isLocked: true,
+          });
+        } else {
+          set({ cellGrades: updatedGrades });
+        }
+      },
 
-  prevChallenge: () => {
-    const { currentIndex } = get();
-    if (currentIndex > 0) {
-      get().setChallenge(currentIndex - 1);
-    }
-  },
+      showHint: () =>
+        set((state) => ({
+          hintVisible: true,
+          hintUsageCount: state.hintUsageCount + 1,
+        })),
 
-  tick: () => {
-    const { startTime } = get();
-    if (startTime !== null) {
-      set({ elapsedSeconds: Math.floor((Date.now() - startTime) / 1000) });
-    }
-  },
+      toggleExplanation: () =>
+        set((state) => ({ explanationVisible: !state.explanationVisible })),
 
-  // ── Tier actions ────────────────────────────────────────────────────────────
+      retry: () => {
+        const { statuses, currentIndex, challenges, tierChallenges } = get();
+        const challenge = tierChallenges[currentIndex];
+        const updatedStatuses = [...statuses];
+        if (challenge) {
+          const globalIdx = challenges.findIndex(c => c.id === challenge.id);
+          if (globalIdx >= 0) {
+            updatedStatuses[globalIdx] = 'unattempted';
+          }
+        }
+        set({
+          cellGrades: [],
+          isLocked: false,
+          explanationVisible: false,
+          statuses: updatedStatuses,
+          startTime: Date.now(),
+          elapsedSeconds: 0,
+        });
+      },
 
-  setActiveTier: (tier) => {
-    const { challenges } = get();
-    const filtered = challenges.filter(c => c.tier === tier);
-    const shuffled = shuffle(filtered);
-    set({
-      activeTier: tier,
-      tierChallenges: shuffled,
-      currentIndex: 0,
-      cellGrades: [],
-      hintVisible: false,
-      explanationVisible: false,
-      isLocked: false,
-      startTime: Date.now(),
-      elapsedSeconds: 0,
-    });
-  },
+      skip: () => {
+        const { statuses, currentIndex, challenges, tierChallenges } = get();
+        const challenge = tierChallenges[currentIndex];
+        const updatedStatuses = [...statuses];
+        if (challenge) {
+          const globalIdx = challenges.findIndex(c => c.id === challenge.id);
+          if (globalIdx >= 0) {
+            updatedStatuses[globalIdx] = 'skipped';
+          }
+        }
+        const nextIndex = Math.min(currentIndex + 1, tierChallenges.length - 1);
+        set({
+          statuses: updatedStatuses,
+          currentIndex: nextIndex,
+          cellGrades: [],
+          hintVisible: false,
+          explanationVisible: false,
+          isLocked: false,
+          startTime: Date.now(),
+          elapsedSeconds: 0,
+        });
+      },
 
-  isTierUnlocked: (tier) => {
-    const { challenges, statuses } = get();
-    const drillAnswers = useDrillStore.getState().allAnswers;
-    return computeTierUnlocked(tier, challenges, statuses, drillAnswers);
-  },
+      nextChallenge: () => {
+        const { currentIndex, tierChallenges } = get();
+        if (currentIndex < tierChallenges.length - 1) {
+          get().setChallenge(currentIndex + 1);
+        }
+      },
 
-  // ── Helper ──────────────────────────────────────────────────────────────────
+      prevChallenge: () => {
+        const { currentIndex } = get();
+        if (currentIndex > 0) {
+          get().setChallenge(currentIndex - 1);
+        }
+      },
 
-  globalIndex: (challengeId) => {
-    const { challenges } = get();
-    return challenges.findIndex(c => c.id === challengeId);
-  },
-}));
+      tick: () => {
+        const { startTime } = get();
+        if (startTime !== null) {
+          set({ elapsedSeconds: Math.floor((Date.now() - startTime) / 1000) });
+        }
+      },
+
+      // ── Tier actions ────────────────────────────────────────────────────────────
+
+      setActiveTier: (tier) => {
+        const { challenges } = get();
+        const filtered = challenges.filter(c => c.tier === tier);
+        const shuffled = shuffle(filtered);
+        set({
+          activeTier: tier,
+          tierChallenges: shuffled,
+          currentIndex: 0,
+          cellGrades: [],
+          hintVisible: false,
+          explanationVisible: false,
+          isLocked: false,
+          startTime: Date.now(),
+          elapsedSeconds: 0,
+        });
+      },
+
+      isTierUnlocked: (tier) => {
+        const { challenges, statuses } = get();
+        const drillAnswers = useDrillStore.getState().allAnswers;
+        return computeTierUnlocked(tier, challenges, statuses, drillAnswers);
+      },
+
+      // ── Helper ──────────────────────────────────────────────────────────────────
+
+      globalIndex: (challengeId) => {
+        const { challenges } = get();
+        return challenges.findIndex(c => c.id === challengeId);
+      },
+    }),
+    {
+      name: 'excelprep-challenge-v1',
+      storage: createJSONStorage(() => safeLocalStorage),
+      version: 1,
+      // Only persist durable data — never session/UI state
+      partialize: (state) => ({
+        challengeStatuses: Object.fromEntries(
+          state.challenges.map((c, i) => [c.id, state.statuses[i] ?? 'unattempted']),
+        ) as Record<string, ChallengeStatus>,
+        hintUsageCount: state.hintUsageCount,
+      } satisfies PersistedChallengeState),
+      // On hydration: store the persisted Record in _hydratedStatusRecord so that
+      // loadChallenges (called after challenges are available) can rebuild statuses[].
+      merge: (persisted, current) => {
+        const p = persisted as Partial<PersistedChallengeState>;
+        return {
+          ...current,
+          hintUsageCount: p.hintUsageCount ?? 0,
+          _hydratedStatusRecord: p.challengeStatuses ?? {},
+        };
+      },
+    },
+  ),
+);
