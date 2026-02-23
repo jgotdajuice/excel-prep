@@ -10,29 +10,29 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 2 of 5 (Challenge Loop)
-Plan: 1 of 3 in current phase
-Status: Phase 2 Plan 01 complete
-Last activity: 2026-02-23 — Plan 02-01 complete (challenge types, gradeCell engine, useChallengeStore, 3 seed challenges)
+Plan: 2 of 3 in current phase
+Status: Phase 2 Plan 02 complete
+Last activity: 2026-02-23 — Plan 02-02 complete (challenge UI: SpreadsheetGrid challenge mode, RightPanel, ChallengeList, CompletionScreen, /challenge route)
 
-Progress: [███░░░░░░░] 30%
+Progress: [████░░░░░░] 40%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
+- Total plans completed: 4
 - Average duration: 4 min
-- Total execution time: 0.22 hours
+- Total execution time: 0.29 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-formula-engine | 2 | 10 min | 5 min |
-| 02-challenge-loop | 1 | 3 min | 3 min |
+| 02-challenge-loop | 2 | 7 min | 3.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 6 min, 4 min, 3 min
-- Trend: Faster
+- Last 5 plans: 6 min, 4 min, 3 min, 4 min
+- Trend: Stable
 
 *Updated after each plan completion*
 
@@ -59,6 +59,10 @@ Recent decisions affecting current work:
 - [02-01]: NPV seed challenge tolerance 0.5 to handle formula-path variation while catching wrong answers
 - [02-01]: gradeCellAction replaces existing cell grade on re-grade — supports retry flow without stale grade accumulation
 - [02-01]: Engine-verified seed challenge expected values: VLOOKUP=105000, NPV=5373.93, nested IF="Medium"
+- [02-02]: cells callback return type is CellMeta (not CellProperties) — CellProperties has required runtime fields that HOT fills internally
+- [02-02]: hfInstance exported from SpreadsheetGrid — ChallengePage reads computed cell values without duplicating engine construction
+- [02-02]: challenge key prop on HotTable forces full remount on challenge switch — ensures HOT reinitializes with new seed data
+- [02-02]: Custom renderer receives gradeStatus via CellMeta cast — HOT passes CellMeta to renderer's cellProperties argument
 
 ### Pending Todos
 
@@ -68,12 +72,12 @@ None.
 
 - [Phase 1 RESOLVED]: HyperFormula Excel compatibility verified — all 12 GRID-02 functions pass smoke tests
 - [Phase 1 RESOLVED]: Grid UI complete — Handsontable wired to HyperFormula, formula bar, autocomplete, routing all working
-- [Phase 2 IN PROGRESS]: Plan 02-01 complete — data layer and grading engine done; Plan 02-02 (challenge UI) is next
+- [Phase 2 IN PROGRESS]: Plans 02-01 and 02-02 complete — full challenge loop UI live; Plan 02-03 (localStorage persistence + progress tracking) is next
 - [Phase 4]: Browser shortcut interception scope is not fully resolved — spike needed to confirm which IB shortcuts are safely capturable without browser conflicts
 - [Phase 3]: Tier-1 function list should be validated against a finance professional's input before content build starts
 
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 02-01-PLAN.md (challenge data layer and grading engine)
-Resume file: .planning/phases/02-challenge-loop/02-02-PLAN.md
+Stopped at: Completed 02-02-PLAN.md (challenge UI — full interactive loop at /challenge route)
+Resume file: .planning/phases/02-challenge-loop/02-03-PLAN.md

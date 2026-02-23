@@ -44,7 +44,7 @@ Plans:
   3. User sees distinct, clear feedback for "wrong value" versus "formula syntax error" (not a generic error message)
   4. After every submission (correct or incorrect), user sees an explanation of how the formula works and why it produces the expected result
   5. User can move to the next challenge after seeing their result
-**Plans:** 1/3 plans complete
+**Plans:** 2/3 plans executed
 Plans:
 - [x] 02-01-PLAN.md — Challenge types, grading engine (TDD), Zustand store, seed challenge data
 - [ ] 02-02-PLAN.md — SpreadsheetGrid challenge mode, ChallengePage, RightPanel, ChallengeList, CompletionScreen, routing
@@ -91,7 +91,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Formula Engine | 2/2 | Complete    | 2026-02-23 |
-| 2. Challenge Loop | 1/3 | In Progress | - |
+| 2. Challenge Loop | 2/3 | In Progress|  |
 | 3. Content Library | 0/TBD | Not started | - |
 | 4. Keyboard Shortcuts | 0/TBD | Not started | - |
 | 5. Progress and Weak Areas | 0/TBD | Not started | - |
