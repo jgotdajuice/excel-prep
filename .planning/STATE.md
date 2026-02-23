@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-23)
 
 ## Current Position
 
-Phase: 7 — Shell and Welcome Page Restyling
-Plan: 3 of 3 complete
-Status: Phase 07 complete — all 3 plans done
-Last activity: 2026-02-23 — 07-03 StatCard, ProgressPage, ShortcutsPage restyled with Tailwind tokens
+Phase: 8 — Challenge Components and Prompt Formatting
+Plan: 1 of 2 complete
+Status: Phase 08 in progress — plan 01 done
+Last activity: 2026-02-23 — 08-01 formatPrompt utility + ChallengeList, TierTabs, CompletionScreen Tailwind migration
 
-Progress: [██████████] 100% (phase 07 complete)
+Progress: [█████░░░░░] 50% (phase 08, 1 of 2 plans done)
 
 ## Performance Metrics
 
@@ -71,6 +71,11 @@ v1.1 decisions:
 - [Phase 07-03]: AccuracyBar fill div retains inline style for width/backgroundColor — dynamic runtime values from accuracy state, not design-token-resolvable
 - [Phase 07-03]: StatCard delegates container styling to Card — no duplication of bg-surface/border/rounded-card
 - [Phase 07-03]: optionBtnClass(active) as local clsx function — mirrors Button variant pattern for ShortcutSetup toggle buttons
+- [Phase 08-01]: formatPrompt uses line-by-line parsing — table lines start with |, bullet data lines start with • or '- ' and contain data chars (digits, $, /)
+- [Phase 08-01]: PromptDisplay uses React.createElement (not JSX) in .ts file — avoids need to rename to .tsx while keeping single-file utility
+- [Phase 08-01]: ChallengeList locked+active state uses separate clsx conditions for locked/non-locked hover paths
+- [Phase 08-01]: CompletionScreen Card uses padding={false} + className px-12 py-10 to override Card default p-6
+- [Phase 08-01]: completion-pop keyframe stays in index.css, referenced via Tailwind arbitrary animate-[completion-pop_0.5s_ease-out]
 
 ### Pending Todos
 
@@ -79,11 +84,11 @@ None.
 ### Blockers/Concerns
 
 - [v1.1 RESOLVED by 06-01]: Tailwind preflight may conflict with Handsontable grid styles — addressed with .hot-container preflight repair CSS
-- [v1.1]: Drill question text is wall-of-text — addressed in Phase 8 (UX-02)
+- [v1.1 RESOLVED by 08-01]: Drill question text is wall-of-text — formatPrompt utility now splits prompts into scenario/data/task sections; PromptDisplay will be integrated in 08-02
 - [v1.0 RESOLVED]: All 15 v1.0 requirements shipped and verified
 
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 07-03-PLAN.md — StatCard, ProgressPage, ShortcutsPage Tailwind restyling
+Stopped at: Completed 08-01-PLAN.md — formatPrompt utility, ChallengeList/TierTabs/CompletionScreen Tailwind migration
 Resume file: /gsd:execute-phase 8

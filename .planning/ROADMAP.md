@@ -71,7 +71,7 @@ Plans:
   2. Challenge prompts render with structured layout: scenario label, data block (styled as code/table), task instruction — not a single paragraph
   3. Drill question prompts use the same structured formatting
   4. Handsontable grid still renders correctly after adjacent component CSS changes (no height collapse, no border loss)
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 08-01-PLAN.md — formatPrompt utility + ChallengeList, TierTabs, CompletionScreen Tailwind migration
@@ -104,5 +104,5 @@ v1.1: Phases 6 -> 7 -> 8 -> 9
 | 5. Progress and Weak Areas | 3/3 | Complete | 2026-02-23 |
 | 6. Design Foundation | 2/2 | Complete | 2026-02-23 |
 | 7. Shell, Welcome, and Page Restyling | 3/3 | Complete   | 2026-02-23 |
-| 8. Challenge Components and Prompt Formatting | 0/2 | Planned | — |
+| 8. Challenge Components and Prompt Formatting | 1/2 | In Progress|  |
 | 9. Deployment and Verification | 0/0 | Pending | — |
