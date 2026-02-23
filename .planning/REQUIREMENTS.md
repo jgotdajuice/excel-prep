@@ -19,13 +19,13 @@
 - [x] **LEARN-03**: User sees an explanation after each question showing why the answer works and how the formula operates
 - [x] **LEARN-04**: All challenges use finance/IB/accounting scenario framing rather than generic examples
 - [x] **LEARN-05**: User can follow a structured learning path from beginner to interview-ready
-- [ ] **LEARN-06**: Drill queue surfaces frequently-missed formulas more often (weighted-random)
+- [x] **LEARN-06**: Drill queue surfaces frequently-missed formulas more often (weighted-random)
 
 ### Progress Tracking
 
 - [x] **PROG-01**: User's completed challenges and scores persist across browser sessions
 - [x] **PROG-02**: User can see weak areas tagged by function/concept with accuracy rates per topic
-- [ ] **PROG-03**: User receives suggested next topics based on their performance and gaps
+- [x] **PROG-03**: User receives suggested next topics based on their performance and gaps
 
 ### Keyboard Shortcuts
 
@@ -70,10 +70,10 @@
 | LEARN-03 | Phase 2 | Complete |
 | LEARN-04 | Phase 2 | Complete (02-01) |
 | LEARN-05 | Phase 3 | Complete |
-| LEARN-06 | Phase 5 | Pending |
+| LEARN-06 | Phase 5 | Complete (05-02) |
 | PROG-01 | Phase 5 | Complete |
-| PROG-02 | Phase 5 | Complete |
-| PROG-03 | Phase 5 | Pending |
+| PROG-02 | Phase 5 | Complete (05-02) |
+| PROG-03 | Phase 5 | Complete (05-02) |
 | KEYS-01 | Phase 4 | Complete |
 | KEYS-02 | Phase 4 | Complete |
 
@@ -84,4 +84,4 @@
 
 ---
 *Requirements defined: 2026-02-22*
-*Last updated: 2026-02-23 after plan 02-01 — GRID-03, GRID-04, LEARN-01, LEARN-04 marked complete*
+*Last updated: 2026-02-23 after plan 05-02 — LEARN-06, PROG-02, PROG-03 marked complete*

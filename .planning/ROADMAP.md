@@ -92,7 +92,7 @@ Plans:
 **Plans:** 3 plans
 Plans:
 - [x] 05-01-PLAN.md — Zustand persist middleware on both stores, safeStorage, hintUsageCount, progress selector functions
-- [ ] 05-02-PLAN.md — ProgressPage dashboard (accuracy bars, stats, weak-area suggestions), weighted drill queue, route + nav wiring
+- [x] 05-02-PLAN.md — ProgressPage dashboard (accuracy bars, stats, weak-area suggestions), weighted drill queue, route + nav wiring
 - [ ] 05-03-PLAN.md — Human verification of persistence, dashboard, and weighted drill
 
 ## Progress
@@ -106,4 +106,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Challenge Loop | 3/3 | Complete | 2026-02-23 |
 | 3. Content Library | 4/4 | Complete | 2026-02-23 |
 | 4. Keyboard Shortcuts | 1/2 | Complete    | 2026-02-23 |
-| 5. Progress and Weak Areas | 1/3 | In Progress | - |
+| 5. Progress and Weak Areas | 2/3 | In Progress | - |

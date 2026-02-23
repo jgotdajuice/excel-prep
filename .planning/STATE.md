@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** A beginner can rapidly learn the Excel functions and patterns that finance interviews test, through active practice rather than passive reading.
-**Current focus:** Phase 5 in progress — Persistence and Progress Selectors (Plan 1 of 3 complete)
+**Current focus:** Phase 5 in progress — Progress Dashboard and Weighted Drill Queue (Plan 2 of 3 complete)
 
 ## Current Position
 
 Phase: 5 of 5 (Progress and Weak Areas) — In Progress
-Plan: 1 of 3 complete in current phase
-Status: Phase 5 Plan 1 complete — persist middleware added, progressSelectors created
-Last activity: 2026-02-23 — Phase 5 Plan 1 executed
+Plan: 2 of 3 complete in current phase
+Status: Phase 5 Plan 2 complete — ProgressPage dashboard, /progress route, weighted drill queue
+Last activity: 2026-02-23 — Phase 5 Plan 2 executed
 
-Progress: [████████░░] 82%
+Progress: [█████████░] 90%
 
 ## Performance Metrics
 
@@ -38,6 +38,7 @@ Progress: [████████░░] 82%
 - Trend: Persistence plans run fast; dashboard plans (Plan 2) may take longer
 
 *Updated after each plan completion*
+| Phase 05-progress-and-weak-areas P02 | 4 | 2 tasks | 4 files |
 | Phase 05-progress-and-weak-areas P01 | 4 | 2 tasks | 4 files |
 | Phase 03-content-library P03 | 3 | 2 tasks | 8 files |
 | Phase 03-content-library P02 | 3 | 2 tasks | 5 files |
@@ -92,6 +93,9 @@ Recent decisions affecting current work:
 - [Phase 05-01]: _hydratedStatusRecord internal field bridges persist merge and loadChallenges — challenges[] empty at hydration time, Record stored in state and array rebuilt after challenges load
 - [Phase 05-01]: computeCategoryAccuracies uses simple unweighted accuracy for display — distinct from 100%/50% weighted tier-gating in computeTierUnlocked
 - [Phase 05-01]: Skipped challenges excluded from gridTotal in accuracy — only correct/incorrect count as attempts
+- [Phase 05-02]: Circular ESM import drillStore<->challengeStore safe when values only accessed inside function bodies — top-level import works, require() does not in Vite ESM
+- [Phase 05-02]: buildWeightedQueue guarantees 1 question per category before weighted-random fill — no category absent from any session
+- [Phase 05-02]: weight = max(0.05, 1 - accuracy) gives 30%→0.70 vs 80%→0.20 (ratio 3.5x), satisfying 2-3x spec
 
 ### Pending Todos
 
@@ -108,5 +112,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Phase 5 Plan 1 complete — persist middleware + progressSelectors
-Resume file: Phase 5 Plan 2 — run /gsd:execute-phase 05-progress-and-weak-areas
+Stopped at: Phase 5 Plan 2 complete — ProgressPage dashboard + weighted drill queue
+Resume file: Phase 5 Plan 3 — run /gsd:execute-phase 05-progress-and-weak-areas
