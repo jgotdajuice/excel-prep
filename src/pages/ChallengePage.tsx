@@ -72,9 +72,9 @@ export function ChallengePage() {
   const prereqTier = activeTier === 'intermediate' ? 'Beginner' : 'Intermediate';
 
   return (
-    <div className="challenge-page">
+    <div className="flex flex-row h-full overflow-hidden">
       {/* Left: tier tabs + challenge list sidebar */}
-      <div className="challenge-sidebar">
+      <div className="flex flex-col border-r border-border bg-base shrink-0 w-[200px] min-w-[200px]">
         <TierTabs
           activeTier={activeTier}
           intermediateUnlocked={intermediateUnlocked}
@@ -85,15 +85,15 @@ export function ChallengePage() {
       </div>
 
       {/* Center: spreadsheet grid (only when tier unlocked) */}
-      <div className="challenge-grid-area">
+      <div className="flex-1 overflow-hidden flex flex-col">
         {activeTierLocked ? (
-          <div className="tier-locked-message">
-            <p className="tier-locked-title">{'\u{1F512}'} Tier Locked</p>
-            <p className="tier-locked-body">
+          <div className="flex flex-col items-center justify-center h-full gap-3 p-6 text-center text-muted">
+            <p className="text-lg font-bold text-brand-dark m-0">{'\u{1F512}'} Tier Locked</p>
+            <p className="text-sm m-0 max-w-[300px]">
               Complete {prereqTier} challenges first to unlock{' '}
               {activeTier.charAt(0).toUpperCase() + activeTier.slice(1)}.
             </p>
-            <p className="tier-locked-hint">
+            <p className="text-xs text-muted m-0">
               You need 70% correct in each function category.
             </p>
           </div>

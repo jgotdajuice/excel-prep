@@ -33,15 +33,8 @@ export function DrillQuestionCard({ question, mode, onSubmit, disabled }: DrillQ
 
   if (mode === 'typing') {
     return (
-      <div style={{ width: '100%' }}>
-        <div
-          style={{
-            fontSize: '13px',
-            color: 'rgba(255,255,255,0.55)',
-            marginBottom: '8px',
-            fontStyle: 'italic',
-          }}
-        >
+      <div className="w-full">
+        <div className="text-[13px] text-muted mb-2 italic">
           {scopeHint}
         </div>
 
@@ -52,7 +45,7 @@ export function DrillQuestionCard({ question, mode, onSubmit, disabled }: DrillQ
             const val = (e.currentTarget.elements.namedItem('answer') as HTMLInputElement).value;
             onSubmit(val);
           }}
-          style={{ display: 'flex', gap: '8px' }}
+          className="flex gap-2"
         >
           <input
             ref={inputRef}
@@ -62,32 +55,12 @@ export function DrillQuestionCard({ question, mode, onSubmit, disabled }: DrillQ
             placeholder="Type your answer..."
             autoComplete="off"
             spellCheck={false}
-            style={{
-              flex: 1,
-              fontFamily: 'monospace',
-              fontSize: '16px',
-              padding: '10px 14px',
-              borderRadius: '8px',
-              border: '2px solid rgba(255,255,255,0.2)',
-              backgroundColor: 'rgba(255,255,255,0.08)',
-              color: '#ffffff',
-              outline: 'none',
-            }}
+            className="flex-1 font-mono text-base px-3.5 py-2.5 rounded-lg border-2 border-border bg-surface text-text-primary outline-none focus:border-brand transition-colors duration-150 disabled:opacity-60"
           />
           <button
             type="submit"
             disabled={disabled}
-            style={{
-              padding: '10px 20px',
-              borderRadius: '8px',
-              border: 'none',
-              backgroundColor: '#1a6b3c',
-              color: '#ffffff',
-              fontSize: '14px',
-              fontWeight: 600,
-              cursor: disabled ? 'not-allowed' : 'pointer',
-              opacity: disabled ? 0.5 : 1,
-            }}
+            className="px-5 py-2.5 rounded-lg border-none bg-brand text-white text-sm font-semibold cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
           >
             Submit
           </button>
@@ -98,37 +71,13 @@ export function DrillQuestionCard({ question, mode, onSubmit, disabled }: DrillQ
 
   // Multiple choice mode
   return (
-    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+    <div className="w-full flex flex-col gap-2.5">
       {shuffledOptions.map((option) => (
         <button
           key={option}
           disabled={disabled}
           onClick={() => !disabled && onSubmit(option)}
-          style={{
-            display: 'block',
-            width: '100%',
-            padding: '12px 16px',
-            borderRadius: '8px',
-            border: '2px solid rgba(255,255,255,0.15)',
-            backgroundColor: 'rgba(255,255,255,0.05)',
-            color: '#ffffff',
-            fontFamily: 'monospace',
-            fontSize: '14px',
-            textAlign: 'left',
-            cursor: disabled ? 'not-allowed' : 'pointer',
-            opacity: disabled ? 0.6 : 1,
-            transition: 'border-color 0.15s, background-color 0.15s',
-          }}
-          onMouseEnter={(e) => {
-            if (!disabled) {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,0.45)';
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(255,255,255,0.12)';
-            }
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,0.15)';
-            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(255,255,255,0.05)';
-          }}
+          className="block w-full px-4 py-3 rounded-lg border-2 border-border bg-surface text-text-primary font-mono text-sm text-left cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-150 hover:border-brand/50 hover:bg-brand-light/30"
         >
           {option}
         </button>

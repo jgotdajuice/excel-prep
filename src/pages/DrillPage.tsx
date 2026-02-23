@@ -7,6 +7,7 @@ import { DrillFeedback } from '../components/DrillFeedback';
 import { DrillReview } from '../components/DrillReview';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { formatPrompt, PromptDisplay } from '../utils/formatPrompt';
 
 export function DrillPage() {
   const {
@@ -186,8 +187,8 @@ export function DrillPage() {
       </div>
 
       {/* Question prompt */}
-      <div className="text-base leading-relaxed text-text-primary mb-6 min-h-[60px]">
-        {currentQuestion.prompt}
+      <div className="mb-6 min-h-[60px]">
+        <PromptDisplay sections={formatPrompt(currentQuestion.prompt)} />
       </div>
 
       {/* Answer input */}
