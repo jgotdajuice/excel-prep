@@ -7,14 +7,7 @@ export function ShortcutsPage() {
   const drillState = useShortcutStore((s) => s.drillState);
 
   return (
-    <div
-      style={{
-        padding: '24px',
-        overflowY: 'auto',
-        height: '100%',
-        boxSizing: 'border-box',
-      }}
-    >
+    <div className="p-6 overflow-y-auto h-full">
       {drillState === 'idle' && <ShortcutSetup />}
       {(drillState === 'drilling' || drillState === 'feedback') && <ShortcutDrill />}
       {drillState === 'summary' && <ShortcutSummary />}
