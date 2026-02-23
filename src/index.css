@@ -39,6 +39,17 @@ html, body, #root {
   background: #ffffff;
 }
 
+/* HotTable wrapper div doesn't inherit height from flex parents — propagate it */
+.hot-container > div {
+  height: 100%;
+}
+.hot-container .ht-root-wrapper {
+  height: 100%;
+}
+.hot-container .ht-grid {
+  height: 100%;
+}
+
 /* Formula bar utility */
 .formula-bar {
   font-family: Consolas, "Courier New", monospace;

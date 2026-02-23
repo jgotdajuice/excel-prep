@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { HotTable } from '@handsontable/react-wrapper';
 import type { HotTableRef } from '@handsontable/react-wrapper';
 import { registerAllModules } from 'handsontable/registry';
@@ -105,21 +105,35 @@ export function SpreadsheetGrid({
   // Enter-key grading flag: set true when Enter is pressed in an answer cell
   const enterPressedRef = useRef(false);
 
-  // Build answer cell set for quick lookup: "row:col" → AnswerCell
-  const answerCellSet = new Set<string>(
-    (challenge?.answerCells ?? []).map((ac) => `${ac.row}:${ac.col}`),
-  );
+  // Use refs for challenge props to avoid re-creating cells callback on every render
+  const isLockedRef = useRef(isLocked);
+  isLockedRef.current = isLocked;
+  const cellGradesRef = useRef(cellGrades);
+  cellGradesRef.current = cellGrades;
+  const onGradeCellRef = useRef(onGradeCell);
+  onGradeCellRef.current = onGradeCell;
 
-  // Build grade map for renderer: "row:col" → grade status
-  const gradeMap = new Map<string, string>();
-  for (const cg of cellGrades ?? []) {
-    gradeMap.set(`${cg.row}:${cg.col}`, cg.result.status);
-  }
+  // Build answer cell set — memoized on challenge ID, also stored in ref for stable callbacks
+  const answerCellSet = useMemo(
+    () => new Set<string>((challenge?.answerCells ?? []).map((ac) => `${ac.row}:${ac.col}`)),
+    [challenge?.id], // eslint-disable-line react-hooks/exhaustive-deps
+  );
+  const answerCellSetRef = useRef(answerCellSet);
+  answerCellSetRef.current = answerCellSet;
+
+  const isChallenge = !!challenge;
 
   // Set localStorage flag so WelcomePage can show "Continue" on next visit
   useEffect(() => {
     localStorage.setItem('hasStarted', 'true');
   }, []);
+
+  // When grades or lock state change, re-render grid cells to update outlines
+  useEffect(() => {
+    if (!isChallenge) return;
+    const hot = hotRef.current?.hotInstance;
+    if (hot) hot.render();
+  }, [isLocked, cellGrades, isChallenge]);
 
   // When challenge changes, imperatively load seed data into HOT
   useEffect(() => {
@@ -157,8 +171,6 @@ export function SpreadsheetGrid({
   }
 
   // ── Challenge mode props ─────────────────────────────────────────────────
-  const isChallenge = !!challenge;
-
   const minRows = isChallenge ? challenge!.seedData.length : 50;
   const maxRows = isChallenge ? challenge!.seedData.length : undefined;
   const minCols = isChallenge
@@ -168,26 +180,30 @@ export function SpreadsheetGrid({
     ? Math.max(...challenge!.seedData.map((r) => r.length))
     : undefined;
 
-  // cells callback — controls readOnly and renderer per cell
-  const cellsCallback = isChallenge
-    ? (row: number, col: number): Handsontable.CellMeta => {
-        const key = `${row}:${col}`;
-        if (isLocked) {
-          // Grid locked after grading — all cells read-only
-          if (answerCellSet.has(key)) {
-            const gradeStatus = gradeMap.get(key);
-            return { readOnly: true, renderer: 'answerCell', gradeStatus } as Handsontable.CellMeta;
-          }
-          return { readOnly: true };
-        }
-        if (answerCellSet.has(key)) {
-          const gradeStatus = gradeMap.get(key);
-          return { readOnly: false, renderer: 'answerCell', gradeStatus } as Handsontable.CellMeta;
-        }
-        // Seed cell — read-only
-        return { readOnly: true };
+  // Stable cells callback — reads ALL state from refs to avoid re-render loops
+  const cellsCallbackRef = useRef((row: number, col: number): Handsontable.CellMeta => {
+    const key = `${row}:${col}`;
+    const locked = isLockedRef.current;
+    const acSet = answerCellSetRef.current;
+    // Build grade map from current ref
+    const gradeMap = new Map<string, string>();
+    for (const cg of cellGradesRef.current ?? []) {
+      gradeMap.set(`${cg.row}:${cg.col}`, cg.result.status);
+    }
+    if (locked) {
+      if (acSet.has(key)) {
+        const gradeStatus = gradeMap.get(key);
+        return { readOnly: true, renderer: 'answerCell', gradeStatus } as Handsontable.CellMeta;
       }
-    : undefined;
+      return { readOnly: true };
+    }
+    if (acSet.has(key)) {
+      const gradeStatus = gradeMap.get(key);
+      return { readOnly: false, renderer: 'answerCell', gradeStatus } as Handsontable.CellMeta;
+    }
+    return { readOnly: true };
+  });
+  const cellsCallback = isChallenge ? cellsCallbackRef.current : undefined;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
@@ -198,7 +214,7 @@ export function SpreadsheetGrid({
           cellLabel={`${colIndexToLetter(selectedCell.col)}${selectedCell.row + 1}`}
         />
       )}
-      <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+      <div className="hot-container" style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
         <HotTable
           ref={hotRef}
           // Use challenge key to force full re-mount when challenge changes
@@ -221,7 +237,7 @@ export function SpreadsheetGrid({
               }
             : {})}
           beforeKeyDown={(e: KeyboardEvent) => {
-            if (!isChallenge || !onGradeCell) return;
+            if (!isChallenge || !onGradeCellRef.current) return;
             if (e.key !== 'Enter') return;
             const hot = hotRef.current?.hotInstance;
             if (!hot) return;
@@ -229,19 +245,19 @@ export function SpreadsheetGrid({
             if (!selected || selected.length === 0) return;
             const [row, col] = selected[0];
             const key = `${row}:${col}`;
-            if (answerCellSet.has(key) && !isLocked) {
+            if (answerCellSetRef.current.has(key) && !isLockedRef.current) {
               enterPressedRef.current = true;
             }
           }}
           afterChange={(changes, source) => {
-            if (isChallenge && onGradeCell && source === 'edit') {
+            if (isChallenge && onGradeCellRef.current && source === 'edit') {
               if (enterPressedRef.current) {
                 enterPressedRef.current = false;
                 if (changes) {
                   for (const [row, col] of changes) {
                     const key = `${row}:${Number(col)}`;
-                    if (answerCellSet.has(key)) {
-                      onGradeCell(row as number, Number(col));
+                    if (answerCellSetRef.current.has(key)) {
+                      onGradeCellRef.current!(row as number, Number(col));
                     }
                   }
                 }
@@ -254,6 +270,8 @@ export function SpreadsheetGrid({
             }
           }}
           afterSelection={(row, col) => {
+            // Skip state updates in challenge mode — FormulaBar isn't shown
+            if (isChallenge) return;
             let formula: string | undefined;
             let value: string | number | boolean | null = null;
             try {
