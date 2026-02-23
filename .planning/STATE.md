@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-23)
 
 ## Current Position
 
-Phase: 6 — Design Foundation
-Plan: 2 of 2 complete
-Status: Phase 06 complete — all plans done
-Last activity: 2026-02-23 — 06-02 UI primitives (Button + Card components)
+Phase: 7 — Shell and Welcome Page Restyling
+Plan: 1 of ? complete
+Status: Phase 07 in progress — plan 01 done
+Last activity: 2026-02-23 — 07-01 AppShell + WelcomePage restyled with Tailwind tokens
 
-Progress: [██░░░░░░░░] 20%
+Progress: [███░░░░░░░] 25%
 
 ## Performance Metrics
 
@@ -60,6 +60,9 @@ v1.1 decisions:
 - [Phase 06-design-foundation]: HOT preflight repair targets .hot-container (scoped) to avoid global table overrides
 - [Phase 06-02]: Button uses clsx (not tailwind-merge) — variants are non-conflicting by design
 - [Phase 06-02]: Card is layout-only container — no hover/click, just bg-surface + border + rounded-card
+- [Phase 07-01]: NavLink uses className callback (not style callback) with clsx for isActive toggling — Tailwind-consistent approach
+- [Phase 07-01]: Sidebar w-[220px] min-w-[220px] uses arbitrary values for explicit 220px width
+- [Phase 07-01]: WelcomePage secondary CTA uses variant='secondary' (brand-light + border-brand) rather than ghost
 
 ### Pending Todos
 
@@ -74,5 +77,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 06-02-PLAN.md — UI primitives (Button + Card components)
+Stopped at: Completed 07-01-PLAN.md — AppShell + WelcomePage Tailwind restyling
 Resume file: /gsd:execute-phase 7

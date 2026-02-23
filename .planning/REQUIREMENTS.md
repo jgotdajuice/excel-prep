@@ -22,7 +22,7 @@ Requirements for Polish & Deploy milestone.
 
 ### User Experience
 
-- [ ] **UX-01**: WelcomePage includes a "How it works" section explaining the learning loop for first-time users
+- [x] **UX-01**: WelcomePage includes a "How it works" section explaining the learning loop for first-time users
 - [ ] **UX-02**: Challenge and drill prompts use structured formatting (scenario label, data block, task instruction) instead of wall-of-text paragraphs
 - [ ] **UX-03**: Correct/incorrect answer feedback includes visual animation (green flash for correct, red shake for wrong)
 - [x] **UX-04**: Browser tab shows app name ("ExcelPrep") and a custom favicon (not Vite defaults)
@@ -69,7 +69,7 @@ Deferred to future release.
 | VIS-02 | Phase 7 | Pending |
 | VIS-03 | Phase 6 | Complete |
 | VIS-04 | Phase 6 | Complete |
-| UX-01 | Phase 7 | Pending |
+| UX-01 | Phase 7 | Complete |
 | UX-02 | Phase 8 | Pending |
 | UX-03 | Phase 7 | Pending |
 | UX-04 | Phase 6 | Complete |
