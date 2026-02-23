@@ -1,9 +1,12 @@
 import { useRef, useEffect } from 'react';
+import { clsx } from 'clsx';
 import type { Tier } from '../types';
 import { useDrillStore } from '../store/drillStore';
 import { DrillQuestionCard } from '../components/DrillQuestion';
 import { DrillFeedback } from '../components/DrillFeedback';
 import { DrillReview } from '../components/DrillReview';
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
 
 export function DrillPage() {
   const {
@@ -48,46 +51,20 @@ export function DrillPage() {
   // ── Idle: setup screen ──────────────────────────────────────────────────────
   if (phase === 'idle') {
     return (
-      <div
-        style={{
-          backgroundColor: '#111827',
-          color: '#ffffff',
-          borderRadius: '12px',
-          padding: '40px',
-          maxWidth: '520px',
-          margin: '40px auto',
-          boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
-        }}
-      >
-        <h1
-          style={{
-            fontSize: '24px',
-            fontWeight: 700,
-            marginBottom: '6px',
-            color: '#ffffff',
-          }}
-        >
+      <Card shadow className="max-w-[520px] mx-auto mt-10">
+        <h1 className="text-2xl font-bold text-brand-dark mb-1">
           Rapid-Fire Drill
         </h1>
-        <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.55)', marginBottom: '32px' }}>
+        <p className="text-sm text-muted mb-8">
           10 questions, answer quickly!
         </p>
 
         {/* Tier selector */}
-        <div style={{ marginBottom: '24px' }}>
-          <div
-            style={{
-              fontSize: '12px',
-              fontWeight: 600,
-              color: 'rgba(255,255,255,0.5)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.7px',
-              marginBottom: '10px',
-            }}
-          >
+        <div className="mb-6">
+          <span className="text-[11px] font-semibold text-muted uppercase tracking-wide mb-2.5 block">
             Difficulty
-          </div>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          </span>
+          <div className="flex gap-2 flex-wrap">
             {(['beginner', 'intermediate', 'advanced', 'all'] as const).map((tier) => {
               const isSelected = sessionTier === tier;
               return (
@@ -96,20 +73,12 @@ export function DrillPage() {
                   onClick={() =>
                     useDrillStore.setState({ sessionTier: tier as Tier | 'all' })
                   }
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: '8px',
-                    border: `2px solid ${isSelected ? '#1a6b3c' : 'rgba(255,255,255,0.15)'}`,
-                    backgroundColor: isSelected
-                      ? 'rgba(26, 107, 60, 0.25)'
-                      : 'rgba(255,255,255,0.04)',
-                    color: isSelected ? '#4ade80' : 'rgba(255,255,255,0.7)',
-                    fontSize: '13px',
-                    fontWeight: isSelected ? 600 : 400,
-                    cursor: 'pointer',
-                    textTransform: 'capitalize',
-                    transition: 'all 0.15s',
-                  }}
+                  className={clsx(
+                    'px-4 py-2 rounded-lg text-[13px] cursor-pointer transition-all duration-150',
+                    isSelected
+                      ? 'bg-brand-light border-2 border-brand text-brand-dark font-semibold'
+                      : 'bg-surface border-2 border-border text-text-primary/70 hover:border-brand/50'
+                  )}
                 >
                   {tier === 'all' ? 'All' : tier.charAt(0).toUpperCase() + tier.slice(1)}
                 </button>
@@ -119,43 +88,19 @@ export function DrillPage() {
         </div>
 
         {/* Mode toggle */}
-        <div style={{ marginBottom: '32px' }}>
-          <div
-            style={{
-              fontSize: '12px',
-              fontWeight: 600,
-              color: 'rgba(255,255,255,0.5)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.7px',
-              marginBottom: '10px',
-            }}
-          >
+        <div className="mb-8">
+          <span className="text-[11px] font-semibold text-muted uppercase tracking-wide mb-2.5 block">
             Answer Mode
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              backgroundColor: 'rgba(255,255,255,0.06)',
-              borderRadius: '8px',
-              padding: '4px',
-              width: 'fit-content',
-            }}
-          >
+          </span>
+          <div className="flex bg-base rounded-lg p-1 w-fit">
             {(['typing', 'mc'] as const).map((m) => (
               <button
                 key={m}
                 onClick={() => setMode(m)}
-                style={{
-                  padding: '8px 20px',
-                  borderRadius: '6px',
-                  border: 'none',
-                  backgroundColor: mode === m ? '#1a6b3c' : 'transparent',
-                  color: mode === m ? '#ffffff' : 'rgba(255,255,255,0.55)',
-                  fontSize: '13px',
-                  fontWeight: mode === m ? 600 : 400,
-                  cursor: 'pointer',
-                  transition: 'all 0.15s',
-                }}
+                className={clsx(
+                  'px-5 py-2 rounded-md text-[13px] cursor-pointer border-none transition-all duration-150',
+                  mode === m ? 'bg-brand text-white font-semibold' : 'bg-transparent text-muted'
+                )}
               >
                 {m === 'typing' ? 'Typing' : 'Multiple Choice'}
               </button>
@@ -164,72 +109,29 @@ export function DrillPage() {
         </div>
 
         {/* Timer info */}
-        <div
-          style={{
-            backgroundColor: 'rgba(255,255,255,0.04)',
-            borderRadius: '8px',
-            padding: '12px 16px',
-            marginBottom: '28px',
-            fontSize: '13px',
-            color: 'rgba(255,255,255,0.5)',
-          }}
-        >
+        <div className="bg-base rounded-lg px-4 py-3 mb-7 text-sm text-muted">
           Timer per question:{' '}
-          <span style={{ color: 'rgba(255,255,255,0.8)', fontWeight: 500 }}>
+          <span className="text-text-primary font-medium">
             {sessionTier === 'beginner' ? '45s' : sessionTier === 'intermediate' ? '30s' : sessionTier === 'advanced' ? '20s' : '30s'}
           </span>
         </div>
 
-        <button
-          onClick={() => startSession(sessionTier, mode)}
-          style={{
-            display: 'block',
-            width: '100%',
-            padding: '14px',
-            borderRadius: '10px',
-            border: 'none',
-            backgroundColor: '#1a6b3c',
-            color: '#ffffff',
-            fontSize: '16px',
-            fontWeight: 700,
-            cursor: 'pointer',
-            letterSpacing: '0.3px',
-          }}
-        >
+        <Button className="w-full py-3.5 text-base font-bold rounded-[10px]" onClick={() => startSession(sessionTier, mode)}>
           Start Drill
-        </button>
-      </div>
+        </Button>
+      </Card>
     );
   }
 
   // ── Review ──────────────────────────────────────────────────────────────────
   if (phase === 'review') {
     return (
-      <div
-        style={{
-          backgroundColor: '#111827',
-          color: '#ffffff',
-          borderRadius: '12px',
-          padding: '32px',
-          maxWidth: '680px',
-          margin: '32px auto',
-          boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
-          overflowY: 'auto',
-          maxHeight: 'calc(100vh - 100px)',
-        }}
-      >
-        <h1
-          style={{
-            fontSize: '22px',
-            fontWeight: 700,
-            marginBottom: '24px',
-            textAlign: 'center',
-          }}
-        >
+      <Card shadow className="max-w-[680px] mx-auto mt-8 overflow-y-auto max-h-[calc(100vh-100px)]">
+        <h1 className="text-xl font-bold text-brand-dark mb-6 text-center">
           Session Complete
         </h1>
         <DrillReview />
-      </div>
+      </Card>
     );
   }
 
@@ -239,18 +141,7 @@ export function DrillPage() {
   const isUrgent = secondsRemaining <= 10 && phase === 'active';
 
   return (
-    <div
-      style={{
-        backgroundColor: '#111827',
-        color: '#ffffff',
-        borderRadius: '12px',
-        padding: '32px',
-        maxWidth: '640px',
-        margin: '32px auto',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
-        position: 'relative',
-      }}
-    >
+    <Card shadow className="max-w-[640px] mx-auto mt-8 relative">
       {/* Feedback overlay */}
       {phase === 'feedback' && feedbackStatus && (
         <DrillFeedback
@@ -260,88 +151,42 @@ export function DrillPage() {
       )}
 
       {/* Header: question number + score */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '20px',
-        }}
-      >
-        <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>
+      <div className="flex justify-between items-center mb-5">
+        <span className="text-[13px] text-muted">
           Question{' '}
-          <span style={{ color: '#ffffff', fontWeight: 600 }}>
+          <span className="text-text-primary font-semibold">
             {currentQuestionIndex + 1}
           </span>{' '}
           / {questions.length}
         </span>
-        <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>
+        <span className="text-[13px] text-muted">
           Score:{' '}
-          <span style={{ color: '#4ade80', fontWeight: 600 }}>{correctCount}</span>
+          <span className="text-brand font-semibold">{correctCount}</span>
         </span>
       </div>
 
       {/* Timer */}
-      <div
-        style={{
-          textAlign: 'center',
-          marginBottom: '24px',
-        }}
-      >
+      <div className="text-center mb-6">
         <div
-          style={{
-            display: 'inline-block',
-            fontSize: '40px',
-            fontWeight: 700,
-            fontVariantNumeric: 'tabular-nums',
-            color: isUrgent ? '#ef4444' : '#ffffff',
-            lineHeight: 1,
-            transition: 'color 0.3s',
-          }}
+          className="inline-block text-[40px] font-bold tabular-nums leading-none transition-colors duration-300"
+          style={{ color: isUrgent ? '#ef4444' : 'var(--color-text-primary)' }}
         >
           {secondsRemaining}
         </div>
-        <div
-          style={{
-            fontSize: '11px',
-            color: 'rgba(255,255,255,0.35)',
-            marginTop: '2px',
-            letterSpacing: '0.5px',
-          }}
-        >
+        <div className="text-[11px] text-muted mt-0.5 tracking-wide">
           seconds
         </div>
       </div>
 
       {/* Category badge */}
-      <div style={{ marginBottom: '8px' }}>
-        <span
-          style={{
-            display: 'inline-block',
-            fontSize: '11px',
-            fontWeight: 600,
-            color: 'rgba(255,255,255,0.45)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.7px',
-            backgroundColor: 'rgba(255,255,255,0.06)',
-            padding: '3px 8px',
-            borderRadius: '4px',
-          }}
-        >
+      <div className="mb-2">
+        <span className="inline-block text-[11px] font-semibold text-muted uppercase tracking-wide bg-base px-2 py-0.5 rounded">
           {currentQuestion.category} · {currentQuestion.tier}
         </span>
       </div>
 
       {/* Question prompt */}
-      <div
-        style={{
-          fontSize: '16px',
-          lineHeight: 1.6,
-          color: 'rgba(255,255,255,0.9)',
-          marginBottom: '24px',
-          minHeight: '60px',
-        }}
-      >
+      <div className="text-base leading-relaxed text-text-primary mb-6 min-h-[60px]">
         {currentQuestion.prompt}
       </div>
 
@@ -352,6 +197,6 @@ export function DrillPage() {
         onSubmit={submitAnswer}
         disabled={phase !== 'active'}
       />
-    </div>
+    </Card>
   );
 }
