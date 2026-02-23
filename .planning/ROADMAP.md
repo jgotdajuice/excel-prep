@@ -44,7 +44,11 @@ Plans:
   3. User sees distinct, clear feedback for "wrong value" versus "formula syntax error" (not a generic error message)
   4. After every submission (correct or incorrect), user sees an explanation of how the formula works and why it produces the expected result
   5. User can move to the next challenge after seeing their result
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 02-01-PLAN.md — Challenge types, grading engine (TDD), Zustand store, seed challenge data
+- [ ] 02-02-PLAN.md — SpreadsheetGrid challenge mode, ChallengePage, RightPanel, ChallengeList, CompletionScreen, routing
+- [ ] 02-03-PLAN.md — Human verification of end-to-end challenge flow
 
 ### Phase 3: Content Library
 **Goal**: Users have a full set of finance interview formulas to practice — organized from beginner to interview-ready — plus a rapid-fire drill mode for recognition practice
@@ -87,7 +91,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Formula Engine | 1/2 | Complete    | 2026-02-23 |
-| 2. Challenge Loop | 0/TBD | Not started | - |
+| 2. Challenge Loop | 0/3 | Planned | - |
 | 3. Content Library | 0/TBD | Not started | - |
 | 4. Keyboard Shortcuts | 0/TBD | Not started | - |
 | 5. Progress and Weak Areas | 0/TBD | Not started | - |
