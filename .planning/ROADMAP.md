@@ -21,7 +21,7 @@ Build a client-side SPA that teaches Excel functions for finance interviews thro
 ### v1.1 — Polish & Deploy
 
 - [ ] **Phase 6: Design Foundation** - CSS design tokens, shared UI primitives, Inter font, page title/favicon, vercel.json
-- [ ] **Phase 7: Shell, Welcome, and Page Restyling** - AppShell restyle, WelcomePage onboarding, DrillPage light theme, ProgressPage/ShortcutsPage polish, feedback animations
+- [x] **Phase 7: Shell, Welcome, and Page Restyling** - AppShell restyle, WelcomePage onboarding, DrillPage light theme, ProgressPage/ShortcutsPage polish, feedback animations (completed 2026-02-23)
 - [ ] **Phase 8: Challenge Components and Prompt Formatting** - CSS class migration to Tailwind, structured prompt formatting, formula chip styling
 - [ ] **Phase 9: Deployment and Verification** - Vercel deploy, route verification, production build validation
 
@@ -55,7 +55,7 @@ Plans:
   4. ProgressPage and ShortcutsPage use shared Card/StatCard/Button components
   5. Correct answer shows green flash animation; incorrect shows red shake animation
   6. All pages have consistent typography (Inter font, size scale from tokens)
-**Plans:** 1/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] 07-01-PLAN.md — AppShell restyle + WelcomePage onboarding section
@@ -99,6 +99,6 @@ v1.1: Phases 6 -> 7 -> 8 -> 9
 | 4. Keyboard Shortcuts | 2/2 | Complete | 2026-02-23 |
 | 5. Progress and Weak Areas | 3/3 | Complete | 2026-02-23 |
 | 6. Design Foundation | 2/2 | Complete | 2026-02-23 |
-| 7. Shell, Welcome, and Page Restyling | 1/3 | In Progress|  |
+| 7. Shell, Welcome, and Page Restyling | 3/3 | Complete   | 2026-02-23 |
 | 8. Challenge Components and Prompt Formatting | 0/0 | Pending | — |
 | 9. Deployment and Verification | 0/0 | Pending | — |

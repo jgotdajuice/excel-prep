@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-23)
 ## Current Position
 
 Phase: 7 — Shell and Welcome Page Restyling
-Plan: 1 of ? complete
-Status: Phase 07 in progress — plan 01 done
-Last activity: 2026-02-23 — 07-01 AppShell + WelcomePage restyled with Tailwind tokens
+Plan: 3 of 3 complete
+Status: Phase 07 complete — all 3 plans done
+Last activity: 2026-02-23 — 07-03 StatCard, ProgressPage, ShortcutsPage restyled with Tailwind tokens
 
-Progress: [███░░░░░░░] 25%
+Progress: [██████████] 100% (phase 07 complete)
 
 ## Performance Metrics
 
@@ -34,6 +34,8 @@ Progress: [███░░░░░░░] 25%
 | 05-progress-and-weak-areas | 3 | ~23 min | 7.7 min |
 | Phase 06-design-foundation P01 | 2 | 2 tasks | 7 files |
 | Phase 06-design-foundation P02 | 2 | 2 tasks | 2 files |
+| Phase 07-shell-welcome-page-restyling P02 | 7 | 2 tasks | 4 files |
+| Phase 07-shell-welcome-page-restyling P03 | 2 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -63,6 +65,12 @@ v1.1 decisions:
 - [Phase 07-01]: NavLink uses className callback (not style callback) with clsx for isActive toggling — Tailwind-consistent approach
 - [Phase 07-01]: Sidebar w-[220px] min-w-[220px] uses arbitrary values for explicit 220px width
 - [Phase 07-01]: WelcomePage secondary CTA uses variant='secondary' (brand-light + border-brand) rather than ghost
+- [Phase 07-02]: CSS keyframes in index.css, referenced via .animate-* class names — no embedded <style> blocks in components
+- [Phase 07-02]: Timer urgent color uses dynamic inline style (runtime value) — isUrgent ? '#ef4444' : 'var(--color-text-primary)'
+- [Phase 07-02]: DrillFeedback overlay uses dark green/red backgrounds — intentional overlay colors on top of light card, not dark-theme violations
+- [Phase 07-03]: AccuracyBar fill div retains inline style for width/backgroundColor — dynamic runtime values from accuracy state, not design-token-resolvable
+- [Phase 07-03]: StatCard delegates container styling to Card — no duplication of bg-surface/border/rounded-card
+- [Phase 07-03]: optionBtnClass(active) as local clsx function — mirrors Button variant pattern for ShortcutSetup toggle buttons
 
 ### Pending Todos
 
@@ -77,5 +85,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 07-01-PLAN.md — AppShell + WelcomePage Tailwind restyling
-Resume file: /gsd:execute-phase 7
+Stopped at: Completed 07-03-PLAN.md — StatCard, ProgressPage, ShortcutsPage Tailwind restyling
+Resume file: /gsd:execute-phase 8
