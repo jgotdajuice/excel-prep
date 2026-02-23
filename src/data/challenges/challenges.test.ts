@@ -3,6 +3,7 @@ import { buildExcelCompatEngine } from '../../engine/formulaEngine';
 import type { Challenge } from '../../types';
 import { beginnerChallenges } from './beginner';
 import { intermediateChallenges } from './intermediate';
+import { advancedChallenges } from './advanced';
 
 /**
  * Engine-verification test suite for all challenge content.
@@ -72,6 +73,20 @@ describe('Beginner Challenge Engine Verification', () => {
 
 describe('Intermediate Challenge Engine Verification', () => {
   for (const challenge of intermediateChallenges) {
+    it(`[${challenge.id}] ${challenge.title}`, () => {
+      const results = verifyChallenge(challenge);
+      for (const r of results) {
+        expect(
+          r.pass,
+          `Cell[${r.cellIndex}]: expected ${JSON.stringify(r.expected)} but got ${JSON.stringify(r.got)}`,
+        ).toBe(true);
+      }
+    });
+  }
+});
+
+describe('Advanced Challenge Engine Verification', () => {
+  for (const challenge of advancedChallenges) {
     it(`[${challenge.id}] ${challenge.title}`, () => {
       const results = verifyChallenge(challenge);
       for (const r of results) {
