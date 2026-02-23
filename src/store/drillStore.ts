@@ -83,7 +83,7 @@ function buildWeightedQueue(
   const guaranteed: Challenge[] = [];
   const pool: Challenge[] = [];
 
-  for (const [cat, group] of byCategory.entries()) {
+  for (const [, group] of byCategory.entries()) {
     // Pick one random challenge from this category as the guaranteed entry
     const idx = Math.floor(Math.random() * group.length);
     guaranteed.push(group[idx]);

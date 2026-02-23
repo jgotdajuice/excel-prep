@@ -66,10 +66,6 @@ export function computeCategoryAccuracies(
   const challengeIdToCategory = new Map<string, string>(
     challenges.map((c) => [c.id, c.category ?? 'General']),
   );
-  const challengeIdToTier = new Map<string, Tier>(
-    challenges.map((c) => [c.id, c.tier]),
-  );
-
   // Collect unique categories with their tiers
   const categoryTierMap = new Map<string, Tier>();
   for (const c of challenges) {
