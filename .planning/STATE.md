@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-23)
 ## Current Position
 
 Phase: 6 — Design Foundation
-Plan: 1 of 2 complete
-Status: In progress — Plan 06-01 complete, Plan 06-02 next
-Last activity: 2026-02-23 — 06-01 design foundation executed (tokens, Inter font, favicon, vercel.json)
+Plan: 2 of 2 complete
+Status: Phase 06 complete — all plans done
+Last activity: 2026-02-23 — 06-02 UI primitives (Button + Card components)
 
-Progress: [█░░░░░░░░░] 10%
+Progress: [██░░░░░░░░] 20%
 
 ## Performance Metrics
 
@@ -33,6 +33,7 @@ Progress: [█░░░░░░░░░] 10%
 | 04-keyboard-shortcuts | 2 | ~6 min | 3 min |
 | 05-progress-and-weak-areas | 3 | ~23 min | 7.7 min |
 | Phase 06-design-foundation P01 | 2 | 2 tasks | 7 files |
+| Phase 06-design-foundation P02 | 2 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -57,6 +58,8 @@ v1.1 decisions:
 - DrillPage dark background (#111827) must be removed for visual consistency
 - [Phase 06-design-foundation]: CSS token names use --color-brand (not --color-brand-green) for clean bg-brand utility classes
 - [Phase 06-design-foundation]: HOT preflight repair targets .hot-container (scoped) to avoid global table overrides
+- [Phase 06-02]: Button uses clsx (not tailwind-merge) — variants are non-conflicting by design
+- [Phase 06-02]: Card is layout-only container — no hover/click, just bg-surface + border + rounded-card
 
 ### Pending Todos
 
@@ -71,5 +74,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 06-01-PLAN.md — design foundation (tokens, Inter font, favicon, vercel.json)
-Resume file: /gsd:execute-phase 6 (Plan 06-02 next)
+Stopped at: Completed 06-02-PLAN.md — UI primitives (Button + Card components)
+Resume file: /gsd:execute-phase 7

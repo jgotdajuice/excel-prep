@@ -18,7 +18,7 @@ Requirements for Polish & Deploy milestone.
 - [x] **VIS-01**: App uses a consistent CSS design token system (color, typography, spacing) defined via Tailwind v4 `@theme` — no scattered hardcoded hex values
 - [ ] **VIS-02**: All pages use a unified light theme with Excel-green (#1a6b3c) accent and white surfaces — no dark-themed pages (DrillPage dark background removed)
 - [x] **VIS-03**: Typography uses a professional font (Inter) with consistent size/weight scale across all pages
-- [ ] **VIS-04**: Shared UI primitives (Button, Card) replace inconsistent per-page implementations
+- [x] **VIS-04**: Shared UI primitives (Button, Card) replace inconsistent per-page implementations
 
 ### User Experience
 
@@ -68,7 +68,7 @@ Deferred to future release.
 | VIS-01 | Phase 6 | Complete |
 | VIS-02 | Phase 7 | Pending |
 | VIS-03 | Phase 6 | Complete |
-| VIS-04 | Phase 6 | Pending |
+| VIS-04 | Phase 6 | Complete |
 | UX-01 | Phase 7 | Pending |
 | UX-02 | Phase 8 | Pending |
 | UX-03 | Phase 7 | Pending |
