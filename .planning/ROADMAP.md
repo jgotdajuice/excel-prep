@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Formula Engine** - Interactive spreadsheet grid wired to a verified, Excel-compatible formula engine (completed 2026-02-23)
 - [x] **Phase 2: Challenge Loop** - Single end-to-end challenge flow: grid renders, user enters formula, grader grades it, explanation appears (completed 2026-02-23)
 - [ ] **Phase 3: Content Library** - Finance-framed question bank and structured beginner-to-interview-ready learning path
-- [ ] **Phase 4: Keyboard Shortcuts** - Independent drill module for finance/IB keyboard shortcuts with keypress capture
+- [x] **Phase 4: Keyboard Shortcuts** - Independent drill module for finance/IB keyboard shortcuts with keypress capture (completed 2026-02-23)
 - [ ] **Phase 5: Progress and Weak Areas** - Session persistence, per-function accuracy tracking, weighted drill queue, next-topic suggestions
 
 ## Phase Details
@@ -75,7 +75,7 @@ Plans:
   2. User is shown a shortcut action and must press the correct key combination — the app detects the actual keypress
   3. Shortcut drills cover finance-workflow-relevant shortcuts (formula entry, navigation, selection, formatting) drawn from IB Excel practice
   4. Browser-conflicting shortcuts (Ctrl+W, Ctrl+T, Ctrl+N) are either avoided or handled gracefully with clear guidance to the user
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 04-01-PLAN.md — Shortcut types, IB shortcut dataset (~30 shortcuts), drill session Zustand store
 - [ ] 04-02-PLAN.md — Drill UI components (setup, drill, feedback, summary), /shortcuts route, sidebar NavLink upgrade
@@ -101,5 +101,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Formula Engine | 2/2 | Complete    | 2026-02-23 |
 | 2. Challenge Loop | 3/3 | Complete | 2026-02-23 |
 | 3. Content Library | 3/4 | In Progress|  |
-| 4. Keyboard Shortcuts | 1/2 | In Progress|  |
+| 4. Keyboard Shortcuts | 1/2 | Complete    | 2026-02-23 |
 | 5. Progress and Weak Areas | 0/TBD | Not started | - |
