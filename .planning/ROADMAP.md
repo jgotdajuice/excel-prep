@@ -29,7 +29,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. All 12 finance-relevant functions (VLOOKUP, INDEX/MATCH, SUMIFS, IF/nested IF, NPV, IRR, PMT, XNPV, SUM, AVERAGE, COUNT, COUNTIF) evaluate correctly in the grid
   3. HyperFormula produces outputs matching known Excel values for NPV, IRR, PMT, VLOOKUP, and nested IF before any challenge content is written
   4. Grid keyboard navigation (Tab between cells, Enter to confirm, arrow keys) works without triggering browser defaults
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 01-01-PLAN.md — Project scaffold, HyperFormula engine factory, Excel-compat smoke tests (TDD)
+- [ ] 01-02-PLAN.md — Spreadsheet grid UI, formula bar, function autocomplete, app shell
 
 ### Phase 2: Challenge Loop
 **Goal**: Users can complete a finance-scenario challenge from start to finish — the grid loads with seed data, they enter a formula, they get graded on the computed result, and they see an explanation of why the answer works
@@ -83,7 +86,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Formula Engine | 0/TBD | Not started | - |
+| 1. Formula Engine | 0/2 | Planned | - |
 | 2. Challenge Loop | 0/TBD | Not started | - |
 | 3. Content Library | 0/TBD | Not started | - |
 | 4. Keyboard Shortcuts | 0/TBD | Not started | - |
