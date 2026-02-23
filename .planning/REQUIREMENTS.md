@@ -29,8 +29,8 @@
 
 ### Keyboard Shortcuts
 
-- [ ] **KEYS-01**: User can practice Excel keyboard shortcuts through interactive drills
-- [ ] **KEYS-02**: Shortcut drills cover finance-workflow-relevant shortcuts (navigation, formatting, formula entry)
+- [x] **KEYS-01**: User can practice Excel keyboard shortcuts through interactive drills
+- [x] **KEYS-02**: Shortcut drills cover finance-workflow-relevant shortcuts (navigation, formatting, formula entry)
 
 ## v2 Requirements
 
@@ -74,8 +74,8 @@
 | PROG-01 | Phase 5 | Pending |
 | PROG-02 | Phase 5 | Pending |
 | PROG-03 | Phase 5 | Pending |
-| KEYS-01 | Phase 4 | Pending |
-| KEYS-02 | Phase 4 | Pending |
+| KEYS-01 | Phase 4 | Complete |
+| KEYS-02 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 15 total

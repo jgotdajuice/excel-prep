@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** A beginner can rapidly learn the Excel functions and patterns that finance interviews test, through active practice rather than passive reading.
-**Current focus:** Phase 2 complete — next up Phase 3 (Content Library)
+**Current focus:** Phase 4 (Keyboard Shortcuts) — Plan 01 complete, Plan 02 next
 
 ## Current Position
 
-Phase: 2 of 5 (Challenge Loop) — COMPLETE
-Plan: 3 of 3 in current phase — all plans executed and verified
-Status: Phase 2 complete — human verification passed
-Last activity: 2026-02-23 — Plan 02-03 complete (human verification: 4 bugs found & fixed, all 5 success criteria pass)
+Phase: 4 of 5 (Keyboard Shortcuts) — IN PROGRESS
+Plan: 1 of 2 complete in current phase
+Status: Plan 04-01 complete — data layer built (types, shortcut dataset, drill store)
+Last activity: 2026-02-23 — Plan 04-01 complete (shortcut types, 33 IB shortcuts, Zustand store)
 
-Progress: [██████░░░░] 60%
+Progress: [████████░░] 70%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: 7 min
-- Total execution time: 0.58 hours
+- Total plans completed: 6
+- Average duration: 6 min
+- Total execution time: 0.63 hours
 
 **By Phase:**
 
@@ -29,10 +29,11 @@ Progress: [██████░░░░] 60%
 |-------|-------|-------|----------|
 | 01-formula-engine | 2 | 10 min | 5 min |
 | 02-challenge-loop | 3 | 32 min | 10.7 min |
+| 04-keyboard-shortcuts | 1 | 3 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 4 min, 3 min, 4 min, 25 min (human verify + bug fixes)
-- Trend: Verification plan was longer due to 4 bug fixes
+- Last 5 plans: 3 min, 4 min, 25 min (human verify + bug fixes), 3 min
+- Trend: Data layer plans are fast; UI plans take longer
 
 *Updated after each plan completion*
 
@@ -67,6 +68,9 @@ Recent decisions affecting current work:
 - [02-03]: Skip setSelectedCell in challenge mode — FormulaBar hidden, no selection state tracking needed
 - [02-03]: .hot-container CSS height propagation needed — HotTable wrapper div doesn't inherit flex parent height without explicit rules
 - [02-03]: answerCellSetRef updated every render — cellsCallbackRef reads from ref to avoid stale closure from first render
+- [Phase 04-01]: 7s timed mode default — midpoint of 5-10s range per plan spec
+- [Phase 04-01]: gradeKeys exported as pure function for unit testing
+- [Phase 04-01]: submitMultipleChoiceAnswer added for Keys→Action drill direction
 
 ### Pending Todos
 
@@ -83,5 +87,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Phase 2 complete — all plans executed and human-verified
-Resume file: Phase 3 — run `/gsd:plan-phase 3` to begin Content Library
+Stopped at: Completed 04-01-PLAN.md — shortcut data layer complete
+Resume file: Phase 4, Plan 02 — run `/gsd:execute-phase 4` to build shortcut UI components
