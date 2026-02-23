@@ -22,6 +22,7 @@ export function RightPanel() {
     isLocked,
     elapsedSeconds,
     statuses,
+    tierChallenges,
     showHint,
     retry,
     skip,
@@ -40,7 +41,7 @@ export function RightPanel() {
     };
   }, [currentIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const challenge = challenges[currentIndex];
+  const challenge = tierChallenges[currentIndex];
   if (!challenge) {
     return (
       <div className="right-panel">
@@ -49,8 +50,12 @@ export function RightPanel() {
     );
   }
 
-  const totalChallenges = challenges.length;
-  const completedCount = statuses.filter((s) => s !== 'unattempted').length;
+  // Scope progress to current tier
+  const totalChallenges = tierChallenges.length;
+  const completedCount = tierChallenges.filter((tc) => {
+    const globalIdx = challenges.findIndex((c) => c.id === tc.id);
+    return globalIdx >= 0 && statuses[globalIdx] !== 'unattempted';
+  }).length;
   const progressPct = totalChallenges > 0 ? (completedCount / totalChallenges) * 100 : 0;
 
   // Determine feedback state
