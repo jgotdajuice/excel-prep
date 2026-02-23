@@ -1,8 +1,23 @@
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { WelcomePage } from './pages/WelcomePage';
+import { AppShell } from './components/AppShell';
+import { SpreadsheetGrid } from './components/SpreadsheetGrid';
+
 function App() {
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <h1 className="text-2xl font-semibold text-gray-800">Excel Interview Prep</h1>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<WelcomePage />} />
+        <Route
+          path="/practice"
+          element={
+            <AppShell>
+              <SpreadsheetGrid />
+            </AppShell>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

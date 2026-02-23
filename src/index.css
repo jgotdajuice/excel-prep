@@ -1,1 +1,46 @@
 @import "tailwindcss";
+
+/* Reset margin/padding for full-height layout */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* -----------------------------------------------------------------------
+   Handsontable ht-theme-main CSS variable overrides for Excel-like look
+   ----------------------------------------------------------------------- */
+
+/* Cell backgrounds — white like Excel */
+.ht-theme-main {
+  --ht-cell-background: #ffffff;
+  --ht-cell-border-color: #d0d0d0;
+
+  /* Header background — light gray like Excel row/col headers */
+  --ht-header-background: #f0f0f0;
+  --ht-header-border-color: #c0c0c0;
+  --ht-header-color: #333333;
+
+  /* Selection highlight — Excel's blue selection */
+  --ht-selection-border-color: #1a73e8;
+  --ht-selection-background: rgba(26, 115, 232, 0.12);
+
+  /* Active cell border */
+  --ht-current-border-color: #1a73e8;
+}
+
+/* Ensure grid fills its container correctly */
+.handsontable .wtHolder {
+  background: #ffffff;
+}
+
+/* Formula bar utility */
+.formula-bar {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 13px;
+}
