@@ -75,19 +75,125 @@ html, body, #root {
 }
 
 /* -----------------------------------------------------------------------
+   Challenge Sidebar (tier tabs + challenge list)
+   ----------------------------------------------------------------------- */
+
+.challenge-sidebar {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #d0d0d0;
+  background: #fafafa;
+  flex-shrink: 0;
+  width: 200px;
+  min-width: 200px;
+}
+
+/* -----------------------------------------------------------------------
+   Tier Tabs
+   ----------------------------------------------------------------------- */
+
+.tier-tabs {
+  display: flex;
+  flex-direction: row;
+  border-bottom: 1px solid #d0d0d0;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.tier-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #666;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+
+.tier-tab:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.tier-tab--active {
+  color: #1a3a2a;
+  font-weight: 700;
+  border-bottom-color: #1a3a2a;
+  background: #fff;
+}
+
+.tier-tab--locked {
+  color: #999;
+}
+
+.tier-tab--locked.tier-tab--active {
+  color: #555;
+  border-bottom-color: #999;
+}
+
+.tier-tab-lock {
+  font-size: 10px;
+  line-height: 1;
+}
+
+.tier-tab-label {
+  /* text only */
+}
+
+/* -----------------------------------------------------------------------
+   Tier locked state in grid area
+   ----------------------------------------------------------------------- */
+
+.tier-locked-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+  color: #555;
+}
+
+.tier-locked-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a3a2a;
+  margin: 0;
+}
+
+.tier-locked-body {
+  font-size: 14px;
+  margin: 0;
+  max-width: 300px;
+}
+
+.tier-locked-hint {
+  font-size: 12px;
+  color: #888;
+  margin: 0;
+}
+
+/* -----------------------------------------------------------------------
    Challenge List (left sidebar)
    ----------------------------------------------------------------------- */
 
 .challenge-list {
-  width: 200px;
-  min-width: 200px;
-  border-right: 1px solid #d0d0d0;
   overflow-y: auto;
   background: #fafafa;
   display: flex;
   flex-direction: column;
   padding: 12px 0;
-  flex-shrink: 0;
+  flex: 1;
 }
 
 .challenge-list-header {
@@ -109,6 +215,7 @@ html, body, #root {
 .challenge-list-item {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   padding: 8px 12px;
   font-size: 12px;
@@ -140,6 +247,40 @@ html, body, #root {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.challenge-list-title.text-locked {
+  color: #aaa;
+}
+
+.challenge-list-item.locked {
+  color: #aaa;
+  cursor: pointer;
+}
+
+.challenge-list-item.locked:hover {
+  background: #f5f5f5;
+}
+
+.challenge-category-badge {
+  font-size: 10px;
+  color: #777;
+  background: #ebebeb;
+  border-radius: 3px;
+  padding: 1px 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.challenge-locked-msg {
+  display: block;
+  width: 100%;
+  font-size: 10px;
+  color: #c0392b;
+  margin-top: 4px;
+  padding-left: 24px;
 }
 
 /* -----------------------------------------------------------------------

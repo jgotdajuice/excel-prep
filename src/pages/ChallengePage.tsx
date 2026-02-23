@@ -3,8 +3,10 @@ import { SpreadsheetGrid, hfInstance } from '../components/SpreadsheetGrid';
 import { RightPanel } from '../components/RightPanel';
 import { ChallengeList } from '../components/ChallengeList';
 import { CompletionScreen } from '../components/CompletionScreen';
+import { TierTabs } from '../components/TierTabs';
 import { useChallengeStore } from '../store/challengeStore';
 import { challenges as seedChallenges } from '../data/challenges';
+import type { Tier } from '../types';
 
 export function ChallengePage() {
   const {
@@ -16,6 +18,10 @@ export function ChallengePage() {
     loadChallenges,
     setChallenge,
     gradeCellAction,
+    activeTier,
+    tierChallenges,
+    setActiveTier,
+    isTierUnlocked,
   } = useChallengeStore();
 
   // Load seed challenges on mount
@@ -24,11 +30,26 @@ export function ChallengePage() {
     setChallenge(0);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const currentChallenge = challenges[currentIndex];
+  const intermediateUnlocked = challenges.length > 0 ? isTierUnlocked('intermediate') : false;
+  const advancedUnlocked = challenges.length > 0 ? isTierUnlocked('advanced') : false;
 
-  // All challenges attempted → show completion screen
+  // Determine if the current active tier is locked
+  const activeTierLocked =
+    (activeTier === 'intermediate' && !intermediateUnlocked) ||
+    (activeTier === 'advanced' && !advancedUnlocked);
+
+  const currentChallenge = tierChallenges[currentIndex];
+
+  // All challenges in current tier attempted → show completion screen
+  // Only show completion when tier is unlocked and all tierChallenges are done
+  const tierStatuses = tierChallenges.map(c => {
+    const globalIdx = challenges.findIndex(ch => ch.id === c.id);
+    return globalIdx >= 0 ? (statuses[globalIdx] ?? 'unattempted') : 'unattempted';
+  });
   const allDone =
-    challenges.length > 0 && statuses.every((s) => s !== 'unattempted');
+    !activeTierLocked &&
+    tierChallenges.length > 0 &&
+    tierStatuses.every((s) => s !== 'unattempted');
 
   function handleGradeCell(row: number, col: number) {
     let cellValue: unknown;
@@ -40,27 +61,54 @@ export function ChallengePage() {
     gradeCellAction(row, col, cellValue);
   }
 
+  function handleSelectTier(tier: Tier) {
+    setActiveTier(tier);
+  }
+
   if (allDone) {
     return <CompletionScreen />;
   }
 
+  const prereqTier = activeTier === 'intermediate' ? 'Beginner' : 'Intermediate';
+
   return (
     <div className="challenge-page">
-      {/* Left: challenge list sidebar */}
-      <ChallengeList />
-
-      {/* Center: spreadsheet grid */}
-      <div className="challenge-grid-area">
-        <SpreadsheetGrid
-          challenge={currentChallenge}
-          isLocked={isLocked}
-          cellGrades={cellGrades}
-          onGradeCell={handleGradeCell}
+      {/* Left: tier tabs + challenge list sidebar */}
+      <div className="challenge-sidebar">
+        <TierTabs
+          activeTier={activeTier}
+          intermediateUnlocked={intermediateUnlocked}
+          advancedUnlocked={advancedUnlocked}
+          onSelectTier={handleSelectTier}
         />
+        <ChallengeList lockedTier={activeTierLocked} prereqTier={prereqTier} />
       </div>
 
-      {/* Right: prompt, feedback, navigation */}
-      <RightPanel />
+      {/* Center: spreadsheet grid (only when tier unlocked) */}
+      <div className="challenge-grid-area">
+        {activeTierLocked ? (
+          <div className="tier-locked-message">
+            <p className="tier-locked-title">{'\u{1F512}'} Tier Locked</p>
+            <p className="tier-locked-body">
+              Complete {prereqTier} challenges first to unlock{' '}
+              {activeTier.charAt(0).toUpperCase() + activeTier.slice(1)}.
+            </p>
+            <p className="tier-locked-hint">
+              You need 70% correct in each function category.
+            </p>
+          </div>
+        ) : (
+          <SpreadsheetGrid
+            challenge={currentChallenge}
+            isLocked={isLocked}
+            cellGrades={cellGrades}
+            onGradeCell={handleGradeCell}
+          />
+        )}
+      </div>
+
+      {/* Right: prompt, feedback, navigation (only when tier unlocked) */}
+      {!activeTierLocked && <RightPanel />}
     </div>
   );
 }
