@@ -6,11 +6,9 @@ interface ShortcutFeedbackProps {
 }
 
 export function ShortcutFeedback({ shortcut }: ShortcutFeedbackProps) {
-  const { lastCorrect, lastPressedKeys, osMode } = useShortcutStore((s) => ({
-    lastCorrect: s.lastCorrect,
-    lastPressedKeys: s.lastPressedKeys,
-    osMode: s.osMode,
-  }));
+  const lastCorrect = useShortcutStore((s) => s.lastCorrect);
+  const lastPressedKeys = useShortcutStore((s) => s.lastPressedKeys);
+  const osMode = useShortcutStore((s) => s.osMode);
 
   const isTimeout = lastPressedKeys.length === 0 && lastCorrect === false;
   const expectedKeys = osMode === 'windows' ? shortcut.keys.windows : shortcut.keys.mac;

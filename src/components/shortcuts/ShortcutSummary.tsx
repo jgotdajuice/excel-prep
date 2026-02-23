@@ -21,12 +21,10 @@ function msToSec(ms: number): string {
 }
 
 export function ShortcutSummary() {
-  const { results, osMode, resetToIdle, startSession } = useShortcutStore((s) => ({
-    results: s.results,
-    osMode: s.osMode,
-    resetToIdle: s.resetToIdle,
-    startSession: s.startSession,
-  }));
+  const results = useShortcutStore((s) => s.results);
+  const osMode = useShortcutStore((s) => s.osMode);
+  const resetToIdle = useShortcutStore((s) => s.resetToIdle);
+  const startSession = useShortcutStore((s) => s.startSession);
 
   const correct = results.filter((r) => r.correct).length;
   const total = results.length;
