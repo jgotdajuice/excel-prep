@@ -19,9 +19,9 @@ Progress: [████████░░] 70%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: 6 min
-- Total execution time: 0.63 hours
+- Total plans completed: 7
+- Average duration: 8 min
+- Total execution time: 0.89 hours
 
 **By Phase:**
 
@@ -29,11 +29,12 @@ Progress: [████████░░] 70%
 |-------|-------|-------|----------|
 | 01-formula-engine | 2 | 10 min | 5 min |
 | 02-challenge-loop | 3 | 32 min | 10.7 min |
+| 03-content-library | 1 | 16 min | 16 min |
 | 04-keyboard-shortcuts | 1 | 3 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 3 min, 4 min, 25 min (human verify + bug fixes), 3 min
-- Trend: Data layer plans are fast; UI plans take longer
+- Last 5 plans: 3 min, 4 min, 25 min (human verify + bug fixes), 3 min, 16 min (content authoring)
+- Trend: Content authoring plan takes longer due to engine verification cycles
 
 *Updated after each plan completion*
 
@@ -71,6 +72,11 @@ Recent decisions affecting current work:
 - [Phase 04-01]: 7s timed mode default — midpoint of 5-10s range per plan spec
 - [Phase 04-01]: gradeKeys exported as pure function for unit testing
 - [Phase 04-01]: submitMultipleChoiceAnswer added for Keys→Action drill direction
+- [03-01]: buildExcelCompatEngine requires addSheet() before setCellContents — buildEmpty() creates no sheets; test harness must call addSheet first
+- [03-01]: XLOOKUP unsupported in HyperFormula 3.2 — correctFormula uses INDEX/MATCH; drillAnswer teaches XLOOKUP syntax
+- [03-01]: OFFSET height/width must be static in HyperFormula — OFFSET(B2,0,0,D2,1) errors; engine test uses hardcoded value
+- [03-01]: NPV formula cell references must match seedData row layout — npv-01 fixed C3:E3→C2:E2 to match actual data position
+- [03-01]: IRR/XNPV/PMT expected values must come from actual engine output — manual calculations were significantly off
 
 ### Pending Todos
 
@@ -87,5 +93,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 04-01-PLAN.md — shortcut data layer complete
-Resume file: Phase 4, Plan 02 — run `/gsd:execute-phase 4` to build shortcut UI components
+Stopped at: Completed 03-01-PLAN.md — 66 challenges + engine verification complete
+Resume file: Phase 3, Plan 02 OR Phase 4, Plan 02 — run appropriate gsd:execute-phase command

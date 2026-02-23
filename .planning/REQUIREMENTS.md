@@ -15,10 +15,10 @@
 ### Learning System
 
 - [x] **LEARN-01**: User can complete challenge-based tasks with finance-scenario prompts (e.g., "Calculate the IRR of this investment...")
-- [ ] **LEARN-02**: User can do rapid-fire formula drills (scenario presented → user writes the correct formula)
+- [x] **LEARN-02**: User can do rapid-fire formula drills (scenario presented → user writes the correct formula)
 - [x] **LEARN-03**: User sees an explanation after each question showing why the answer works and how the formula operates
 - [x] **LEARN-04**: All challenges use finance/IB/accounting scenario framing rather than generic examples
-- [ ] **LEARN-05**: User can follow a structured learning path from beginner to interview-ready
+- [x] **LEARN-05**: User can follow a structured learning path from beginner to interview-ready
 - [ ] **LEARN-06**: Drill queue surfaces frequently-missed formulas more often (weighted-random)
 
 ### Progress Tracking
@@ -66,10 +66,10 @@
 | GRID-03 | Phase 2 | Complete (02-01) |
 | GRID-04 | Phase 2 | Complete (02-01) |
 | LEARN-01 | Phase 2 | Complete (02-01) |
-| LEARN-02 | Phase 3 | Pending |
+| LEARN-02 | Phase 3 | Complete |
 | LEARN-03 | Phase 2 | Complete |
 | LEARN-04 | Phase 2 | Complete (02-01) |
-| LEARN-05 | Phase 3 | Pending |
+| LEARN-05 | Phase 3 | Complete |
 | LEARN-06 | Phase 5 | Pending |
 | PROG-01 | Phase 5 | Pending |
 | PROG-02 | Phase 5 | Pending |
