@@ -38,7 +38,11 @@ Build a client-side SPA that teaches Excel functions for finance interviews thro
   4. `index.html` has app name ("ExcelPrep") as page title and a custom favicon (not Vite defaults)
   5. `ui/Button.tsx` and `ui/Card.tsx` shared components exist and are importable
   6. Handsontable grid renders correctly with no visual regressions after Tailwind token additions (preflight does not break grid borders/padding)
-**Plans:** 0 plans
+**Plans:** 2 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Design tokens, Inter font, page identity, vercel.json, HOT preflight repair
+- [ ] 06-02-PLAN.md — Button and Card shared UI primitives, build verification
 
 ### Phase 7: Shell, Welcome, and Page Restyling
 **Goal**: Restyle the app shell and all non-challenge pages to the new design system — unified light theme with green accent, professional typography, onboarding copy, and feedback animations
@@ -79,8 +83,8 @@ Build a client-side SPA that teaches Excel functions for finance interviews thro
 ## Progress
 
 **Execution Order:**
-v1.0: Phases 1 → 2 → 3 → 4 → 5 (complete)
-v1.1: Phases 6 → 7 → 8 → 9
+v1.0: Phases 1 -> 2 -> 3 -> 4 -> 5 (complete)
+v1.1: Phases 6 -> 7 -> 8 -> 9
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -89,7 +93,7 @@ v1.1: Phases 6 → 7 → 8 → 9
 | 3. Content Library | 4/4 | Complete | 2026-02-23 |
 | 4. Keyboard Shortcuts | 2/2 | Complete | 2026-02-23 |
 | 5. Progress and Weak Areas | 3/3 | Complete | 2026-02-23 |
-| 6. Design Foundation | 0/0 | Pending | — |
+| 6. Design Foundation | 0/2 | In Progress | — |
 | 7. Shell, Welcome, and Page Restyling | 0/0 | Pending | — |
 | 8. Challenge Components and Prompt Formatting | 0/0 | Pending | — |
 | 9. Deployment and Verification | 0/0 | Pending | — |
