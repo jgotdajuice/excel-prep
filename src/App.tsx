@@ -5,6 +5,7 @@ import { SpreadsheetGrid } from './components/SpreadsheetGrid';
 import { ChallengePage } from './pages/ChallengePage';
 import { DrillPage } from './pages/DrillPage';
 import { ShortcutsPage } from './pages/ShortcutsPage';
+import { ProgressPage } from './pages/ProgressPage';
 
 function App() {
   return (
@@ -40,6 +41,14 @@ function App() {
           element={
             <AppShell>
               <ShortcutsPage />
+            </AppShell>
+          }
+        />
+        <Route
+          path="/progress"
+          element={
+            <AppShell>
+              <ProgressPage />
             </AppShell>
           }
         />

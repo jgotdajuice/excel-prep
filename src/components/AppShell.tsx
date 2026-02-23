@@ -15,7 +15,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Challenges', to: '/challenge' },
   { label: 'Rapid-Fire Drill', to: '/drill' },
   { label: 'Keyboard Shortcuts', to: '/shortcuts' },
-  { label: 'Progress', to: '/progress', disabled: true },
+  { label: 'Progress', to: '/progress' },
 ];
 
 export function AppShell({ children }: AppShellProps) {
