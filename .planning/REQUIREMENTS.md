@@ -7,7 +7,7 @@
 
 ### Spreadsheet Engine
 
-- [ ] **GRID-01**: User can type Excel formulas into an interactive spreadsheet grid and see computed results
+- [x] **GRID-01**: User can type Excel formulas into an interactive spreadsheet grid and see computed results
 - [x] **GRID-02**: Grid supports finance-relevant functions: VLOOKUP, INDEX/MATCH, SUMIFS, IF/nested IF, NPV, IRR, PMT, XNPV, SUM, AVERAGE, COUNT, COUNTIF
 - [ ] **GRID-03**: User's formula is graded by comparing computed output value against expected result (not string matching)
 - [ ] **GRID-04**: User sees clear error feedback distinguishing "wrong value" from "formula syntax error"
@@ -61,7 +61,7 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GRID-01 | Phase 1 | Pending |
+| GRID-01 | Phase 1 | Complete |
 | GRID-02 | Phase 1 | Complete (01-01) |
 | GRID-03 | Phase 2 | Pending |
 | GRID-04 | Phase 2 | Pending |
