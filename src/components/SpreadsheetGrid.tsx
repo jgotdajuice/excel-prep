@@ -2,18 +2,20 @@ import { useEffect, useRef, useState } from 'react';
 import { HotTable } from '@handsontable/react-wrapper';
 import type { HotTableRef } from '@handsontable/react-wrapper';
 import { registerAllModules } from 'handsontable/registry';
+import Handsontable from 'handsontable';
 import 'handsontable/styles/handsontable.min.css';
 import 'handsontable/styles/ht-theme-main.min.css';
 import { buildExcelCompatEngine } from '../engine/formulaEngine';
 import { FormulaBar } from './FormulaBar';
 import { FunctionAutocomplete } from './FunctionAutocomplete';
-import type { SelectedCellState } from '../types';
+import type { SelectedCellState, Challenge, GradeResult } from '../types';
 
 // Register all Handsontable modules once at module level
 registerAllModules();
 
 // HyperFormula instance must live outside React state to avoid proxy breakage
-const hfInstance = buildExcelCompatEngine();
+// Exported so ChallengePage can read cell values for grading
+export const hfInstance = buildExcelCompatEngine();
 
 /** Convert zero-based col index to Excel column letter (0 → A, 25 → Z) */
 function colIndexToLetter(col: number): string {
@@ -27,7 +29,56 @@ function colIndexToLetter(col: number): string {
   return letter;
 }
 
-export function SpreadsheetGrid() {
+interface CellGradeInfo {
+  row: number;
+  col: number;
+  result: GradeResult;
+}
+
+interface SpreadsheetGridProps {
+  challenge?: Challenge;
+  isLocked?: boolean;
+  cellGrades?: CellGradeInfo[];
+  onGradeCell?: (row: number, col: number) => void;
+}
+
+// Register custom answer cell renderer once
+Handsontable.renderers.registerRenderer(
+  'answerCell',
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function (this: any, hotInstance, td, row, col, prop, value, cellProperties) {
+    // Call base text renderer first
+    Handsontable.renderers.TextRenderer.call(
+      this,
+      hotInstance,
+      td,
+      row,
+      col,
+      prop,
+      value,
+      cellProperties,
+    );
+
+    // Apply outline based on grade status stored in cellProperties
+    const gradeStatus = (cellProperties as { gradeStatus?: string }).gradeStatus;
+    if (gradeStatus === 'correct') {
+      td.style.outline = '2px solid #1a6b3c';
+    } else if (gradeStatus === 'incorrect' || gradeStatus === 'error') {
+      td.style.outline = '2px solid #c0392b';
+    } else {
+      // Unattempted answer cell — blue
+      td.style.outline = '2px solid #0066cc';
+    }
+    td.style.outlineOffset = '-2px';
+  },
+);
+
+export function SpreadsheetGrid({
+  challenge,
+  isLocked,
+  cellGrades,
+  onGradeCell,
+}: SpreadsheetGridProps) {
   const hotRef = useRef<HotTableRef>(null);
 
   const [selectedCell, setSelectedCell] = useState<SelectedCellState>({
@@ -51,10 +102,37 @@ export function SpreadsheetGrid() {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const keyupListenerRef = useRef<((e: KeyboardEvent) => void) | null>(null);
 
+  // Enter-key grading flag: set true when Enter is pressed in an answer cell
+  const enterPressedRef = useRef(false);
+
+  // Build answer cell set for quick lookup: "row:col" → AnswerCell
+  const answerCellSet = new Set<string>(
+    (challenge?.answerCells ?? []).map((ac) => `${ac.row}:${ac.col}`),
+  );
+
+  // Build grade map for renderer: "row:col" → grade status
+  const gradeMap = new Map<string, string>();
+  for (const cg of cellGrades ?? []) {
+    gradeMap.set(`${cg.row}:${cg.col}`, cg.result.status);
+  }
+
   // Set localStorage flag so WelcomePage can show "Continue" on next visit
   useEffect(() => {
     localStorage.setItem('hasStarted', 'true');
   }, []);
+
+  // When challenge changes, imperatively load seed data into HOT
+  useEffect(() => {
+    if (!challenge) return;
+    const hot = hotRef.current?.hotInstance;
+    if (!hot) return;
+    // Small delay to ensure HOT is mounted
+    setTimeout(() => {
+      hotRef.current?.hotInstance?.loadData(
+        challenge.seedData as Handsontable.CellValue[][],
+      );
+    }, 0);
+  }, [challenge?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function hideAutocomplete() {
     setAutocomplete((prev) => ({ ...prev, isVisible: false }));
@@ -78,25 +156,103 @@ export function SpreadsheetGrid() {
     textareaRef.current = null;
   }
 
+  // ── Challenge mode props ─────────────────────────────────────────────────
+  const isChallenge = !!challenge;
+
+  const minRows = isChallenge ? challenge!.seedData.length : 50;
+  const maxRows = isChallenge ? challenge!.seedData.length : undefined;
+  const minCols = isChallenge
+    ? Math.max(...challenge!.seedData.map((r) => r.length))
+    : 26;
+  const maxCols = isChallenge
+    ? Math.max(...challenge!.seedData.map((r) => r.length))
+    : undefined;
+
+  // cells callback — controls readOnly and renderer per cell
+  const cellsCallback = isChallenge
+    ? (row: number, col: number): Handsontable.CellMeta => {
+        const key = `${row}:${col}`;
+        if (isLocked) {
+          // Grid locked after grading — all cells read-only
+          if (answerCellSet.has(key)) {
+            const gradeStatus = gradeMap.get(key);
+            return { readOnly: true, renderer: 'answerCell', gradeStatus } as Handsontable.CellMeta;
+          }
+          return { readOnly: true };
+        }
+        if (answerCellSet.has(key)) {
+          const gradeStatus = gradeMap.get(key);
+          return { readOnly: false, renderer: 'answerCell', gradeStatus } as Handsontable.CellMeta;
+        }
+        // Seed cell — read-only
+        return { readOnly: true };
+      }
+    : undefined;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-      <FormulaBar
-        formula={selectedCell.formula}
-        value={selectedCell.value}
-        cellLabel={`${colIndexToLetter(selectedCell.col)}${selectedCell.row + 1}`}
-      />
+      {!isChallenge && (
+        <FormulaBar
+          formula={selectedCell.formula}
+          value={selectedCell.value}
+          cellLabel={`${colIndexToLetter(selectedCell.col)}${selectedCell.row + 1}`}
+        />
+      )}
       <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
         <HotTable
           ref={hotRef}
+          // Use challenge key to force full re-mount when challenge changes
+          key={isChallenge ? `challenge-${challenge!.id}` : 'freeform'}
           formulas={{ engine: hfInstance, sheetName: 'Sheet1' }}
           themeName="ht-theme-main"
           colHeaders={true}
           rowHeaders={true}
           width="100%"
           height="100%"
-          minCols={26}
-          minRows={50}
+          minCols={minCols}
+          minRows={minRows}
+          {...(maxRows !== undefined ? { maxRows } : {})}
+          {...(maxCols !== undefined ? { maxCols } : {})}
           licenseKey="non-commercial-and-evaluation"
+          {...(isChallenge
+            ? {
+                data: challenge!.seedData as Handsontable.CellValue[][],
+                cells: cellsCallback,
+              }
+            : {})}
+          beforeKeyDown={(e: KeyboardEvent) => {
+            if (!isChallenge || !onGradeCell) return;
+            if (e.key !== 'Enter') return;
+            const hot = hotRef.current?.hotInstance;
+            if (!hot) return;
+            const selected = hot.getSelected();
+            if (!selected || selected.length === 0) return;
+            const [row, col] = selected[0];
+            const key = `${row}:${col}`;
+            if (answerCellSet.has(key) && !isLocked) {
+              enterPressedRef.current = true;
+            }
+          }}
+          afterChange={(changes, source) => {
+            if (isChallenge && onGradeCell && source === 'edit') {
+              if (enterPressedRef.current) {
+                enterPressedRef.current = false;
+                if (changes) {
+                  for (const [row, col] of changes) {
+                    const key = `${row}:${Number(col)}`;
+                    if (answerCellSet.has(key)) {
+                      onGradeCell(row as number, Number(col));
+                    }
+                  }
+                }
+              }
+            }
+            if (!isChallenge) {
+              // Free-form mode cleanup
+              hideAutocomplete();
+              cleanupTextareaListener();
+            }
+          }}
           afterSelection={(row, col) => {
             let formula: string | undefined;
             let value: string | number | boolean | null = null;
@@ -112,6 +268,7 @@ export function SpreadsheetGrid() {
             setSelectedCell({ row, col, formula, value });
           }}
           afterBeginEditing={(row, col) => {
+            if (isChallenge) return; // No autocomplete in challenge mode
             // Clean up any previous listener
             cleanupTextareaListener();
 
@@ -150,24 +307,22 @@ export function SpreadsheetGrid() {
               textarea.addEventListener('keyup', onKeyup);
             }, 0);
           }}
-          afterChange={() => {
-            // After a cell value is committed, hide the autocomplete and clean up
-            hideAutocomplete();
-            cleanupTextareaListener();
-          }}
           afterDeselect={() => {
-            // When focus moves away from the grid entirely
-            hideAutocomplete();
-            cleanupTextareaListener();
+            if (!isChallenge) {
+              hideAutocomplete();
+              cleanupTextareaListener();
+            }
           }}
         />
-        <FunctionAutocomplete
-          isVisible={autocomplete.isVisible}
-          filterText={autocomplete.filterText}
-          position={autocomplete.position}
-          onSelect={handleAutocompleteSelect}
-          onHide={hideAutocomplete}
-        />
+        {!isChallenge && (
+          <FunctionAutocomplete
+            isVisible={autocomplete.isVisible}
+            filterText={autocomplete.filterText}
+            position={autocomplete.position}
+            onSelect={handleAutocompleteSelect}
+            onHide={hideAutocomplete}
+          />
+        )}
       </div>
     </div>
   );
