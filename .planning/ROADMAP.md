@@ -89,7 +89,11 @@ Plans:
   2. User can view a progress dashboard showing their accuracy rate broken down by function/concept (e.g., "VLOOKUP: 60%, nested IF: 40%")
   3. User receives a specific suggested next topic based on their weakest areas, not a generic recommendation
   4. In drill mode, formulas the user has frequently missed appear more often than formulas they have answered correctly (weighted-random queue)
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 05-01-PLAN.md — Zustand persist middleware on both stores, safeStorage, hintUsageCount, progress selector functions
+- [ ] 05-02-PLAN.md — ProgressPage dashboard (accuracy bars, stats, weak-area suggestions), weighted drill queue, route + nav wiring
+- [ ] 05-03-PLAN.md — Human verification of persistence, dashboard, and weighted drill
 
 ## Progress
 
@@ -102,4 +106,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Challenge Loop | 3/3 | Complete | 2026-02-23 |
 | 3. Content Library | 4/4 | Complete | 2026-02-23 |
 | 4. Keyboard Shortcuts | 1/2 | Complete    | 2026-02-23 |
-| 5. Progress and Weak Areas | 0/TBD | Not started | - |
+| 5. Progress and Weak Areas | 0/3 | Planned | - |
