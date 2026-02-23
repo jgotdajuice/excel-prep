@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** A beginner can rapidly learn the Excel functions and patterns that finance interviews test, through active practice rather than passive reading.
-**Current focus:** Phase 4 (Keyboard Shortcuts) — Plan 01 complete, Plan 02 next
+**Current focus:** Phase 3 (Content Library) — Plan 03 complete; Phase 4 Plan 02 next
 
 ## Current Position
 
-Phase: 4 of 5 (Keyboard Shortcuts) — IN PROGRESS
-Plan: 1 of 2 complete in current phase
-Status: Plan 04-01 complete — data layer built (types, shortcut dataset, drill store)
-Last activity: 2026-02-23 — Plan 04-01 complete (shortcut types, 33 IB shortcuts, Zustand store)
+Phase: 3 of 5 (Content Library) — Plan 03 complete
+Plan: 3 of 4 complete in current phase
+Status: Plan 03-03 complete — rapid-fire drill mode at /drill fully functional
+Last activity: 2026-02-23 — Plan 03-03 complete (drillStore, DrillPage, /drill route, sidebar nav)
 
 Progress: [████████░░] 70%
 
@@ -29,7 +29,7 @@ Progress: [████████░░] 70%
 |-------|-------|-------|----------|
 | 01-formula-engine | 2 | 10 min | 5 min |
 | 02-challenge-loop | 3 | 32 min | 10.7 min |
-| 03-content-library | 1 | 16 min | 16 min |
+| 03-content-library | 3 | 22 min | 7.3 min |
 | 04-keyboard-shortcuts | 1 | 3 min | 3 min |
 
 **Recent Trend:**
@@ -37,6 +37,7 @@ Progress: [████████░░] 70%
 - Trend: Content authoring plan takes longer due to engine verification cycles
 
 *Updated after each plan completion*
+| Phase 03-content-library P03 | 3 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,9 @@ Recent decisions affecting current work:
 - [03-01]: OFFSET height/width must be static in HyperFormula — OFFSET(B2,0,0,D2,1) errors; engine test uses hardcoded value
 - [03-01]: NPV formula cell references must match seedData row layout — npv-01 fixed C3:E3→C2:E2 to match actual data position
 - [03-01]: IRR/XNPV/PMT expected values must come from actual engine output — manual calculations were significantly off
+- [Phase 03-03]: Answer normalization: strip leading =, remove whitespace, uppercase for formula scope; strip = and uppercase for function scope
+- [Phase 03-03]: allAnswers accumulates across sessions in Zustand memory (not localStorage) for tier gating
+- [Phase 03-03]: MC options shuffled once per question via useMemo(challengeId) to prevent reshuffle on each render
 
 ### Pending Todos
 
@@ -93,5 +97,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 03-01-PLAN.md — 66 challenges + engine verification complete
-Resume file: Phase 3, Plan 02 OR Phase 4, Plan 02 — run appropriate gsd:execute-phase command
+Stopped at: Completed 03-03-PLAN.md — rapid-fire drill mode at /drill complete
+Resume file: Phase 3, Plan 04 OR Phase 4, Plan 02 — run appropriate gsd:execute-phase command

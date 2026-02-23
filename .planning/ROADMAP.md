@@ -59,7 +59,7 @@ Plans:
   2. User sees a structured learning path with at least three tiers (beginner, intermediate, advanced) and can follow it in sequence
   3. The content library covers at minimum the 10 tier-1 finance interview functions with at least 4 challenges per function, all using finance/IB/accounting scenario framing
   4. User cannot advance to intermediate tier challenges without demonstrating readiness on beginner-tier content
-**Plans:** 1/4 plans executed
+**Plans:** 2/4 plans executed
 Plans:
 - [ ] 03-01-PLAN.md — Type extensions (Tier, drill fields, DrillQuestion), 60+ challenge content across 3 tier files, engine verification tests
 - [ ] 03-02-PLAN.md — TierTabs component, challengeStore tier state + gating logic, ChallengePage + ChallengeList tier integration
@@ -100,6 +100,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Formula Engine | 2/2 | Complete    | 2026-02-23 |
 | 2. Challenge Loop | 3/3 | Complete | 2026-02-23 |
-| 3. Content Library | 1/4 | In Progress|  |
+| 3. Content Library | 2/4 | In Progress|  |
 | 4. Keyboard Shortcuts | 1/2 | In Progress|  |
 | 5. Progress and Weak Areas | 0/TBD | Not started | - |
