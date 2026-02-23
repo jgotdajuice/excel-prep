@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useChallengeStore } from '../store/challengeStore';
+import { Card } from './ui/Card';
+import { Button } from './ui/Button';
 
 function formatTime(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -25,30 +27,30 @@ export function CompletionScreen() {
   }
 
   return (
-    <div className="completion-screen">
-      <div className="completion-card">
+    <div className="flex items-center justify-center h-full bg-base">
+      <Card shadow padding={false} className="text-center flex flex-col items-center gap-5 max-w-[440px] w-full mx-auto px-12 py-10">
         {/* Celebration icon */}
-        <div className="completion-trophy">&#127942;</div>
+        <div className="text-[56px] animate-[completion-pop_0.5s_ease-out]">&#127942;</div>
 
-        <h2 className="completion-title">All Challenges Complete!</h2>
+        <h2 className="text-[22px] font-bold text-brand-dark m-0">All Challenges Complete!</h2>
 
         {/* Summary stats */}
-        <div className="completion-stats">
-          <div className="completion-stat">
-            <span className="completion-stat-value">{correctCount}/{total}</span>
-            <span className="completion-stat-label">Correct</span>
+        <div className="flex gap-8 justify-center">
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-[28px] font-bold text-brand">{correctCount}/{total}</span>
+            <span className="text-xs text-muted uppercase tracking-wide">Correct</span>
           </div>
-          <div className="completion-stat">
-            <span className="completion-stat-value">{formatTime(elapsedSeconds)}</span>
-            <span className="completion-stat-label">Time</span>
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-[28px] font-bold text-brand">{formatTime(elapsedSeconds)}</span>
+            <span className="text-xs text-muted uppercase tracking-wide">Time</span>
           </div>
         </div>
 
         {/* Missed questions */}
         {missedChallenges.length > 0 && (
-          <div className="completion-missed">
-            <p className="completion-missed-label">Review these:</p>
-            <ul className="completion-missed-list">
+          <div className="text-left w-full">
+            <p className="text-[13px] font-semibold text-muted mb-1.5 m-0">Review these:</p>
+            <ul className="text-[13px] text-red-600 m-0 pl-5 [&_li]:mb-1">
               {missedChallenges.map((c) => (
                 <li key={c.id}>{c.title}</li>
               ))}
@@ -57,15 +59,11 @@ export function CompletionScreen() {
         )}
 
         {/* Action buttons */}
-        <div className="completion-buttons">
-          <button className="btn btn-review" onClick={handleReview}>
-            Review Challenges
-          </button>
-          <button className="btn btn-home" onClick={() => navigate('/')}>
-            Back to Home
-          </button>
+        <div className="flex gap-3 w-full justify-center">
+          <Button variant="secondary" onClick={handleReview}>Review Challenges</Button>
+          <Button onClick={() => navigate('/')}>Back to Home</Button>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
