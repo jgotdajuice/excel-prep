@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildExcelCompatEngine } from '../../engine/formulaEngine';
 import type { Challenge } from '../../types';
 import { beginnerChallenges } from './beginner';
+import { intermediateChallenges } from './intermediate';
 
 /**
  * Engine-verification test suite for all challenge content.
@@ -57,6 +58,20 @@ function verifyChallenge(challenge: Challenge): { cellIndex: number; got: unknow
 
 describe('Beginner Challenge Engine Verification', () => {
   for (const challenge of beginnerChallenges) {
+    it(`[${challenge.id}] ${challenge.title}`, () => {
+      const results = verifyChallenge(challenge);
+      for (const r of results) {
+        expect(
+          r.pass,
+          `Cell[${r.cellIndex}]: expected ${JSON.stringify(r.expected)} but got ${JSON.stringify(r.got)}`,
+        ).toBe(true);
+      }
+    });
+  }
+});
+
+describe('Intermediate Challenge Engine Verification', () => {
+  for (const challenge of intermediateChallenges) {
     it(`[${challenge.id}] ${challenge.title}`, () => {
       const results = verifyChallenge(challenge);
       for (const r of results) {
