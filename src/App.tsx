@@ -3,6 +3,7 @@ import { WelcomePage } from './pages/WelcomePage';
 import { AppShell } from './components/AppShell';
 import { SpreadsheetGrid } from './components/SpreadsheetGrid';
 import { ChallengePage } from './pages/ChallengePage';
+import { ShortcutsPage } from './pages/ShortcutsPage';
 
 function App() {
   return (
@@ -22,6 +23,14 @@ function App() {
           element={
             <AppShell>
               <ChallengePage />
+            </AppShell>
+          }
+        />
+        <Route
+          path="/shortcuts"
+          element={
+            <AppShell>
+              <ShortcutsPage />
             </AppShell>
           }
         />

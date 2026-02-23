@@ -1,13 +1,20 @@
 import type { ReactNode } from 'react';
+import { NavLink, Link } from 'react-router-dom';
 
 interface AppShellProps {
   children: ReactNode;
 }
 
-const NAV_ITEMS = [
-  { label: 'Formula Practice', active: true },
-  { label: 'Keyboard Shortcuts', active: false },
-  { label: 'Progress', active: false },
+interface NavItem {
+  label: string;
+  to: string;
+  disabled?: boolean;
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { label: 'Formula Practice', to: '/challenge' },
+  { label: 'Keyboard Shortcuts', to: '/shortcuts' },
+  { label: 'Progress', to: '/progress', disabled: true },
 ];
 
 export function AppShell({ children }: AppShellProps) {
@@ -33,16 +40,18 @@ export function AppShell({ children }: AppShellProps) {
           boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
         }}
       >
-        <span
+        <Link
+          to="/"
           style={{
             color: '#ffffff',
             fontSize: '18px',
             fontWeight: 700,
             letterSpacing: '-0.3px',
+            textDecoration: 'none',
           }}
         >
           ExcelPrep
-        </span>
+        </Link>
       </header>
 
       {/* Body: sidebar + main content */}
@@ -75,21 +84,40 @@ export function AppShell({ children }: AppShellProps) {
             Topics
           </p>
           <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-            {NAV_ITEMS.map((item) => (
-              <li
-                key={item.label}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: '13px',
-                  color: item.active ? '#1a3a2a' : '#aaa',
-                  fontWeight: item.active ? 600 : 400,
-                  cursor: item.active ? 'pointer' : 'default',
-                  borderLeft: item.active ? '3px solid #1a6b3c' : '3px solid transparent',
-                }}
-              >
-                {item.label}
-              </li>
-            ))}
+            {NAV_ITEMS.map((item) =>
+              item.disabled ? (
+                <li
+                  key={item.label}
+                  style={{
+                    padding: '8px 16px',
+                    fontSize: '13px',
+                    color: '#aaa',
+                    fontWeight: 400,
+                    cursor: 'default',
+                    borderLeft: '3px solid transparent',
+                  }}
+                >
+                  {item.label}
+                </li>
+              ) : (
+                <li key={item.label}>
+                  <NavLink
+                    to={item.to}
+                    style={({ isActive }) => ({
+                      display: 'block',
+                      padding: '8px 16px',
+                      fontSize: '13px',
+                      textDecoration: 'none',
+                      color: isActive ? '#1a3a2a' : '#555',
+                      fontWeight: isActive ? 600 : 400,
+                      borderLeft: isActive ? '3px solid #1a6b3c' : '3px solid transparent',
+                    })}
+                  >
+                    {item.label}
+                  </NavLink>
+                </li>
+              ),
+            )}
           </ul>
         </aside>
 
