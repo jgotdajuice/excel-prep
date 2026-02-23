@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** A beginner can rapidly learn the Excel functions and patterns that finance interviews test, through active practice rather than passive reading.
-**Current focus:** Phase 3 complete — Content Library verified end-to-end
+**Current focus:** Phase 5 in progress — Persistence and Progress Selectors (Plan 1 of 3 complete)
 
 ## Current Position
 
-Phase: 3 of 5 (Content Library) — Complete
-Plan: 4 of 4 complete in current phase
-Status: Phase 3 complete — all verification criteria pass, 1 bug fixed (RightPanel tier scoping)
-Last activity: 2026-02-23 — Phase 3 human verification passed
+Phase: 5 of 5 (Progress and Weak Areas) — In Progress
+Plan: 1 of 3 complete in current phase
+Status: Phase 5 Plan 1 complete — persist middleware added, progressSelectors created
+Last activity: 2026-02-23 — Phase 5 Plan 1 executed
 
-Progress: [████████░░] 80%
+Progress: [████████░░] 82%
 
 ## Performance Metrics
 
@@ -31,12 +31,14 @@ Progress: [████████░░] 80%
 | 02-challenge-loop | 3 | 32 min | 10.7 min |
 | 03-content-library | 4 | 25 min | 6.25 min |
 | 04-keyboard-shortcuts | 1 | 3 min | 3 min |
+| 05-progress-and-weak-areas | 1/3 | 4 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 3 min, 4 min, 25 min (human verify + bug fixes), 3 min, 16 min (content authoring)
-- Trend: Content authoring plan takes longer due to engine verification cycles
+- Last 5 plans: 4 min, 25 min (human verify + bug fixes), 3 min, 16 min (content authoring), 4 min (persist + selectors)
+- Trend: Persistence plans run fast; dashboard plans (Plan 2) may take longer
 
 *Updated after each plan completion*
+| Phase 05-progress-and-weak-areas P01 | 4 | 2 tasks | 4 files |
 | Phase 03-content-library P03 | 3 | 2 tasks | 8 files |
 | Phase 03-content-library P02 | 3 | 2 tasks | 5 files |
 
@@ -86,6 +88,10 @@ Recent decisions affecting current work:
 - [Phase 03-02]: currentIndex tracks position within tierChallenges (not global challenges array)
 - [Phase 03-02]: Locked tier shows challenge titles with lock icons — clickable to reveal inline prereq message
 - [Phase 03-04]: RightPanel must use tierChallenges[currentIndex] not challenges[currentIndex] — currentIndex is tier-scoped
+- [Phase 05-01]: Persist challengeStatuses as Record<string, ChallengeStatus> keyed by challengeId — stable across challenge reordering vs fragile array index
+- [Phase 05-01]: _hydratedStatusRecord internal field bridges persist merge and loadChallenges — challenges[] empty at hydration time, Record stored in state and array rebuilt after challenges load
+- [Phase 05-01]: computeCategoryAccuracies uses simple unweighted accuracy for display — distinct from 100%/50% weighted tier-gating in computeTierUnlocked
+- [Phase 05-01]: Skipped challenges excluded from gridTotal in accuracy — only correct/incorrect count as attempts
 
 ### Pending Todos
 
@@ -102,5 +108,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Phase 3 complete — all 4 plans executed, human verification passed
-Resume file: Phase 5 next — run /gsd:plan-phase 5
+Stopped at: Phase 5 Plan 1 complete — persist middleware + progressSelectors
+Resume file: Phase 5 Plan 2 — run /gsd:execute-phase 05-progress-and-weak-areas

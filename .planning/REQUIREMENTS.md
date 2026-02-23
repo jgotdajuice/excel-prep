@@ -23,8 +23,8 @@
 
 ### Progress Tracking
 
-- [ ] **PROG-01**: User's completed challenges and scores persist across browser sessions
-- [ ] **PROG-02**: User can see weak areas tagged by function/concept with accuracy rates per topic
+- [x] **PROG-01**: User's completed challenges and scores persist across browser sessions
+- [x] **PROG-02**: User can see weak areas tagged by function/concept with accuracy rates per topic
 - [ ] **PROG-03**: User receives suggested next topics based on their performance and gaps
 
 ### Keyboard Shortcuts
@@ -71,8 +71,8 @@
 | LEARN-04 | Phase 2 | Complete (02-01) |
 | LEARN-05 | Phase 3 | Complete |
 | LEARN-06 | Phase 5 | Pending |
-| PROG-01 | Phase 5 | Pending |
-| PROG-02 | Phase 5 | Pending |
+| PROG-01 | Phase 5 | Complete |
+| PROG-02 | Phase 5 | Complete |
 | PROG-03 | Phase 5 | Pending |
 | KEYS-01 | Phase 4 | Complete |
 | KEYS-02 | Phase 4 | Complete |
