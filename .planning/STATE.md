@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** A beginner can rapidly learn the Excel functions and patterns that finance interviews test, through active practice rather than passive reading.
-**Current focus:** Phase 3 (Content Library) — Plan 03 complete; Phase 4 Plan 02 next
+**Current focus:** Phase 3 (Content Library) — Plan 02 complete; Plan 04 next
 
 ## Current Position
 
-Phase: 3 of 5 (Content Library) — Plan 03 complete
-Plan: 3 of 4 complete in current phase
-Status: Plan 03-03 complete — rapid-fire drill mode at /drill fully functional
-Last activity: 2026-02-23 — Plan 03-03 complete (drillStore, DrillPage, /drill route, sidebar nav)
+Phase: 3 of 5 (Content Library) — Plan 02 complete
+Plan: 4 of 4 complete in current phase (all content-library plans done — 01, 03, 02 completed)
+Status: Plan 03-02 complete — tier tabs, tier gating, locked challenge display at /challenge
+Last activity: 2026-02-23 — Plan 03-02 complete (TierTabs, challengeStore tier state, ChallengeList locked state)
 
-Progress: [████████░░] 70%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
@@ -29,7 +29,7 @@ Progress: [████████░░] 70%
 |-------|-------|-------|----------|
 | 01-formula-engine | 2 | 10 min | 5 min |
 | 02-challenge-loop | 3 | 32 min | 10.7 min |
-| 03-content-library | 3 | 22 min | 7.3 min |
+| 03-content-library | 4 | 25 min | 6.25 min |
 | 04-keyboard-shortcuts | 1 | 3 min | 3 min |
 
 **Recent Trend:**
@@ -38,6 +38,7 @@ Progress: [████████░░] 70%
 
 *Updated after each plan completion*
 | Phase 03-content-library P03 | 3 | 2 tasks | 8 files |
+| Phase 03-content-library P02 | 3 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,9 @@ Recent decisions affecting current work:
 - [Phase 03-03]: Answer normalization: strip leading =, remove whitespace, uppercase for formula scope; strip = and uppercase for function scope
 - [Phase 03-03]: allAnswers accumulates across sessions in Zustand memory (not localStorage) for tier gating
 - [Phase 03-03]: MC options shuffled once per question via useMemo(challengeId) to prevent reshuffle on each render
+- [Phase 03-02]: statuses[] remains globally indexed by challenges[] — gradeCellAction/retry/skip map tierChallenges[currentIndex].id back to global position
+- [Phase 03-02]: currentIndex tracks position within tierChallenges (not global challenges array)
+- [Phase 03-02]: Locked tier shows challenge titles with lock icons — clickable to reveal inline prereq message
 
 ### Pending Todos
 
@@ -97,5 +101,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 03-03-PLAN.md — rapid-fire drill mode at /drill complete
+Stopped at: Completed 03-02-PLAN.md — tier tabs, tier gating, locked challenge display
 Resume file: Phase 3, Plan 04 OR Phase 4, Plan 02 — run appropriate gsd:execute-phase command
