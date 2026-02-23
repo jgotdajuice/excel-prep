@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Challenge Loop** - Single end-to-end challenge flow: grid renders, user enters formula, grader grades it, explanation appears (completed 2026-02-23)
 - [x] **Phase 3: Content Library** - Finance-framed question bank and structured beginner-to-interview-ready learning path (completed 2026-02-23)
 - [x] **Phase 4: Keyboard Shortcuts** - Independent drill module for finance/IB keyboard shortcuts with keypress capture (completed 2026-02-23)
-- [ ] **Phase 5: Progress and Weak Areas** - Session persistence, per-function accuracy tracking, weighted drill queue, next-topic suggestions
+- [x] **Phase 5: Progress and Weak Areas** - Session persistence, per-function accuracy tracking, weighted drill queue, next-topic suggestions (completed 2026-02-23)
 
 ## Phase Details
 
@@ -93,7 +93,7 @@ Plans:
 Plans:
 - [x] 05-01-PLAN.md — Zustand persist middleware on both stores, safeStorage, hintUsageCount, progress selector functions
 - [x] 05-02-PLAN.md — ProgressPage dashboard (accuracy bars, stats, weak-area suggestions), weighted drill queue, route + nav wiring
-- [ ] 05-03-PLAN.md — Human verification of persistence, dashboard, and weighted drill
+- [x] 05-03-PLAN.md — Human verification of persistence, dashboard, and weighted drill (2 bugs found & fixed)
 
 ## Progress
 
@@ -106,4 +106,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Challenge Loop | 3/3 | Complete | 2026-02-23 |
 | 3. Content Library | 4/4 | Complete | 2026-02-23 |
 | 4. Keyboard Shortcuts | 1/2 | Complete    | 2026-02-23 |
-| 5. Progress and Weak Areas | 2/3 | In Progress | - |
+| 5. Progress and Weak Areas | 3/3 | Complete | 2026-02-23 |
