@@ -57,30 +57,55 @@ export function WelcomePage() {
           Practice Excel formulas for finance interviews — SUM, VLOOKUP, NPV, IRR, and more.
         </p>
 
-        {/* CTA button */}
-        <button
-          onClick={() => navigate('/practice')}
-          style={{
-            backgroundColor: '#1a6b3c',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '4px',
-            padding: '12px 32px',
-            fontSize: '16px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            letterSpacing: '0.2px',
-            transition: 'background-color 0.15s',
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#145530';
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1a6b3c';
-          }}
-        >
-          {hasStarted ? 'Continue' : 'Open Spreadsheet'}
-        </button>
+        {/* CTA buttons */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <button
+            onClick={() => navigate('/challenge')}
+            style={{
+              backgroundColor: '#1a6b3c',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '4px',
+              padding: '12px 32px',
+              fontSize: '16px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              letterSpacing: '0.2px',
+              transition: 'background-color 0.15s',
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#145530';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1a6b3c';
+            }}
+          >
+            Start Challenge
+          </button>
+          <button
+            onClick={() => navigate('/practice')}
+            style={{
+              backgroundColor: 'transparent',
+              color: '#1a6b3c',
+              border: '1px solid #1a6b3c',
+              borderRadius: '4px',
+              padding: '10px 32px',
+              fontSize: '14px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              letterSpacing: '0.2px',
+              transition: 'background-color 0.15s',
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#f0f8f4';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+            }}
+          >
+            {hasStarted ? 'Continue Practicing' : 'Free Practice'}
+          </button>
+        </div>
       </div>
     </div>
   );
