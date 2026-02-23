@@ -55,7 +55,12 @@ Plans:
   4. ProgressPage and ShortcutsPage use shared Card/StatCard/Button components
   5. Correct answer shows green flash animation; incorrect shows red shake animation
   6. All pages have consistent typography (Inter font, size scale from tokens)
-**Plans:** 0 plans
+**Plans:** 3 plans
+
+Plans:
+- [ ] 07-01-PLAN.md — AppShell restyle + WelcomePage onboarding section
+- [ ] 07-02-PLAN.md — DrillPage light theme + feedback animations
+- [ ] 07-03-PLAN.md — ProgressPage + ShortcutsPage restyle with shared components
 
 ### Phase 8: Challenge Components and Prompt Formatting
 **Goal**: Migrate challenge sub-components from CSS classes to Tailwind utilities and implement structured prompt formatting to fix the wall-of-text problem
@@ -93,7 +98,7 @@ v1.1: Phases 6 -> 7 -> 8 -> 9
 | 3. Content Library | 4/4 | Complete | 2026-02-23 |
 | 4. Keyboard Shortcuts | 2/2 | Complete | 2026-02-23 |
 | 5. Progress and Weak Areas | 3/3 | Complete | 2026-02-23 |
-| 6. Design Foundation | 1/2 | In Progress|  |
-| 7. Shell, Welcome, and Page Restyling | 0/0 | Pending | — |
+| 6. Design Foundation | 2/2 | Complete | 2026-02-23 |
+| 7. Shell, Welcome, and Page Restyling | 0/3 | In Progress | — |
 | 8. Challenge Components and Prompt Formatting | 0/0 | Pending | — |
 | 9. Deployment and Verification | 0/0 | Pending | — |
