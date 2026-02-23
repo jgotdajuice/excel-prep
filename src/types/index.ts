@@ -53,3 +53,48 @@ export interface GradeResult {
   /** For error: the Excel error string, e.g. '#VALUE!' */
   errorCode?: string;
 }
+
+// ── Keyboard Shortcut Types ─────────────────────────────────────────────────
+
+export type ShortcutCategory =
+  | 'navigation'
+  | 'formula-entry'
+  | 'formatting'
+  | 'selection-editing';
+
+export interface ShortcutKeys {
+  /** Key array for Windows, e.g. ['Ctrl', 'D'] or ['F4'] or ['Alt', '='] */
+  windows: string[];
+  /** Key array for Mac, e.g. ['Cmd', 'D'] or ['F4'] */
+  mac: string[];
+}
+
+export interface Shortcut {
+  id: string;
+  /** What the shortcut does, e.g. "Fill Down" */
+  action: string;
+  keys: ShortcutKeys;
+  category: ShortcutCategory;
+  /** Brief IB workflow context for why this shortcut matters */
+  financeContext: string;
+  /** true = cannot be captured in browser (Ctrl+W, Ctrl+T, Ctrl+N) */
+  browserBlocked?: boolean;
+  /** true = sequential ribbon sequence (Alt+H+B), cannot be drilled as chord */
+  sequentialOnly?: boolean;
+}
+
+export interface DrillResult {
+  shortcut: Shortcut;
+  correct: boolean;
+  /** Milliseconds from question shown to answer submitted */
+  responseMs: number;
+}
+
+export type OSMode = 'windows' | 'mac';
+
+export type DrillMode = 'practice' | 'timed';
+
+/** Action→Keys: user presses the key combo; Keys→Action: user picks correct action (multiple choice) */
+export type DrillDirection = 'action-to-keys' | 'keys-to-action';
+
+export type DrillState = 'idle' | 'drilling' | 'feedback' | 'summary';
