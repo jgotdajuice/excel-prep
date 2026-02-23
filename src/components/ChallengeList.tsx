@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { clsx } from 'clsx';
 import { useChallengeStore } from '../store/challengeStore';
 import type { ChallengeStatus } from '../types';
 
@@ -20,16 +21,17 @@ function statusIcon(status: ChallengeStatus): string {
   }
 }
 
-function statusIconColor(status: ChallengeStatus): string {
+function statusIconClass(status: ChallengeStatus, locked: boolean): string {
+  if (locked) return 'text-muted/60';
   switch (status) {
     case 'correct':
-      return '#1a6b3c';
+      return 'text-brand';
     case 'incorrect':
-      return '#c0392b';
+      return 'text-red-600';
     case 'skipped':
-      return '#888';
+      return 'text-muted';
     default:
-      return '#0066cc';
+      return 'text-blue-600';
   }
 }
 
@@ -38,7 +40,7 @@ export function ChallengeList({ lockedTier, prereqTier }: ChallengeListProps) {
   const [lockedClickId, setLockedClickId] = useState<string | null>(null);
 
   if (tierChallenges.length === 0) {
-    return <div className="challenge-list" />;
+    return <div className="overflow-y-auto bg-base flex flex-col py-3 flex-1" />;
   }
 
   function handleLockedClick(challengeId: string) {
@@ -46,9 +48,11 @@ export function ChallengeList({ lockedTier, prereqTier }: ChallengeListProps) {
   }
 
   return (
-    <div className="challenge-list">
-      <p className="challenge-list-header">Challenges</p>
-      <ul className="challenge-list-items">
+    <div className="overflow-y-auto bg-base flex flex-col py-3 flex-1">
+      <p className="text-[11px] font-semibold text-muted uppercase tracking-wide px-3 mb-2">
+        Challenges
+      </p>
+      <ul className="list-none m-0 p-0">
         {tierChallenges.map((challenge, index) => {
           // Look up global status
           const globalIdx = challenges.findIndex(c => c.id === challenge.id);
@@ -60,7 +64,12 @@ export function ChallengeList({ lockedTier, prereqTier }: ChallengeListProps) {
           return (
             <li
               key={challenge.id}
-              className={`challenge-list-item${isActive ? ' active' : ''}${lockedTier ? ' locked' : ''}`}
+              className={clsx(
+                'flex items-center flex-wrap gap-2 py-2 px-3 text-xs text-text-primary cursor-pointer border-l-[3px] border-transparent transition-colors duration-100',
+                isActive && 'bg-brand-light border-l-brand font-semibold text-brand-dark',
+                lockedTier && !isActive && 'text-muted hover:bg-base',
+                !lockedTier && !isActive && 'hover:bg-border/40',
+              )}
               onClick={() => {
                 if (lockedTier) {
                   handleLockedClick(challenge.id);
@@ -70,21 +79,28 @@ export function ChallengeList({ lockedTier, prereqTier }: ChallengeListProps) {
               }}
             >
               <span
-                className="challenge-list-icon"
-                style={{ color: lockedTier ? '#aaa' : statusIconColor(status) }}
+                className={clsx(
+                  'text-[13px] w-4 text-center shrink-0',
+                  statusIconClass(status, lockedTier),
+                )}
               >
                 {lockedTier ? '\u{1F512}' : statusIcon(status)}
               </span>
-              <span className={`challenge-list-title${lockedTier ? ' text-locked' : ''}`}>
+              <span
+                className={clsx(
+                  'overflow-hidden text-ellipsis whitespace-nowrap flex-1 min-w-0',
+                  lockedTier && 'text-muted/60',
+                )}
+              >
                 {challenge.title}
               </span>
               {challenge.category && (
-                <span className="challenge-category-badge">
+                <span className="text-[10px] text-muted bg-border/50 rounded px-1 py-px whitespace-nowrap shrink-0">
                   {challenge.category}
                 </span>
               )}
               {showLockedMsg && (
-                <span className="challenge-locked-msg">
+                <span className="block w-full text-[10px] text-red-600 mt-1 pl-6">
                   Complete {prereqTier} challenges first
                 </span>
               )}
