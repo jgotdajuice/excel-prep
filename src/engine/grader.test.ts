@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DetailedCellError, ErrorType } from 'hyperformula';
+import { DetailedCellError, CellError, ErrorType } from 'hyperformula';
 import { gradeCell } from './grader';
 import type { AnswerCell } from '../types';
 
@@ -35,7 +35,7 @@ describe('gradeCell', () => {
   // 5. DetailedCellError instance → error with errorCode
   it('returns error with errorCode for DetailedCellError', () => {
     const answerCell: AnswerCell = { row: 0, col: 0, expectedValue: 42 };
-    const cellError = new DetailedCellError(ErrorType.VALUE, '#VALUE!');
+    const cellError = new DetailedCellError(new CellError(ErrorType.VALUE), '#VALUE!');
     const result = gradeCell(cellError, answerCell);
     expect(result).toEqual({ status: 'error', errorCode: '#VALUE!' });
   });
