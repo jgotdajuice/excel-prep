@@ -13,9 +13,13 @@ import type { SelectedCellState, Challenge, GradeResult } from '../types';
 // Register all Handsontable modules once at module level
 registerAllModules();
 
-// HyperFormula instance must live outside React state to avoid proxy breakage
-// Exported so ChallengePage can read cell values for grading
-export const hfInstance = buildExcelCompatEngine();
+// HyperFormula instance must live outside React state to avoid proxy breakage.
+// Exported so ChallengePage can read cell values for grading.
+// `let` because we recreate the engine on each challenge transition — the old
+// HotTable's deferred destroy() corrupts engine registries, so each new
+// HotTable must get a pristine engine.  ES module live bindings ensure
+// importers always see the current instance.
+export let hfInstance = buildExcelCompatEngine();
 
 /** Convert zero-based col index to Excel column letter (0 → A, 25 → Z) */
 function colIndexToLetter(col: number): string {
@@ -27,6 +31,38 @@ function colIndexToLetter(col: number): string {
     n = Math.floor((n - 1) / 26);
   }
   return letter;
+}
+
+/** Check if cursor is at a position where a cell reference can be inserted */
+function isCursorAtReferencePosition(textarea: HTMLTextAreaElement): boolean {
+  const val = textarea.value;
+  if (!val.startsWith('=')) return false;
+  const pos = textarea.selectionStart;
+  if (pos === val.length && val.length >= 1) return true; // at end of formula
+  if (pos === 0) return false;
+  const charBefore = val[pos - 1];
+  return '(,+-*/:  '.includes(charBefore);
+}
+
+/** Build a cell reference string like "B2" or "B2:B6" for a range */
+function buildCellRef(r1: number, c1: number, r2: number, c2: number): string {
+  const topRow = Math.min(r1, r2);
+  const botRow = Math.max(r1, r2);
+  const leftCol = Math.min(c1, c2);
+  const rightCol = Math.max(c1, c2);
+  const start = `${colIndexToLetter(leftCol)}${topRow + 1}`;
+  if (topRow === botRow && leftCol === rightCol) return start;
+  return `${start}:${colIndexToLetter(rightCol)}${botRow + 1}`;
+}
+
+/** Insert a cell reference at the cursor position in a textarea */
+function insertReferenceIntoTextarea(textarea: HTMLTextAreaElement, ref: string): void {
+  const pos = textarea.selectionStart;
+  const val = textarea.value;
+  textarea.value = val.slice(0, pos) + ref + val.slice(pos);
+  const newPos = pos + ref.length;
+  textarea.setSelectionRange(newPos, newPos);
+  textarea.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
 interface CellGradeInfo {
@@ -105,6 +141,15 @@ export function SpreadsheetGrid({
   // Enter-key grading flag: set true when Enter is pressed in an answer cell
   const enterPressedRef = useRef(false);
 
+  // Formula click-to-reference state
+  const formulaEditingRef = useRef<{ active: boolean; editorRow: number; editorCol: number }>({
+    active: false,
+    editorRow: -1,
+    editorCol: -1,
+  });
+  const dragStartRef = useRef<{ row: number; col: number } | null>(null);
+  const dragCurrentRef = useRef<{ row: number; col: number } | null>(null);
+
   // Use refs for challenge props to avoid re-creating cells callback on every render
   const isLockedRef = useRef(isLocked);
   isLockedRef.current = isLocked;
@@ -123,26 +168,29 @@ export function SpreadsheetGrid({
 
   const isChallenge = !!challenge;
 
+  // Synchronous render-phase engine recreation: build a fresh HyperFormula
+  // BEFORE returning JSX with a new HotTable key.  The old HotTable's deferred
+  // destroy() will corrupt the old engine's registries via unregisterEngine(),
+  // but we don't care — the new HotTable gets a pristine engine instance.
+  const prevChallengeIdRef = useRef<string | null>(null);
+  if (isChallenge && challenge && prevChallengeIdRef.current !== null && prevChallengeIdRef.current !== challenge.id) {
+    hfInstance = buildExcelCompatEngine();
+  }
+  prevChallengeIdRef.current = isChallenge && challenge ? challenge.id : null;
+
   // Set localStorage flag so WelcomePage can show "Continue" on next visit
   useEffect(() => {
     localStorage.setItem('hasStarted', 'true');
   }, []);
 
-  // Clear HyperFormula sheet on unmount to prevent SheetSizeLimitExceededError
-  // when React remounts HotTable via key change between challenges
+  // On full unmount (navigating away from challenge mode), recreate the engine
+  // so freeform mode (or next page) gets a pristine instance.
   useEffect(() => {
     if (!isChallenge) return;
     return () => {
-      try {
-        const sheetId = hfInstance.getSheetId('Sheet1');
-        if (sheetId !== undefined) {
-          hfInstance.removeSheet(sheetId);
-        }
-      } catch {
-        // ignore cleanup errors
-      }
+      hfInstance = buildExcelCompatEngine();
     };
-  }, [isChallenge, challenge?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isChallenge]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // When grades or lock state change, re-render grid cells to update outlines
   useEffect(() => {
@@ -265,6 +313,51 @@ export function SpreadsheetGrid({
               enterPressedRef.current = true;
             }
           }}
+          beforeOnCellMouseDown={(event, coords, _td, controller) => {
+            if (!isChallenge) return;
+            if (!formulaEditingRef.current.active) return;
+            const textarea = textareaRef.current;
+            if (!textarea) return;
+            if (!isCursorAtReferencePosition(textarea)) return;
+            // Ignore header clicks (row = -1 or col = -1)
+            if (coords.row < 0 || coords.col < 0) return;
+            // Allow normal behavior when clicking the answer cell itself
+            const { editorRow, editorCol } = formulaEditingRef.current;
+            if (coords.row === editorRow && coords.col === editorCol) return;
+
+            // Prevent HOT from closing the editor and selecting the clicked cell
+            controller.row = false;
+            controller.column = false;
+            controller.cell = false;
+            event.stopImmediatePropagation();
+
+            // Record drag start
+            dragStartRef.current = { row: coords.row, col: coords.col };
+            dragCurrentRef.current = { row: coords.row, col: coords.col };
+
+            const onMouseUp = () => {
+              document.removeEventListener('mouseup', onMouseUp);
+              const start = dragStartRef.current;
+              const end = dragCurrentRef.current;
+              if (!start || !end || !textareaRef.current) {
+                dragStartRef.current = null;
+                dragCurrentRef.current = null;
+                return;
+              }
+              const ref = buildCellRef(start.row, start.col, end.row, end.col);
+              insertReferenceIntoTextarea(textareaRef.current, ref);
+              textareaRef.current.focus();
+              dragStartRef.current = null;
+              dragCurrentRef.current = null;
+            };
+            document.addEventListener('mouseup', onMouseUp);
+          }}
+          beforeOnCellMouseOver={(_event, coords) => {
+            if (!isChallenge) return;
+            if (!dragStartRef.current) return;
+            if (coords.row < 0 || coords.col < 0) return;
+            dragCurrentRef.current = { row: coords.row, col: coords.col };
+          }}
           afterChange={(changes, source) => {
             if (isChallenge && onGradeCellRef.current && source === 'edit') {
               if (enterPressedRef.current) {
@@ -279,7 +372,13 @@ export function SpreadsheetGrid({
                 }
               }
             }
-            if (!isChallenge) {
+            if (isChallenge) {
+              // Clear formula click-to-reference state when editor closes
+              formulaEditingRef.current = { active: false, editorRow: -1, editorCol: -1 };
+              dragStartRef.current = null;
+              dragCurrentRef.current = null;
+              cleanupTextareaListener();
+            } else {
               // Free-form mode cleanup
               hideAutocomplete();
               cleanupTextareaListener();
@@ -302,7 +401,30 @@ export function SpreadsheetGrid({
             setSelectedCell({ row, col, formula, value });
           }}
           afterBeginEditing={(row, col) => {
-            if (isChallenge) return; // No autocomplete in challenge mode
+            // Challenge mode: detect formula editing for click-to-reference
+            if (isChallenge) {
+              setTimeout(() => {
+                const hot = hotRef.current?.hotInstance;
+                if (!hot) return;
+                const editor = hot.getActiveEditor();
+                if (!editor) return;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const textarea = (editor as any).TEXTAREA as HTMLTextAreaElement | undefined;
+                if (!textarea) return;
+                textareaRef.current = textarea;
+                formulaEditingRef.current = { active: textarea.value.startsWith('='), editorRow: row, editorCol: col };
+                const onInput = () => {
+                  formulaEditingRef.current.active = textarea.value.startsWith('=');
+                };
+                textarea.addEventListener('input', onInput);
+                // Store cleanup — reuse keyupListenerRef slot for the input listener
+                cleanupTextareaListener();
+                keyupListenerRef.current = (() => {
+                  textarea.removeEventListener('input', onInput);
+                }) as unknown as (e: KeyboardEvent) => void;
+              }, 0);
+              return;
+            }
             // Clean up any previous listener
             cleanupTextareaListener();
 
@@ -342,7 +464,12 @@ export function SpreadsheetGrid({
             }, 0);
           }}
           afterDeselect={() => {
-            if (!isChallenge) {
+            if (isChallenge) {
+              formulaEditingRef.current = { active: false, editorRow: -1, editorCol: -1 };
+              dragStartRef.current = null;
+              dragCurrentRef.current = null;
+              cleanupTextareaListener();
+            } else {
               hideAutocomplete();
               cleanupTextareaListener();
             }
