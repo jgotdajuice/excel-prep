@@ -119,3 +119,16 @@ None - no external service configuration required.
 ---
 *Phase: 08-challenge-components-prompt-formatting*
 *Completed: 2026-02-23*
+
+## Self-Check: PASSED
+
+- FOUND: src/components/RightPanel.tsx
+- FOUND: src/pages/ChallengePage.tsx
+- FOUND: src/components/DrillQuestion.tsx
+- FOUND: src/pages/DrillPage.tsx
+- FOUND: src/index.css (114 lines)
+- FOUND: .planning/phases/08-challenge-components-prompt-formatting/08-02-SUMMARY.md
+- FOUND commit: 1663d52 (Task 1)
+- FOUND commit: 8c1cfe4 (Task 2)
+- FOUND commit: 08cbffc (Task 3)
+- Build: PASS (tsc --noEmit + npm run build, zero errors)
