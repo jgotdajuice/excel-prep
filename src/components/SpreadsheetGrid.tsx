@@ -57,15 +57,6 @@ function buildCellRef(r1: number, c1: number, r2: number, c2: number): string {
   return `${start}:${colIndexToLetter(rightCol)}${botRow + 1}`;
 }
 
-/** Insert a cell reference at the cursor position in a textarea */
-function insertReferenceIntoTextarea(textarea: HTMLTextAreaElement, ref: string): void {
-  const pos = textarea.selectionStart;
-  const val = textarea.value;
-  textarea.value = val.slice(0, pos) + ref + val.slice(pos);
-  const newPos = pos + ref.length;
-  textarea.setSelectionRange(newPos, newPos);
-  textarea.dispatchEvent(new Event('input', { bubbles: true }));
-}
 
 interface CellGradeInfo {
   row: number;
@@ -157,6 +148,10 @@ export function SpreadsheetGrid({
   });
   const dragStartRef = useRef<{ row: number; col: number } | null>(null);
   const dragCurrentRef = useRef<{ row: number; col: number } | null>(null);
+  // Track the last inserted reference so subsequent clicks replace it (Excel behavior)
+  const lastInsertedRef = useRef<{ start: number; end: number } | null>(null);
+  // Flag to distinguish our programmatic textarea edits from user typing
+  const programmaticInsertRef = useRef(false);
 
   // Use refs for challenge props to avoid re-creating cells callback on every render
   const isLockedRef = useRef(isLocked);
@@ -242,10 +237,15 @@ export function SpreadsheetGrid({
     textareaRef.current = null;
   }
 
-  // ── Capturing mousedown for click-to-reference ─────────────────────────
+  // ── Capturing mousedown for click-to-reference (Excel Point Mode) ────
   // Native capturing listener fires BEFORE Handsontable sees the event.
   // This prevents HOT from closing the editor when clicking cells during
-  // formula editing, allowing us to insert references reliably.
+  // formula editing, allowing us to insert/replace references reliably.
+  //
+  // Point Mode behaviour:
+  //   - Click a cell → inserts reference (or replaces previous if no typing since last click)
+  //   - Drag across cells → creates/updates range reference (e.g. B2:B6)
+  //   - Type an operator/comma → exits replace-mode so next click inserts fresh
   useEffect(() => {
     if (!isChallenge) return;
     const container = containerRef.current;
@@ -271,9 +271,12 @@ export function SpreadsheetGrid({
 
       const textarea = textareaRef.current;
       if (!textarea) return;
-      if (!isCursorAtReferencePosition(textarea)) return;
 
-      // Find which cell was clicked by checking the event target
+      // Determine mode: replace (re-click without typing) vs insert (after operator)
+      const inReplaceMode = lastInsertedRef.current !== null;
+      if (!inReplaceMode && !isCursorAtReferencePosition(textarea)) return;
+
+      // Find which cell was clicked
       const hot = hotRef.current?.hotInstance;
       if (!hot) return;
 
@@ -281,11 +284,10 @@ export function SpreadsheetGrid({
       const td = target.closest('td');
       if (!td) return;
 
-      // Get cell coords from HOT
       const coords = hot.getCoords(td);
       if (!coords || coords.row < 0 || coords.col < 0) return;
 
-      // Don't intercept clicks on the answer cell itself
+      // Don't intercept clicks on the answer cell being edited
       const { editorRow, editorCol } = formulaEditingRef.current;
       if (coords.row === editorRow && coords.col === editorCol) return;
 
@@ -293,9 +295,35 @@ export function SpreadsheetGrid({
       e.stopPropagation();
       e.preventDefault();
 
-      // Insert the cell reference immediately
+      // Build single-cell reference
       const ref = buildCellRef(coords.row, coords.col, coords.row, coords.col);
-      insertReferenceIntoTextarea(textarea, ref);
+
+      let insertStart: number;
+      if (inReplaceMode) {
+        // Replace the previous click-inserted reference
+        const { start, end } = lastInsertedRef.current!;
+        const val = textarea.value;
+        programmaticInsertRef.current = true;
+        textarea.value = val.slice(0, start) + ref + val.slice(end);
+        const newEnd = start + ref.length;
+        textarea.setSelectionRange(newEnd, newEnd);
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        programmaticInsertRef.current = false;
+        insertStart = start;
+        lastInsertedRef.current = { start, end: newEnd };
+      } else {
+        // Insert at cursor
+        const pos = textarea.selectionStart;
+        const val = textarea.value;
+        programmaticInsertRef.current = true;
+        textarea.value = val.slice(0, pos) + ref + val.slice(pos);
+        const newEnd = pos + ref.length;
+        textarea.setSelectionRange(newEnd, newEnd);
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        programmaticInsertRef.current = false;
+        insertStart = pos;
+        lastInsertedRef.current = { start: pos, end: newEnd };
+      }
       textarea.focus();
 
       // Set up drag tracking for range selection
@@ -308,51 +336,28 @@ export function SpreadsheetGrid({
         if (!moveTd) return;
         const moveCoords = hot.getCoords(moveTd);
         if (!moveCoords || moveCoords.row < 0 || moveCoords.col < 0) return;
+
+        const prev = dragCurrentRef.current!;
+        if (prev.row === moveCoords.row && prev.col === moveCoords.col) return;
         dragCurrentRef.current = { row: moveCoords.row, col: moveCoords.col };
 
-        // Update the reference in the textarea as user drags
+        // Build range reference and replace from insertStart to current end
         const start = dragStartRef.current!;
-        const end = dragCurrentRef.current;
-        const rangeRef = buildCellRef(start.row, start.col, end.row, end.col);
-        // Replace the last inserted reference
+        const rangeRef = buildCellRef(start.row, start.col, moveCoords.row, moveCoords.col);
         const val = textarea.value;
-        const pos = textarea.selectionStart;
-        // Find start of the reference we inserted (search backwards from cursor)
-        let refStart = pos - ref.length;
-        // If user has dragged, the previous range ref might be longer/shorter
-        // Simpler: track the insertion point
-        const beforeRef = val.slice(0, refStart < 0 ? 0 : refStart);
-        const afterRef = val.slice(pos);
-        textarea.value = beforeRef + rangeRef + afterRef;
-        const newPos = beforeRef.length + rangeRef.length;
-        textarea.setSelectionRange(newPos, newPos);
+        const currentEnd = lastInsertedRef.current!.end;
+        programmaticInsertRef.current = true;
+        textarea.value = val.slice(0, insertStart) + rangeRef + val.slice(currentEnd);
+        const newEnd = insertStart + rangeRef.length;
+        textarea.setSelectionRange(newEnd, newEnd);
         textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        programmaticInsertRef.current = false;
+        lastInsertedRef.current = { start: insertStart, end: newEnd };
       };
 
       const onMouseUp = () => {
         document.removeEventListener('mousemove', onMouseMove);
         document.removeEventListener('mouseup', onMouseUp);
-        // Final range reference
-        const start = dragStartRef.current;
-        const end = dragCurrentRef.current;
-        if (start && end && (start.row !== end.row || start.col !== end.col)) {
-          const rangeRef = buildCellRef(start.row, start.col, end.row, end.col);
-          const val = textarea.value;
-          const pos = textarea.selectionStart;
-          // Find and replace the current reference
-          // The reference starts where we first inserted
-          const singleRef = buildCellRef(start.row, start.col, start.row, start.col);
-          // Search backwards from cursor for the start of any reference
-          const searchFrom = val.lastIndexOf(singleRef);
-          if (searchFrom >= 0) {
-            const beforeRef = val.slice(0, searchFrom);
-            const afterRef = val.slice(pos);
-            textarea.value = beforeRef + rangeRef + afterRef;
-            const newPos = beforeRef.length + rangeRef.length;
-            textarea.setSelectionRange(newPos, newPos);
-            textarea.dispatchEvent(new Event('input', { bubbles: true }));
-          }
-        }
         textarea.focus();
         dragStartRef.current = null;
         dragCurrentRef.current = null;
@@ -465,14 +470,15 @@ export function SpreadsheetGrid({
                 }
               }
             }
-            if (isChallenge) {
+            if (isChallenge && source === 'edit') {
               // Clear formula click-to-reference state when editor closes
               formulaEditingRef.current = { active: false, editorRow: -1, editorCol: -1 };
               setFormulaEditingActive(false);
               dragStartRef.current = null;
               dragCurrentRef.current = null;
+              lastInsertedRef.current = null;
               cleanupTextareaListener();
-            } else {
+            } else if (!isChallenge) {
               // Free-form mode cleanup
               hideAutocomplete();
               cleanupTextareaListener();
@@ -515,6 +521,10 @@ export function SpreadsheetGrid({
                   const active = textarea.value.startsWith('=');
                   formulaEditingRef.current.active = active;
                   setFormulaEditingActive(active);
+                  // User typed something → exit replace-mode so next click inserts fresh
+                  if (!programmaticInsertRef.current) {
+                    lastInsertedRef.current = null;
+                  }
                 };
                 textarea.addEventListener('input', onInput);
                 keyupListenerRef.current = (() => {
@@ -567,6 +577,7 @@ export function SpreadsheetGrid({
               setFormulaEditingActive(false);
               dragStartRef.current = null;
               dragCurrentRef.current = null;
+              lastInsertedRef.current = null;
               cleanupTextareaListener();
             } else {
               hideAutocomplete();
