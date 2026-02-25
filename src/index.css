@@ -107,6 +107,11 @@ html, body, #root {
   height: 100%;
 }
 
+/* Cursor change when formula editing — signals cells are clickable for references */
+.hot-container.formula-editing td {
+  cursor: cell;
+}
+
 /* Formula bar utility */
 .formula-bar {
   font-family: Consolas, "Courier New", monospace;

@@ -6,12 +6,21 @@ import { ChallengePage } from './pages/ChallengePage';
 import { DrillPage } from './pages/DrillPage';
 import { ShortcutsPage } from './pages/ShortcutsPage';
 import { ProgressPage } from './pages/ProgressPage';
+import { LearnPage } from './pages/LearnPage';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<WelcomePage />} />
+        <Route
+          path="/learn"
+          element={
+            <AppShell>
+              <LearnPage />
+            </AppShell>
+          }
+        />
         <Route
           path="/practice"
           element={

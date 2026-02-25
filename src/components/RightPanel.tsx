@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useChallengeStore } from '../store/challengeStore';
 import { formatPrompt, PromptDisplay } from '../utils/formatPrompt';
+import { functionReferences } from '../data/functions';
 
 function formatTime(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -109,6 +110,30 @@ export function RightPanel() {
 
       {/* Title */}
       <h2 className="text-[15px] font-bold text-brand-dark m-0 leading-tight">{challenge.title}</h2>
+
+      {/* Formula primer */}
+      {(() => {
+        const ref = functionReferences.find((f) => f.category === challenge.category);
+        if (!ref) return null;
+        return (
+          <details className="border border-border rounded-btn overflow-hidden">
+            <summary className="text-[13px] font-semibold text-brand-dark py-2 px-2.5 cursor-pointer bg-base select-none hover:bg-border/40">
+              {ref.name} syntax
+            </summary>
+            <div className="py-2 px-2.5 flex flex-col gap-1.5">
+              <code className="font-mono text-xs bg-brand-light text-brand-dark rounded py-1 px-2 block break-all">
+                {ref.syntax}
+              </code>
+              <p className="text-xs text-muted m-0 leading-relaxed">{ref.description}</p>
+              <div className="text-xs text-muted">
+                <span className="font-semibold text-text-primary">Example:</span>{' '}
+                <code className="font-mono text-brand-dark">{ref.example.formula}</code>
+                {' \u2192 '}{ref.example.result}
+              </div>
+            </div>
+          </details>
+        );
+      })()}
 
       {/* Prompt — structured rendering via PromptDisplay */}
       <PromptDisplay sections={formatPrompt(challenge.prompt)} />

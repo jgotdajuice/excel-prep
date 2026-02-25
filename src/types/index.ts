@@ -92,6 +92,25 @@ export interface GradeResult {
   errorCode?: string;
 }
 
+// ── Function Reference Types ────────────────────────────────────────────────
+
+export interface FunctionParameter {
+  name: string;
+  description: string;
+  optional?: boolean;
+}
+
+export interface FunctionReference {
+  name: string;
+  syntax: string;
+  description: string;
+  parameters: FunctionParameter[];
+  example: { scenario: string; formula: string; result: string };
+  whenToUse: string;
+  tier: Tier;
+  category: string;
+}
+
 // ── Keyboard Shortcut Types ─────────────────────────────────────────────────
 
 export type ShortcutCategory =

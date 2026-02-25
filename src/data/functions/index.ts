@@ -1,0 +1,233 @@
+import type { FunctionReference } from '../../types';
+
+export const functionReferences: FunctionReference[] = [
+  // ── Beginner ────────────────────────────────────────────────────────────────
+  {
+    name: 'SUM',
+    syntax: '=SUM(number1, [number2], ...)',
+    description: 'Adds all numbers in a range of cells.',
+    parameters: [
+      { name: 'number1', description: 'First number or range to add' },
+      { name: 'number2', description: 'Additional numbers or ranges', optional: true },
+    ],
+    example: {
+      scenario: 'Sum quarterly revenue figures in B2:B5',
+      formula: '=SUM(B2:B5)',
+      result: '4200000',
+    },
+    whenToUse: 'Totaling line items in financial statements, summing cash flows, adding revenue streams.',
+    tier: 'beginner',
+    category: 'SUM',
+  },
+  {
+    name: 'IF',
+    syntax: '=IF(logical_test, value_if_true, value_if_false)',
+    description: 'Returns one value if a condition is TRUE and another if FALSE.',
+    parameters: [
+      { name: 'logical_test', description: 'Condition to evaluate' },
+      { name: 'value_if_true', description: 'Value returned when condition is TRUE' },
+      { name: 'value_if_false', description: 'Value returned when condition is FALSE' },
+    ],
+    example: {
+      scenario: 'Flag deals over $1M as "Large" else "Small"',
+      formula: '=IF(B2>1000000,"Large","Small")',
+      result: 'Large',
+    },
+    whenToUse: 'Classifying transactions, applying conditional logic to financial models, pass/fail checks.',
+    tier: 'beginner',
+    category: 'IF',
+  },
+  {
+    name: 'IFERROR',
+    syntax: '=IFERROR(value, value_if_error)',
+    description: 'Returns a specified value if a formula evaluates to an error; otherwise returns the formula result.',
+    parameters: [
+      { name: 'value', description: 'Formula to evaluate' },
+      { name: 'value_if_error', description: 'Value returned when formula produces an error' },
+    ],
+    example: {
+      scenario: 'Calculate margin but handle division by zero',
+      formula: '=IFERROR(B2/C2, 0)',
+      result: '0',
+    },
+    whenToUse: 'Wrapping VLOOKUP/division to prevent #N/A or #DIV/0! errors in models.',
+    tier: 'beginner',
+    category: 'IFERROR',
+  },
+  {
+    name: 'VLOOKUP',
+    syntax: '=VLOOKUP(lookup_value, table_array, col_index_num, [range_lookup])',
+    description: 'Searches the first column of a range and returns a value from another column in the same row.',
+    parameters: [
+      { name: 'lookup_value', description: 'Value to search for in the first column' },
+      { name: 'table_array', description: 'Range containing the lookup and return columns' },
+      { name: 'col_index_num', description: 'Column number to return (1-based)' },
+      { name: 'range_lookup', description: '0 for exact match, 1 for approximate', optional: true },
+    ],
+    example: {
+      scenario: 'Look up ticker "AAPL" to get its market cap',
+      formula: '=VLOOKUP("AAPL",A2:D10,4,0)',
+      result: '2800000000000',
+    },
+    whenToUse: 'Pulling data from reference tables, matching comp data, looking up rates or prices.',
+    tier: 'beginner',
+    category: 'VLOOKUP',
+  },
+
+  // ── Intermediate ────────────────────────────────────────────────────────────
+  {
+    name: 'SUMIFS',
+    syntax: '=SUMIFS(sum_range, criteria_range1, criteria1, [criteria_range2, criteria2], ...)',
+    description: 'Sums cells that meet multiple criteria.',
+    parameters: [
+      { name: 'sum_range', description: 'Range of cells to sum' },
+      { name: 'criteria_range1', description: 'First range to evaluate' },
+      { name: 'criteria1', description: 'Criteria for the first range' },
+      { name: 'criteria_range2', description: 'Additional range to evaluate', optional: true },
+      { name: 'criteria2', description: 'Criteria for additional range', optional: true },
+    ],
+    example: {
+      scenario: 'Sum revenue for "Tech" sector in Q1',
+      formula: '=SUMIFS(D2:D20,B2:B20,"Tech",C2:C20,"Q1")',
+      result: '5400000',
+    },
+    whenToUse: 'Multi-dimensional aggregation: sum by region+product, filter by date+category.',
+    tier: 'intermediate',
+    category: 'SUMIFS',
+  },
+  {
+    name: 'INDEX/MATCH',
+    syntax: '=INDEX(array, MATCH(lookup_value, lookup_array, [match_type]))',
+    description: 'INDEX returns a value from a range by position; MATCH finds the position. Together they replace VLOOKUP with more flexibility.',
+    parameters: [
+      { name: 'array', description: 'Range to return a value from' },
+      { name: 'lookup_value', description: 'Value to find' },
+      { name: 'lookup_array', description: 'Range to search in' },
+      { name: 'match_type', description: '0 for exact match', optional: true },
+    ],
+    example: {
+      scenario: 'Find the P/E ratio for company in cell A2',
+      formula: '=INDEX(D2:D10,MATCH(A2,B2:B10,0))',
+      result: '18.5',
+    },
+    whenToUse: 'When lookup column is to the right of result column (VLOOKUP can\'t look left), or for large datasets.',
+    tier: 'intermediate',
+    category: 'INDEX/MATCH',
+  },
+  {
+    name: 'NPV',
+    syntax: '=NPV(rate, value1, [value2], ...) + initial_investment',
+    description: 'Calculates net present value of future cash flows at a discount rate. Add the initial outlay separately since NPV assumes first cash flow is in period 1.',
+    parameters: [
+      { name: 'rate', description: 'Discount rate per period' },
+      { name: 'value1', description: 'Future cash flows (period 1 onward)' },
+      { name: 'value2', description: 'Additional cash flows', optional: true },
+    ],
+    example: {
+      scenario: 'NPV of -$100K initial + 5 years of cash flows at 10%',
+      formula: '=NPV(0.10,B3:B7)+B2',
+      result: '24869.43',
+    },
+    whenToUse: 'DCF valuation, project evaluation, comparing investment alternatives.',
+    tier: 'intermediate',
+    category: 'NPV',
+  },
+  {
+    name: 'PMT',
+    syntax: '=PMT(rate, nper, pv, [fv], [type])',
+    description: 'Calculates the periodic payment for a loan or annuity based on constant payments and a constant interest rate.',
+    parameters: [
+      { name: 'rate', description: 'Interest rate per period' },
+      { name: 'nper', description: 'Total number of payment periods' },
+      { name: 'pv', description: 'Present value (loan principal)' },
+      { name: 'fv', description: 'Future value (default 0)', optional: true },
+      { name: 'type', description: '0 = end of period, 1 = beginning', optional: true },
+    ],
+    example: {
+      scenario: 'Monthly payment on $500K loan, 5% annual, 30 years',
+      formula: '=PMT(0.05/12, 360, -500000)',
+      result: '2684.11',
+    },
+    whenToUse: 'Loan amortization, lease payment calculation, debt service analysis.',
+    tier: 'intermediate',
+    category: 'PMT',
+  },
+
+  // ── Advanced ────────────────────────────────────────────────────────────────
+  {
+    name: 'IRR',
+    syntax: '=IRR(values, [guess])',
+    description: 'Returns the internal rate of return for a series of cash flows. The first value is typically negative (initial investment).',
+    parameters: [
+      { name: 'values', description: 'Range containing cash flows (must include at least one negative and one positive)' },
+      { name: 'guess', description: 'Initial guess for the rate (default 0.1)', optional: true },
+    ],
+    example: {
+      scenario: 'IRR of -$200K investment returning $60K/yr for 5 years',
+      formula: '=IRR(B2:B7)',
+      result: '15.24%',
+    },
+    whenToUse: 'LBO returns analysis, project hurdle-rate comparison, PE fund performance.',
+    tier: 'advanced',
+    category: 'IRR',
+  },
+  {
+    name: 'XLOOKUP',
+    syntax: '=XLOOKUP(lookup_value, lookup_array, return_array, [if_not_found], [match_mode], [search_mode])',
+    description: 'Searches a range and returns a corresponding value. More powerful than VLOOKUP with built-in error handling.',
+    parameters: [
+      { name: 'lookup_value', description: 'Value to search for' },
+      { name: 'lookup_array', description: 'Range to search' },
+      { name: 'return_array', description: 'Range to return from' },
+      { name: 'if_not_found', description: 'Value if no match found', optional: true },
+      { name: 'match_mode', description: '0=exact, -1=exact or next smaller, 1=exact or next larger', optional: true },
+      { name: 'search_mode', description: '1=first-to-last, -1=last-to-first', optional: true },
+    ],
+    example: {
+      scenario: 'Look up a bond rating by issuer name',
+      formula: '=XLOOKUP("Goldman Sachs",A2:A20,C2:C20,"Not Found")',
+      result: 'AA-',
+    },
+    whenToUse: 'Modern replacement for VLOOKUP/INDEX-MATCH. Handles left-lookups, exact match default, built-in #N/A handling.',
+    tier: 'advanced',
+    category: 'XLOOKUP',
+  },
+  {
+    name: 'XNPV',
+    syntax: '=XNPV(rate, values, dates)',
+    description: 'Calculates NPV for cash flows that occur on specific dates rather than evenly spaced periods.',
+    parameters: [
+      { name: 'rate', description: 'Annual discount rate' },
+      { name: 'values', description: 'Cash flow amounts' },
+      { name: 'dates', description: 'Corresponding dates for each cash flow' },
+    ],
+    example: {
+      scenario: 'NPV of irregular cash flows with exact dates at 12% discount',
+      formula: '=XNPV(0.12,B2:B6,A2:A6)',
+      result: '156432.78',
+    },
+    whenToUse: 'Real-world deal valuation where cash flows don\'t fall on regular intervals.',
+    tier: 'advanced',
+    category: 'XNPV',
+  },
+  {
+    name: 'OFFSET',
+    syntax: '=OFFSET(reference, rows, cols, [height], [width])',
+    description: 'Returns a range offset from a starting cell by a given number of rows and columns. Can specify height and width for a dynamic range.',
+    parameters: [
+      { name: 'reference', description: 'Starting cell or range' },
+      { name: 'rows', description: 'Number of rows to offset (positive = down)' },
+      { name: 'cols', description: 'Number of columns to offset (positive = right)' },
+      { name: 'height', description: 'Height of returned range in rows', optional: true },
+      { name: 'width', description: 'Width of returned range in columns', optional: true },
+    ],
+    example: {
+      scenario: 'Sum the last 4 quarters of revenue starting from B2',
+      formula: '=SUM(OFFSET(B2,0,0,4,1))',
+      result: '3200000',
+    },
+    whenToUse: 'Dynamic ranges in financial models, rolling averages, flexible data references.',
+    tier: 'advanced',
+    category: 'OFFSET',
+  },
+];

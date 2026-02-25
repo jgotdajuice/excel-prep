@@ -41,7 +41,7 @@ function isCursorAtReferencePosition(textarea: HTMLTextAreaElement): boolean {
   if (pos === val.length && val.length >= 1) return true; // at end of formula
   if (pos === 0) return false;
   const charBefore = val[pos - 1];
-  return '(,+-*/:  '.includes(charBefore);
+  return '(,+-*/: =<>&;'.includes(charBefore);
 }
 
 /** Build a cell reference string like "B2" or "B2:B6" for a range */
@@ -102,8 +102,8 @@ Handsontable.renderers.registerRenderer(
     } else if (gradeStatus === 'incorrect' || gradeStatus === 'error') {
       td.style.outline = '2px solid #c0392b';
     } else {
-      // Unattempted answer cell — blue
-      td.style.outline = '2px solid #0066cc';
+      // Unattempted answer cell — green
+      td.style.outline = '2px solid #34a05f';
     }
     td.style.outlineOffset = '-2px';
   },
@@ -140,6 +140,9 @@ export function SpreadsheetGrid({
 
   // Enter-key grading flag: set true when Enter is pressed in an answer cell
   const enterPressedRef = useRef(false);
+
+  // Visual cursor state for formula editing (click-to-reference)
+  const [formulaEditingActive, setFormulaEditingActive] = useState(false);
 
   // Formula click-to-reference state
   const formulaEditingRef = useRef<{ active: boolean; editorRow: number; editorCol: number }>({
@@ -278,7 +281,7 @@ export function SpreadsheetGrid({
           cellLabel={`${colIndexToLetter(selectedCell.col)}${selectedCell.row + 1}`}
         />
       )}
-      <div className="hot-container" style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+      <div className={`hot-container${formulaEditingActive ? ' formula-editing' : ''}`} style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
         <HotTable
           ref={hotRef}
           // Use challenge key to force full re-mount when challenge changes
@@ -315,7 +318,24 @@ export function SpreadsheetGrid({
           }}
           beforeOnCellMouseDown={(event, coords, _td, controller) => {
             if (!isChallenge) return;
-            if (!formulaEditingRef.current.active) return;
+            let isFormulaEditing = formulaEditingRef.current.active;
+            // Fallback: directly check textarea value to eliminate setTimeout race
+            if (!isFormulaEditing) {
+              const hot = hotRef.current?.hotInstance;
+              const editor = hot?.getActiveEditor();
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const ta = (editor as any)?.TEXTAREA as HTMLTextAreaElement | undefined;
+              if (ta && ta.value.startsWith('=')) {
+                isFormulaEditing = true;
+                textareaRef.current = ta;
+                const sel = hot!.getSelected();
+                const eRow = sel?.[0]?.[0] ?? -1;
+                const eCol = sel?.[0]?.[1] ?? -1;
+                formulaEditingRef.current = { active: true, editorRow: eRow, editorCol: eCol };
+                setFormulaEditingActive(true);
+              }
+            }
+            if (!isFormulaEditing) return;
             const textarea = textareaRef.current;
             if (!textarea) return;
             if (!isCursorAtReferencePosition(textarea)) return;
@@ -375,6 +395,7 @@ export function SpreadsheetGrid({
             if (isChallenge) {
               // Clear formula click-to-reference state when editor closes
               formulaEditingRef.current = { active: false, editorRow: -1, editorCol: -1 };
+              setFormulaEditingActive(false);
               dragStartRef.current = null;
               dragCurrentRef.current = null;
               cleanupTextareaListener();
@@ -412,9 +433,13 @@ export function SpreadsheetGrid({
                 const textarea = (editor as any).TEXTAREA as HTMLTextAreaElement | undefined;
                 if (!textarea) return;
                 textareaRef.current = textarea;
-                formulaEditingRef.current = { active: textarea.value.startsWith('='), editorRow: row, editorCol: col };
+                const isFormula = textarea.value.startsWith('=');
+                formulaEditingRef.current = { active: isFormula, editorRow: row, editorCol: col };
+                setFormulaEditingActive(isFormula);
                 const onInput = () => {
-                  formulaEditingRef.current.active = textarea.value.startsWith('=');
+                  const active = textarea.value.startsWith('=');
+                  formulaEditingRef.current.active = active;
+                  setFormulaEditingActive(active);
                 };
                 textarea.addEventListener('input', onInput);
                 // Store cleanup — reuse keyupListenerRef slot for the input listener
@@ -466,6 +491,7 @@ export function SpreadsheetGrid({
           afterDeselect={() => {
             if (isChallenge) {
               formulaEditingRef.current = { active: false, editorRow: -1, editorCol: -1 };
+              setFormulaEditingActive(false);
               dragStartRef.current = null;
               dragCurrentRef.current = null;
               cleanupTextareaListener();

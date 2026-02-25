@@ -13,6 +13,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
+  { label: 'Learn', to: '/learn' },
   { label: 'Challenges', to: '/challenge' },
   { label: 'Rapid-Fire Drill', to: '/drill' },
   { label: 'Keyboard Shortcuts', to: '/shortcuts' },
