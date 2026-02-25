@@ -432,6 +432,8 @@ export function SpreadsheetGrid({
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const textarea = (editor as any).TEXTAREA as HTMLTextAreaElement | undefined;
                 if (!textarea) return;
+                // Clean up previous listener before setting new textarea ref
+                cleanupTextareaListener();
                 textareaRef.current = textarea;
                 const isFormula = textarea.value.startsWith('=');
                 formulaEditingRef.current = { active: isFormula, editorRow: row, editorCol: col };
@@ -442,8 +444,6 @@ export function SpreadsheetGrid({
                   setFormulaEditingActive(active);
                 };
                 textarea.addEventListener('input', onInput);
-                // Store cleanup — reuse keyupListenerRef slot for the input listener
-                cleanupTextareaListener();
                 keyupListenerRef.current = (() => {
                   textarea.removeEventListener('input', onInput);
                 }) as unknown as (e: KeyboardEvent) => void;
