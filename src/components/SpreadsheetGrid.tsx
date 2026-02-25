@@ -430,6 +430,7 @@ export function SpreadsheetGrid({
           height="100%"
           minCols={minCols}
           minRows={minRows}
+          stretchH={isChallenge ? 'all' : 'none'}
           {...(maxRows !== undefined ? { maxRows } : {})}
           {...(maxCols !== undefined ? { maxCols } : {})}
           licenseKey="non-commercial-and-evaluation"
