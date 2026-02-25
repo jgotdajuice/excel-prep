@@ -65,6 +65,19 @@ function FunctionCard({ fn }: { fn: FunctionReference }) {
           </p>
         </div>
 
+        {/* Common patterns */}
+        <div>
+          <p className="text-[11px] font-semibold text-muted uppercase tracking-wide m-0 mb-1.5">What it looks like in practice</p>
+          <div className="flex flex-col gap-1.5">
+            {fn.commonPatterns.map((p, i) => (
+              <div key={i} className="flex items-start gap-2 bg-base rounded-btn px-2.5 py-1.5">
+                <code className="font-mono text-xs text-brand-dark whitespace-nowrap shrink-0">{p.formula}</code>
+                <span className="text-xs text-muted">{p.note}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* When to use */}
         <div>
           <p className="text-[11px] font-semibold text-muted uppercase tracking-wide m-0 mb-1">When to use</p>

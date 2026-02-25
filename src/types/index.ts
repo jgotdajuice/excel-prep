@@ -106,6 +106,8 @@ export interface FunctionReference {
   description: string;
   parameters: FunctionParameter[];
   example: { scenario: string; formula: string; result: string };
+  /** Real formula patterns users will actually type in challenges */
+  commonPatterns: { formula: string; note: string }[];
   whenToUse: string;
   tier: Tier;
   category: string;
