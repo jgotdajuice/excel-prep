@@ -33,13 +33,15 @@ function colIndexToLetter(col: number): string {
   return letter;
 }
 
-/** Check if cursor is at a position where a cell reference can be inserted */
+/** Check if cursor is at a position where a cell reference can be inserted.
+ *  A reference can go after operators, open-paren, comma, colon, etc.
+ *  but NOT directly after an alphanumeric char (middle of a reference/number). */
 function isCursorAtReferencePosition(textarea: HTMLTextAreaElement): boolean {
   const val = textarea.value;
   if (!val.startsWith('=')) return false;
   const pos = textarea.selectionStart;
-  if (pos === val.length && val.length >= 1) return true; // at end of formula
   if (pos === 0) return false;
+  // Only allow if the character immediately before cursor is an operator/separator
   const charBefore = val[pos - 1];
   return '(,+-*/: =<>&;'.includes(charBefore);
 }
@@ -133,6 +135,9 @@ export function SpreadsheetGrid({
     filterText: '',
     position: { top: 0, left: 0 },
   });
+
+  // Container ref for capturing mousedown before Handsontable
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   // Track current editing row/col for autocomplete
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -237,6 +242,132 @@ export function SpreadsheetGrid({
     textareaRef.current = null;
   }
 
+  // ── Capturing mousedown for click-to-reference ─────────────────────────
+  // Native capturing listener fires BEFORE Handsontable sees the event.
+  // This prevents HOT from closing the editor when clicking cells during
+  // formula editing, allowing us to insert references reliably.
+  useEffect(() => {
+    if (!isChallenge) return;
+    const container = containerRef.current;
+    if (!container) return;
+
+    function onCapturingMouseDown(e: MouseEvent) {
+      // Only intercept when actively editing a formula
+      if (!formulaEditingRef.current.active) {
+        // Fallback: check editor textarea directly
+        const hot = hotRef.current?.hotInstance;
+        const editor = hot?.getActiveEditor();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const ta = (editor as any)?.TEXTAREA as HTMLTextAreaElement | undefined;
+        if (!ta || !ta.value.startsWith('=')) return;
+        textareaRef.current = ta;
+        const sel = hot!.getSelected();
+        formulaEditingRef.current = {
+          active: true,
+          editorRow: sel?.[0]?.[0] ?? -1,
+          editorCol: sel?.[0]?.[1] ?? -1,
+        };
+      }
+
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+      if (!isCursorAtReferencePosition(textarea)) return;
+
+      // Find which cell was clicked by checking the event target
+      const hot = hotRef.current?.hotInstance;
+      if (!hot) return;
+
+      const target = e.target as HTMLElement;
+      const td = target.closest('td');
+      if (!td) return;
+
+      // Get cell coords from HOT
+      const coords = hot.getCoords(td);
+      if (!coords || coords.row < 0 || coords.col < 0) return;
+
+      // Don't intercept clicks on the answer cell itself
+      const { editorRow, editorCol } = formulaEditingRef.current;
+      if (coords.row === editorRow && coords.col === editorCol) return;
+
+      // Prevent HOT from seeing this mousedown at all
+      e.stopPropagation();
+      e.preventDefault();
+
+      // Insert the cell reference immediately
+      const ref = buildCellRef(coords.row, coords.col, coords.row, coords.col);
+      insertReferenceIntoTextarea(textarea, ref);
+      textarea.focus();
+
+      // Set up drag tracking for range selection
+      dragStartRef.current = { row: coords.row, col: coords.col };
+      dragCurrentRef.current = { row: coords.row, col: coords.col };
+
+      const onMouseMove = (me: MouseEvent) => {
+        const moveTarget = me.target as HTMLElement;
+        const moveTd = moveTarget.closest('td');
+        if (!moveTd) return;
+        const moveCoords = hot.getCoords(moveTd);
+        if (!moveCoords || moveCoords.row < 0 || moveCoords.col < 0) return;
+        dragCurrentRef.current = { row: moveCoords.row, col: moveCoords.col };
+
+        // Update the reference in the textarea as user drags
+        const start = dragStartRef.current!;
+        const end = dragCurrentRef.current;
+        const rangeRef = buildCellRef(start.row, start.col, end.row, end.col);
+        // Replace the last inserted reference
+        const val = textarea.value;
+        const pos = textarea.selectionStart;
+        // Find start of the reference we inserted (search backwards from cursor)
+        let refStart = pos - ref.length;
+        // If user has dragged, the previous range ref might be longer/shorter
+        // Simpler: track the insertion point
+        const beforeRef = val.slice(0, refStart < 0 ? 0 : refStart);
+        const afterRef = val.slice(pos);
+        textarea.value = beforeRef + rangeRef + afterRef;
+        const newPos = beforeRef.length + rangeRef.length;
+        textarea.setSelectionRange(newPos, newPos);
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      };
+
+      const onMouseUp = () => {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        // Final range reference
+        const start = dragStartRef.current;
+        const end = dragCurrentRef.current;
+        if (start && end && (start.row !== end.row || start.col !== end.col)) {
+          const rangeRef = buildCellRef(start.row, start.col, end.row, end.col);
+          const val = textarea.value;
+          const pos = textarea.selectionStart;
+          // Find and replace the current reference
+          // The reference starts where we first inserted
+          const singleRef = buildCellRef(start.row, start.col, start.row, start.col);
+          // Search backwards from cursor for the start of any reference
+          const searchFrom = val.lastIndexOf(singleRef);
+          if (searchFrom >= 0) {
+            const beforeRef = val.slice(0, searchFrom);
+            const afterRef = val.slice(pos);
+            textarea.value = beforeRef + rangeRef + afterRef;
+            const newPos = beforeRef.length + rangeRef.length;
+            textarea.setSelectionRange(newPos, newPos);
+            textarea.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        }
+        textarea.focus();
+        dragStartRef.current = null;
+        dragCurrentRef.current = null;
+      };
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    }
+
+    container.addEventListener('mousedown', onCapturingMouseDown, true);
+    return () => {
+      container.removeEventListener('mousedown', onCapturingMouseDown, true);
+    };
+  }, [isChallenge]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Challenge mode props ─────────────────────────────────────────────────
   const minRows = isChallenge ? challenge!.seedData.length : 50;
   const maxRows = isChallenge ? challenge!.seedData.length : undefined;
@@ -281,7 +412,7 @@ export function SpreadsheetGrid({
           cellLabel={`${colIndexToLetter(selectedCell.col)}${selectedCell.row + 1}`}
         />
       )}
-      <div className={`hot-container${formulaEditingActive ? ' formula-editing' : ''}`} style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+      <div ref={containerRef} className={`hot-container${formulaEditingActive ? ' formula-editing' : ''}`} style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
         <HotTable
           ref={hotRef}
           // Use challenge key to force full re-mount when challenge changes
@@ -316,67 +447,9 @@ export function SpreadsheetGrid({
               enterPressedRef.current = true;
             }
           }}
-          beforeOnCellMouseDown={(event, coords, _td, controller) => {
-            if (!isChallenge) return;
-            let isFormulaEditing = formulaEditingRef.current.active;
-            // Fallback: directly check textarea value to eliminate setTimeout race
-            if (!isFormulaEditing) {
-              const hot = hotRef.current?.hotInstance;
-              const editor = hot?.getActiveEditor();
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const ta = (editor as any)?.TEXTAREA as HTMLTextAreaElement | undefined;
-              if (ta && ta.value.startsWith('=')) {
-                isFormulaEditing = true;
-                textareaRef.current = ta;
-                const sel = hot!.getSelected();
-                const eRow = sel?.[0]?.[0] ?? -1;
-                const eCol = sel?.[0]?.[1] ?? -1;
-                formulaEditingRef.current = { active: true, editorRow: eRow, editorCol: eCol };
-                setFormulaEditingActive(true);
-              }
-            }
-            if (!isFormulaEditing) return;
-            const textarea = textareaRef.current;
-            if (!textarea) return;
-            if (!isCursorAtReferencePosition(textarea)) return;
-            // Ignore header clicks (row = -1 or col = -1)
-            if (coords.row < 0 || coords.col < 0) return;
-            // Allow normal behavior when clicking the answer cell itself
-            const { editorRow, editorCol } = formulaEditingRef.current;
-            if (coords.row === editorRow && coords.col === editorCol) return;
-
-            // Prevent HOT from closing the editor and selecting the clicked cell
-            controller.row = false;
-            controller.column = false;
-            controller.cell = false;
-            event.stopImmediatePropagation();
-
-            // Record drag start
-            dragStartRef.current = { row: coords.row, col: coords.col };
-            dragCurrentRef.current = { row: coords.row, col: coords.col };
-
-            const onMouseUp = () => {
-              document.removeEventListener('mouseup', onMouseUp);
-              const start = dragStartRef.current;
-              const end = dragCurrentRef.current;
-              if (!start || !end || !textareaRef.current) {
-                dragStartRef.current = null;
-                dragCurrentRef.current = null;
-                return;
-              }
-              const ref = buildCellRef(start.row, start.col, end.row, end.col);
-              insertReferenceIntoTextarea(textareaRef.current, ref);
-              textareaRef.current.focus();
-              dragStartRef.current = null;
-              dragCurrentRef.current = null;
-            };
-            document.addEventListener('mouseup', onMouseUp);
-          }}
-          beforeOnCellMouseOver={(_event, coords) => {
-            if (!isChallenge) return;
-            if (!dragStartRef.current) return;
-            if (coords.row < 0 || coords.col < 0) return;
-            dragCurrentRef.current = { row: coords.row, col: coords.col };
+          beforeOnCellMouseDown={() => {
+            // Click-to-reference is handled by the capturing mousedown listener
+            // on the container div, which fires before HOT sees the event.
           }}
           afterChange={(changes, source) => {
             if (isChallenge && onGradeCellRef.current && source === 'edit') {
