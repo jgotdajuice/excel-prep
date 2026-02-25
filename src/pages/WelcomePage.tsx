@@ -60,6 +60,12 @@ export function WelcomePage() {
           <Button variant="secondary" onClick={() => navigate('/practice')} className="py-2.5 text-sm">
             {hasStarted ? 'Continue Practicing' : 'Free Practice'}
           </Button>
+          <button
+            onClick={() => navigate('/learn')}
+            className="text-sm text-brand font-medium bg-transparent border-none cursor-pointer py-1 hover:underline"
+          >
+            Learn formulas first
+          </button>
         </div>
       </Card>
     </div>

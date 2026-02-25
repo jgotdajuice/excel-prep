@@ -105,6 +105,12 @@ export function DrillReview() {
         >
           Back to Challenges
         </Link>
+        <Link
+          to="/learn"
+          className="px-6 py-2.5 rounded-btn border border-border text-brand text-sm font-medium no-underline inline-flex items-center hover:bg-brand-light/40"
+        >
+          Review Formulas
+        </Link>
       </div>
     </div>
   );

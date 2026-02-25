@@ -57,8 +57,8 @@ export function AppShell({ children }: AppShellProps) {
                       clsx(
                         'block py-2 px-4 text-[13px] no-underline border-l-3 transition-colors',
                         isActive
-                          ? 'text-brand-dark font-semibold border-brand'
-                          : 'text-text-primary/70 font-normal border-transparent hover:bg-base hover:text-text-primary'
+                          ? 'text-brand-dark font-semibold border-brand bg-brand-light/50'
+                          : 'text-text-primary/70 font-normal border-transparent hover:bg-brand-light/30 hover:text-text-primary'
                       )
                     }
                   >
