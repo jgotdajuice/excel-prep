@@ -17,6 +17,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Challenges', to: '/challenge' },
   { label: 'Rapid-Fire Drill', to: '/drill' },
   { label: 'Keyboard Shortcuts', to: '/shortcuts' },
+  { label: 'Excel Ribbon Guide', to: '/ribbon' },
   { label: 'Progress', to: '/progress' },
 ];
 

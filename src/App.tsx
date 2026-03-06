@@ -7,6 +7,7 @@ import { DrillPage } from './pages/DrillPage';
 import { ShortcutsPage } from './pages/ShortcutsPage';
 import { ProgressPage } from './pages/ProgressPage';
 import { LearnPage } from './pages/LearnPage';
+import { RibbonGuidePage } from './pages/RibbonGuidePage';
 
 function App() {
   return (
@@ -50,6 +51,14 @@ function App() {
           element={
             <AppShell>
               <ShortcutsPage />
+            </AppShell>
+          }
+        />
+        <Route
+          path="/ribbon"
+          element={
+            <AppShell>
+              <RibbonGuidePage />
             </AppShell>
           }
         />
